@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bootstrap 101 Template</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <!-- Bootstrap -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet" media="screen">
+    <link href="css/style.css" rel="stylesheet" media="screen">
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-inner">
+
+        <ul class="nav">
+            <li class="dropdown">
+                <a class="dropdown-toggle" id="uMenu" role="button" data-toggle="dropdown" data-target="#" href="#">
+                    <img src="http://placehold.it/18x18" style="width:18px;height: 18px;">
+                    <span class="badge badge-info">1</span>
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="uDropDown" role="menu">
+                    <li><a href="#">Друзья</a></li>
+                    <li><a href="#">Профиль</a></li>
+                    <li><a href="#">Настройки</a></li>
+                    <li><a href="#">Закладки</a></li>
+                    <li></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a class="dropdown-toggle" id="lMenu" role="button" data-toggle="dropdown" data-target="#" href="#">Лента
+                    <span class="badge badge-success">4</span></a>
+                <ul class="dropdown-menu" aria-labelledby="lDropDown" role="menu">
+                    <li><a href="#"><i class="icon-envelope"></i> Новое сообщение</a></li>
+                    <li><a href="#"><i class="icon-download-alt"></i> Добавлен новый торрент</a></li>
+                    <li><a href="#"><i class="icon-user"></i> Вас добавили в друзья</a></li>
+                    <li><a href="#"><i class="icon-tag"></i> Вы получили новый значок</a></li>
+                    <li></li>
+                </ul>
+
+            </li>
+
+            <li class="divider-vertical"></li>
+
+            <li><a href="index.html">Главная</a></li>
+
+            <li><a href="torrents.html">Торренты</a></li>
+
+            <li class="active"><a href="upload.html">Загрузить</a></li>
+
+            <li><a href="#">Правила</a></li>
+
+            <li><a href="#">FAQ</a></li>
+
+        </ul>
+
+        <form class="navbar-search pull-right">
+            <input type="text" class="search-query" placeholder="Search">
+        </form>
+    </div>
+</div>
+
+<ul class="breadcrumb">
+    <li><a href="index.html">Главная</a> <span class="divider">/</span></li>
+    <li class="active">Загрузить</li>
+</ul>
+
+
+<div class="container-fluid">
+    <div class="row-fluid">
+
+        <div class="span12">
+            <form class="form-horizontal">
+                <div class="control-group">
+                    <label class="control-label" for="category">Категория</label>
+
+                    <div class="controls">
+                        <select id="category">
+                            <option>выберите категорию</option>
+                        <option>Видео</option>
+                        <option>Аудио</option>
+                        <option>Игры</option>
+                        <option>Софт</option>
+                        <option>Литература</option>
+                            <option>Разное</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="inputEmail">Название</label>
+
+                    <div class="controls">
+                        <input type="text" id="inputEmail" placeholder="Название">
+                        <span class="help-block">Введите название, если торрент с таким или похожим названием уже есть на трекере, то во время ввода появится список. Выберите в нем торрент, который вы загружаете</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label" for="file">Изображение</label>
+
+                    <div class="controls">
+                        <input type="file" id="file" placeholder="Изображение">
+                        <span class="help-block">Добавьте изображение, соответствующее вашему торренту. Например, обложка фильма, игры, музыкального альбома итд.</span>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+        <div class="row-fluid">
+
+            <div class="span4">
+                <h4>Стримзон - пришел, увидел и скачал!</h4>
+                Что может быть проще, чем качать торренты с нашего трекера? Все торренты бесплатно, без регистрации и смс. Просто найдите нужную вам раздачу через поиск торрентов, кликните на Скачать торрент, запустится ваш любимый торрент-клиент и торрент начнет качаться.
+            </div>
+
+            <div class="span4">
+                <h4>StreamZone - лучший торрент-трекер рунета</h4>
+                Добро пожаловать на торрент-трекер StreamZone (стримзон). Наш торрент-трекер является лучшим торрент-трекером 2011 года по версии сайта uptracker. Это подверждается большим количеством качественных торрентов на нашем сайте. Все торренты проверяются на качество и соотвествие описанию торрента. Для того, чтобы скачать торрент бесплатно не нужны никакие смс. Все торренты бесплатно и без регистрации.
+            </div>
+
+            <div class="span4">
+                <h4>Streamzone - большой выбор и скорость!</h4>
+                На нашем трекере представлено множество качественных торрентов на любой вкус и цвет. Вы также можете сами загружать торренты на наш сайт. Однако администрация этого сайта не несет никакой ответственности за действия пользователей. На сервере хранятся только торрент файлы. Это значит, что мы не храним никаких нелегальных материалов.
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

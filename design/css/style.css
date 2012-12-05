@@ -1,0 +1,36 @@
+.module {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 0 #FFFFFF;
+    padding: 10px;
+}
+.module {
+    background-clip: padding-box;
+    border-radius: 6px 6px 6px 6px;
+    line-height: 16px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.moduleHeader {
+    margin: 0 0 10px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+
+
+.accordion-heading .accordion-toggle {
+    display: inline;
+}
+
+
+.accordion-heading {
+    padding: 5px;
+}
+
+.accordion-heading .divider-vertical {
+    padding: 0 5px 0 5px;
+}
+
+.accordion-heading .accordion-toggle {
+    padding: 8px 10px 8px 15px;
+}
