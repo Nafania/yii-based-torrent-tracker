@@ -1,2 +1,5 @@
-
-/design/.idea
+/dev/.idea/*
+/dev/assets/*
+/dev/uploads/*
+/dev/protected/runtime/*
+/dev/protected/modules/yiiadmin/data/*

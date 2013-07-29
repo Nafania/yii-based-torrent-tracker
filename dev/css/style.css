@@ -1,0 +1,36 @@
+a:focus {
+    outline: none;
+}
+
+.accordion-heading .accordion-toggle {
+    display: inline;
+}
+
+
+.accordion-heading {
+    padding: 5px;
+}
+
+.accordion-heading .divider-vertical {
+    padding: 0 5px 0 5px;
+}
+
+.accordion-heading .accordion-toggle {
+    padding: 8px 10px 8px 15px;
+}
+
+.media-body > p img {
+    width: 100px;
+}
+
+footer > div {
+    border-top:1px solid rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-size: 12px;
+}
+
+.modal > form {
+    margin: 0;
+}
