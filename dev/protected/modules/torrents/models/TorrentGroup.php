@@ -4,16 +4,20 @@
  * This is the model class for table "torrentGroups".
  *
  * The followings are the available columns in table 'torrentGroups':
- * @property integer $id
- * @property integer $title
- * @property integer $ctime
- * @property string  $picture
- * @property integer $mtime
- * @property Category $category
- * @property uid $uid
+ * @property integer   $id
+ * @property integer   $title
+ * @property integer   $ctime
+ * @property string    $picture
+ * @property integer   $mtime
+ * @property Category  $category
+ * @property uid       $uid
  * @property Torrent[] torrents
  */
 class TorrentGroup extends EActiveRecord {
+	private $eavAttributes;
+
+	public $cacheTime = 3600;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 *
@@ -93,6 +97,7 @@ class TorrentGroup extends EActiveRecord {
 				     // attribute value column
 				     // Default is 'value'
 				     'valueField'       => 'value',
+				     'cacheId'          => 'cache',
 				     // Model FK name
 				     // By default taken from primaryKey
 				     //'modelTableFk'     => primaryKey,
@@ -103,6 +108,11 @@ class TorrentGroup extends EActiveRecord {
 				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
 				     // Empty by default
 				     'attributesPrefix' => '',
+			     )
+			),
+			array(
+			     'getTorrentTitleBehavior' => array(
+				     'class' => 'application.modules.torrents.behaviors.GetTorrentTitleBehavior'
 			     )
 			));
 	}
@@ -130,16 +140,16 @@ class TorrentGroup extends EActiveRecord {
 
 		$criteria = new CDbCriteria;
 
-		$criteria->compare('id', $this->id);
-		$criteria->compare('title', $this->title);
-		$criteria->compare('ctime', $this->ctime);
-		$criteria->compare('picture', $this->picture, true);
-		$criteria->compare('mtime', $this->mtime);
+		$criteria->compare('t.id', $this->id);
+		$criteria->compare('t.title', $this->title);
+		$criteria->compare('t.ctime', $this->ctime);
+		$criteria->compare('t.picture', $this->picture, true);
+		$criteria->compare('t.mtime', $this->mtime);
 		//$criteria->order = 'mtime DESC';
 
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
-		                                           'sort' => array(
+		                                           'sort'     => array(
 			                                           'defaultOrder' => 'mtime DESC'
 		                                           )
 		                                      ));
@@ -147,10 +157,10 @@ class TorrentGroup extends EActiveRecord {
 
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
-			$this->mtime = time();
+			//$this->mtime = time();
 
 			if ( $this->getIsNewRecord() ) {
-				$this->ctime = time();
+				$this->ctime = $this->mtime = time();
 				$this->uid = Yii::app()->getUser()->getId();
 			}
 
@@ -164,12 +174,6 @@ class TorrentGroup extends EActiveRecord {
 			'/torrents/default/view',
 			'id' => $this->getId()
 		);
-	}
-
-	public function getTitle () {
-		//TODO: get proper name
-		$attributes = $this->getEavAttributeKeys();
-		return $this->getEavAttribute($attributes[0]->id);
 	}
 
 	public function getId () {
@@ -195,7 +199,9 @@ class TorrentGroup extends EActiveRecord {
 			if ( !$val ) {
 				continue;
 			}
-			$attrs[$attribute->getTitle()] = nl2br($val);
+			$prepend = ($attribute->prepend ? $attribute->prepend . ' ' : '');
+			$append = ($attribute->append ? ' ' . $attribute->append : '');
+			$attrs[$attribute->getTitle()] = $prepend . nl2br($val) . $append;
 		}
 
 		return $attrs;
@@ -204,25 +210,46 @@ class TorrentGroup extends EActiveRecord {
 	public function getSeparateAttributes () {
 		$return = array();
 		foreach ( $this->torrents AS $torrent ) {
-			$return[] = $torrent->getSeparateAttribute();
+			$return[$torrent->getId()] = $torrent->getSeparateAttribute();
 		}
 
 		return $return;
 	}
 
+	public function getSeparateAttribute ( $id ) {
+		$attrs = $this->getSeparateAttributes();
+		return (isset($attrs[$id]) ? $attrs[$id] : null);
+	}
+
 	public function getEavAttributeKeys () {
-		return $this->category->attrs(array('condition' => 'common = 1'));
-	}
-
-	public function getTags () {
-		$tags = array();
-		foreach ( $this->torrents AS $torrent ) {
-			$tags = CMap::mergeArray($tags, $torrent->getTags());
+		if ( !$this->eavAttributes ) {
+			return $this->eavAttributes = $this->category->attrs(array('condition' => 'attrs.common = 1'));
 		}
-		return array_unique($tags);
+		return $this->eavAttributes;
 	}
 
-	public function searchWithText ( $search ) {
-		$this->withEavAttributes(array($search));
+	public function searchWithText ( $search = '' ) {
+		if ( $search ) {
+			$criteria = new CDbCriteria();
+			$criteria->with = 'torrents';
+			$this->getDbCriteria()->mergeWith($criteria);
+
+			$this->withEavAttributes(array($search));
+		}
+	}
+
+	public function searchWithTags ( $tags = '' ) {
+		if ( $tags ) {
+			$this->taggedWith($tags);
+		}
+	}
+
+	public function searchWithCategory ( $category = '' ) {
+		if ( $category ) {
+			$criteria = new CDbCriteria();
+			$criteria->with = 'category';
+			$criteria->compare('category.name', $category);
+			$this->getDbCriteria()->mergeWith($criteria);
+		}
 	}
 }

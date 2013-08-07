@@ -82,14 +82,14 @@ $form = $this->beginWidget('CActiveForm',
              </div>
 
 
-                <div class="row <?php if ( $model->getError('measure') ) {
+                <div class="row <?php if ( $model->getError('description') ) {
 	                echo 'errors';
                 } ?>">
-                    <div class="column span-4"><?php echo $form->labelEx($model, 'measure'); ?></div>
+                    <div class="column span-4"><?php echo $form->labelEx($model, 'description'); ?></div>
                     <div class="column span-flexible">
-						<?php echo $form->textField($model, 'measure'); ?>
+						<?php echo $form->textField($model, 'description'); ?>
 	                    <ul class="errorlist">
-                            <li><?php echo $form->error($model, 'measure'); ?></li>
+                            <li><?php echo $form->error($model, 'description'); ?></li>
                         </ul>
                     </div>
                 </div>

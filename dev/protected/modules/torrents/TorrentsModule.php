@@ -27,6 +27,8 @@ class TorrentsModule extends CWebModule {
 	public static function register () {
 		self::_addUrlRules();
 		self::_addModelRules();
+		self::_addBehaviors();
+		self::_addModelsRelations();
 
 		Yii::app()->pd->addAdminModule('torrents', 'Models management');
 	}
@@ -42,11 +44,62 @@ class TorrentsModule extends CWebModule {
 		                            ));
 	}
 
+
+	private static function _addModelsRelations () {
+		Yii::app()->pd->addRelations('Comment',
+			'torrentComments',
+			array(
+			     CActiveRecord::HAS_ONE,
+			     'TorrentCommentsRelations',
+			     'commentId',
+			),
+			'application.modules.torrents.models.*');
+
+		Yii::app()->pd->addRelations('Comment',
+			'torrent',
+			array(
+			     CActiveRecord::HAS_ONE,
+			     'Torrent',
+			     'torrentId',
+			     'through' => 'torrentComments'
+			),
+			'application.modules.torrents.models.*');
+	}
+
 	private function _addModelRules () {
-		Yii::app()->pd->addModelRules('Category', array(
-		                                   'id',
-		                                   'required',
-		                                   'on' => 'createTorrent',
-		                              ));
+		Yii::app()->pd->addModelRules('Category',
+			array(
+			     'id',
+			     'required',
+			     'on' => 'createTorrent',
+			));
+
+		Yii::app()->pd->addModelRules('Category',
+			array(
+			     'torrentsNameRules',
+			     'safe',
+			));
+
+		Yii::app()->pd->addModelRules('Comment',
+			array(
+			     'torrentId',
+			     'safe',
+			));
+	}
+
+	private function _addBehaviors () {
+		Yii::app()->pd->registerBehavior('Category',
+			array(
+			     'torrentNameRulesBehavior' => array(
+				     'class' => 'application.modules.torrents.behaviors.TorrentNameRuleBehavior'
+			     )
+			));
+
+		Yii::app()->pd->registerBehavior('Comment',
+			array(
+			     'torrentComments' => array(
+				     'class' => 'application.modules.torrents.behaviors.TorrentCommentsRelationsBehavior'
+			     )
+			));
 	}
 }

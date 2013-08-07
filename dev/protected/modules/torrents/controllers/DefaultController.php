@@ -62,6 +62,8 @@ class DefaultController extends Controller {
 			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
 			$Torrent->setTags($_POST['tags']);
 
+			$TorrentGroup->addTags($_POST['tags']);
+
 			$valid = $Torrent->validate();
 			$valid = $this->validateAttributes($Attributes) && $valid;
 
@@ -84,7 +86,7 @@ class DefaultController extends Controller {
 					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'collapse' . md5($Torrent->getSeparateAttribute()))));
+						array('#' => 'collapse' . $Torrent->getId())));
 				} catch ( Exception $e ) {
 
 					$transaction->rollBack();
@@ -112,7 +114,7 @@ class DefaultController extends Controller {
 		if ( !$Torrent ) {
 			throw new CHttpException(404, 'The requested page does not exist.');
 		}
-		Yii::app()->getRequest()->sendFile($Torrent->torrentGroup->getTitle() . '.torrent',
+		Yii::app()->getRequest()->sendFile($Torrent->getTitle() . '.torrent',
 			file_get_contents($Torrent->getDownloadPath()),
 			'application/x-bittorrent');
 	}
@@ -138,6 +140,8 @@ class DefaultController extends Controller {
 			$TorrentGroup->attributes = $_POST['TorrentGroup'];
 			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
 			$Torrent->setTags($_POST['tags']);
+
+			$TorrentGroup->setTags($_POST['tags']);
 
 			$valid = $TorrentGroup->validate();
 			$valid = $Torrent->validate() && $valid;
@@ -172,7 +176,7 @@ class DefaultController extends Controller {
 					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'collapse' . md5($Torrent->getSeparateAttribute()))));
+						array('#' => 'collapse' . $Torrent->getId())));
 				} catch ( Exception $e ) {
 
 					$transaction->rollBack();
@@ -301,7 +305,6 @@ class DefaultController extends Controller {
 		$this->render('updateGroup',
 			array(
 			     'torrentGroup' => $TorrentGroup,
-			     'category'     => $Category,
 			     'attributes'   => $Attributes,
 			));
 
@@ -344,7 +347,12 @@ class DefaultController extends Controller {
 
 		if ( isset($_POST['Torrent']) ) {
 			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
+
+			$TorrentGroup->removeTags($Torrent->getTags());
+
 			$Torrent->setTags($_POST['tags']);
+
+			$TorrentGroup->addTags($_POST['tags']);
 
 			$valid = $Torrent->validate();
 			$valid = $this->validateAttributes($Attributes) && $valid;
@@ -356,7 +364,9 @@ class DefaultController extends Controller {
 					$Torrent->gId = $TorrentGroup->getId();
 					$Torrent->save(false);
 
-					$TorrentGroup->mtime = time();
+					if ( $Torrent->info_hash instanceof CUploadedFile ) {
+						$TorrentGroup->mtime = time();
+					}
 					$TorrentGroup->save(false);
 
 					//foreach ( $Attributes AS $Attribute ) {
@@ -366,9 +376,9 @@ class DefaultController extends Controller {
 					$transaction->commit();
 
 					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
-						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
+						Yii::t('torrentsModule.common', 'Торрент успешно изменен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'collapse' . md5($Torrent->getSeparateAttribute()))));
+						array('#' => 'collapse' . $Torrent->getId())));
 				} catch ( Exception $e ) {
 
 					$transaction->rollBack();
@@ -428,32 +438,21 @@ class DefaultController extends Controller {
 		$model->setScenario('search');
 
 		$attributes = Yii::app()->getRequest()->getQuery('TorrentGroup', '');
-		$search = Yii::app()->getRequest()->getParam('search');
+		$search = Yii::app()->getRequest()->getParam('search', '');
+		$tags = Yii::app()->getRequest()->getParam('tags', '');
+		$category = Yii::app()->getRequest()->getParam('category', '');
 
+		//$model->title = $search;
 		$model->attributes = $attributes;
 		$model->searchWithText($search);
+		$model->searchWithTags($tags);
+		$model->searchWithCategory($category);
 
-		$dataProvider = $model->search();
+		$dataProvider = $model->with('category', 'category.attrs', 'torrents')->search();
 
 		$this->render('index',
 			array(
 			     'dataProvider' => $dataProvider,
-			));
-	}
-
-	/**
-	 * Manages all models.
-	 */
-	public function actionAdmin () {
-		$model = new Torrent('search');
-		$model->unsetAttributes(); // clear any default values
-		if ( isset($_GET['Torrent']) ) {
-			$model->attributes = $_GET['Torrent'];
-		}
-
-		$this->render('admin',
-			array(
-			     'model' => $model,
 			));
 	}
 
@@ -519,6 +518,7 @@ class DefaultController extends Controller {
 				$attributes[$key] = trim($purify->purify($val));
 			}
 		}
+
 		return $model->setEavAttributes($attributes->toArray(), true);
 	}
 

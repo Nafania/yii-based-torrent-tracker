@@ -1,0 +1,5 @@
+<span class="badge<?php echo ( $rating > 0 ? ' badge-success' : ( $rating < 0 ? ' badge-important' : '' ) ); ?>"><?php echo $rating ?></span>
+<a data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('ratingsModule.common',
+		        'Повысить рейтинг комментария'); ?>" data-action="rating" data-id="<?php echo $modelId ?>" data-model="<?php echo $modelName ?>" data-state="<?php echo RatingRelations::RATING_STATE_PLUS ?>" href="<?php echo Yii::app()->createUrl('ratings/default/create') ?>"><i class="icon-arrow-up"></i></a>
+<a data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('ratingsModule.common',
+		        'Понизить рейтинг комментария'); ?>" data-action="rating" data-id="<?php echo $modelId ?>" data-model="<?php echo $modelName ?>" data-state="<?php echo RatingRelations::RATING_STATE_MINUS ?>" href="<?php echo Yii::app()->createUrl('ratings/default/create') ?>"><i class="icon-arrow-down"></i></a>

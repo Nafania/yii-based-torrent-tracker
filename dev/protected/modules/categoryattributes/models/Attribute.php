@@ -9,8 +9,10 @@
  * @property integer $validator
  * @property integer $required
  * @property string  $title
- * @property string  $measure
+ * @property string  $description
  * @property integer cId
+ * @property integer append
+ * @property integer prepend
  */
 class Attribute extends EActiveRecord {
 
@@ -58,7 +60,7 @@ class Attribute extends EActiveRecord {
 				'range' => array_keys($this->typeLabels())
 			),
 			array(
-				'title, measure',
+				'title, description',
 				'length',
 				'max' => 255
 			),
@@ -67,7 +69,7 @@ class Attribute extends EActiveRecord {
 				'safe'
 			),
 			array(
-				'type, title, measure, validator, required, common, cId',
+				'type, title, description, validator, required, common, cId',
 				'safe',
 				'on' => 'adminSearch'
 			)
@@ -100,7 +102,7 @@ class Attribute extends EActiveRecord {
 			'type'      => Yii::t('CategoryAttributesModule', 'Тип'),
 			'validator' => Yii::t('CategoryAttributesModule', 'Валидатор'),
 			'required'  => Yii::t('CategoryAttributesModule', 'Обязательное'),
-			'measure'   => Yii::t('CategoryAttributesModule', 'Ед. измерения'),
+			'description'   => Yii::t('CategoryAttributesModule', 'Описание'),
 			'common'    => Yii::t('CategoryAttributesModule', 'Общий'),
 			'cId'       => Yii::t('CategoryAttributesModule', 'Категория'),
 		);
@@ -130,6 +132,7 @@ class Attribute extends EActiveRecord {
 		if ( sizeof($in) ) {
 			$this->getDbCriteria()->mergeWith(array(
 			                                       'condition' => 'id IN(' . implode(', ', $in) . ')',
+			                                       'order' => 'FIELD(id, ' . implode(', ', $in) . ')',
 			                                  ));
 		}
 		else {
@@ -166,7 +169,7 @@ class Attribute extends EActiveRecord {
 
 		$criteria->compare('id', $this->id);
 		$criteria->compare('title', $this->title, true);
-		$criteria->compare('measure', $this->measure, true);
+		$criteria->compare('description', $this->description, true);
 		$criteria->compare('type', $this->type);
 		$criteria->compare('required', $this->required);
 		$criteria->compare('cId', $this->cId);

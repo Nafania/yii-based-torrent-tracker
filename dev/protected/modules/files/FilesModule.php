@@ -55,6 +55,23 @@ class FilesModule extends CWebModule {
 			     ),
 			));
 
+		Yii::app()->pd->registerBehavior('UserProfile',
+			array(
+			     'image' => array(
+				     'class'     => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
+				     'types'     => array(
+					     'gif',
+					     'jpg',
+					     'png',
+					     'jpeg'
+				     ),
+				     'attribute' => 'picture',
+				     # Default image to return if no image path is found in the DB
+				     'fallback_image' => '/images/profile_mask2.png',
+				     'path'      => "uploads/images/:model/:id/:fileNameMd5.:ext",
+			     ),
+			));
+
 		/*Yii::app()->pd->registerBehavior('Category',
 			array(
 			     'image' => array(

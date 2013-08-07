@@ -1,0 +1,185 @@
+/**********************************************/
+/* @name: style.css                           */
+/* @date: 19/11/07                            */
+/* @desc: JMyCarousel css                     */
+/* @auth: kevin@enova-tech.net                */
+/**********************************************/
+/** General Elements && arrows description  ***/
+
+
+div.jMyCarousel .prev{
+	background: url(../img/left.png)center center no-repeat;
+	width:47px;
+	height:61px;
+	border:0px;
+}
+
+div.jMyCarousel .next{
+	background: url(../img/right.png)center center no-repeat;
+	width:40px;
+	height:61px;
+	border:0px;
+}
+div.jMyCarousel.small .prev{
+	background: url(../img/left_s.png)center center no-repeat;
+	width:31px;
+	height:40px;
+}
+div.jMyCarousel.small .next{
+	background: url(../img/right_s.png)center center no-repeat;
+	width:26px;
+	height:40px;
+}
+div.jMyCarousel .prev, div.jMyCarousel .next{
+	opacity: 0.8 !important;
+}
+div.jMyCarousel .prev:hover, div.jMyCarousel .next:hover{
+	opacity: 1.0 !important;
+}
+
+
+#featured_bottom .up{
+	background: url(../img/up.png)center center no-repeat;
+	width:16px !important;
+	height:16px !important;
+	border:0px;
+	left: 19px;
+	top:15px !important;
+}
+
+#featured_bottom .down{
+	background: url(../img/down.png)center center no-repeat;
+	width:16px !important;
+	height:16px !important;
+	border:0px;
+	left: 19px;
+	top:33px !important;
+}
+
+
+div.jMyCarousel{
+	margin:auto;
+	/*border:1px solid #1c6f8e;*/
+}
+
+div.jMyCarousel ul{
+
+}
+
+div.jMyCarousel ul li{
+	/*
+	margin:0px;
+	border:1px solid #ccc;
+	line-height:0px;
+	padding:0px;
+	*/
+	margin:5px;
+	line-height:0px;
+
+	border:1px solid #ccc;
+	padding:3px;
+
+}
+
+div.jMyCarousel ul li a{ /* in case of link */
+	display:block;
+	padding:0px;
+	text-decoration: none;
+}
+
+div.jMyCarousel ul li img{
+	display:block;
+	border:0px;
+	margin-bottom:0px;
+	padding-bottom:0px;
+}
+
+div.jMyCarousel ul li div{
+	z-index:100;
+	position:absolute;
+	bottom:6px;
+
+	margin:5px;
+
+	text-align:center;
+	/*width:140px;*/
+
+	line-height:normal;
+	background-color: #000 !important;
+	border: 1px dashed #fff;
+	padding-top:4px;
+	padding-bottom:4px;
+}
+
+div.jMyCarousel ul li span
+{
+	color: #fff;
+	/*font-size: 14px;*/
+	font-weight: bold;
+	line-height: normal;
+	white-space: normal;
+	/*
+	padding:3px;
+	padding-left:10px;
+	padding-right:10px;
+	*/
+}
+div.jMyCarousel ul li span:hover{
+	text-decoration: underline;
+}
+
+.carusel_loading{
+	text-align:center;
+}
+
+.torrentItem {
+height:200px;
+overflow:hidden;
+position:relative;
+padding:5px;
+}
+
+.torrentItem h3 {
+position:absolute;
+bottom:5px;
+left:0;
+border:none;
+line-height:0.7em;
+width:146px;
+text-align:center;
+margin:0;
+padding:0;
+}
+
+.torrentItem h3 a {
+font-size:10px;
+display:block;
+height:auto;
+width:auto;
+}
+
+.torrentItem a {
+display:block;
+overflow:hidden;
+}
+
+.torrentItem img,.torrentItem a img {
+border:none;
+margin:0;
+padding:0!important;
+}
+
+.torrentItem {
+border:1px solid #ddd;
+float:left;
+}
+
+.torrentItem h3 a {
+background-color:#747474;
+color:#eee;
+}
+
+.torrentItem h3 a:hover {
+background-color:#eaeaea;
+color:#747474;
+}

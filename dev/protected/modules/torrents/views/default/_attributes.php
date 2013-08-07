@@ -15,13 +15,13 @@ foreach ( $attributes AS $attribute ) {
 		$value = $model->getEavAttribute($attribute->id);
 	}
 	$required = ($attribute->required ? ' <span class="required">*</span>' : '');
-	$measure = ($attribute->measure ? ' <span class="measure">(' . $attribute->measure . ')</span>' : '');
+	$description = ( $attribute->description ? ' <span class="attributeDescription"  data-toggle="tooltip" data-placement="top" data-original-title="' . $attribute->description . '">?</span>' : '' );
 	//}
 
 	$hasErrors = $attribute->hasErrors();
 
 	echo CHtml::openTag('div', array('class' => 'attribute'));
-	echo CHtml::label($attribute->title . $measure . $required,
+	echo CHtml::label($attribute->title . $description . $required,
 		'Attribute_' . $attribute->id,
 		array(
 		     'class' => ($attribute->required ? 'required' : '') . ($hasErrors ? ' error' : '')

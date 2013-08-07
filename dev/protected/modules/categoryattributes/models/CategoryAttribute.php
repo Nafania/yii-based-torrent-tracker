@@ -8,6 +8,7 @@
  * @property integer $attrId
  */
 class CategoryAttribute extends EActiveRecord {
+	public $cacheTime = 3600;
 	/**
 	 * Returns the static model of the specified AR class.
 	 *

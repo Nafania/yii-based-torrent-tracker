@@ -46,7 +46,7 @@ class CategoryModule extends CWebModule {
 			));
 	}
 
-	private function _addRelations() {
+	private function _addRelations () {
 
 		Yii::app()->pd->addRelations('TorrentGroup',
 			'category',

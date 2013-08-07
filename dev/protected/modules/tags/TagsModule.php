@@ -29,6 +29,16 @@ class TagsModule extends CWebModule
 		        )
 		    )
 		);
+
+		Yii::app()->pd->registerBehavior('TorrentGroup', array(
+		        'tags' => array(
+		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
+		            'modelTableName' => 'TorrentGroup',
+		            'cacheID' => 'cache',
+		            'createTagsAutomatically' => true,
+		        )
+		    )
+		);
 	}
 
 	protected static function _addUrlRules () {

@@ -40,13 +40,18 @@ class DefaultController extends Controller {
 		$this->breadcrumbs[] = Yii::t('userModule.common', 'Регистрация');
 
 		$User = new User('register');
+		$Profile = new UserProfile('register');
 
 		$this->performAjaxValidation($User);
 
 		if ( isset($_POST['User']) ) {
 			$User->attributes = $_POST['User'];
 			if ( $User->save() ) {
-				Yii::app()->getAuthManager()->assign('registered', $User->id);
+
+				$Profile->uid = $User->getId();
+				$Profile->save(false);
+
+				Yii::app()->getAuthManager()->assign('registered', $User->getId());
 
 				Yii::app()->user->setFlash(User::FLASH_SUCCESS, Yii::t('userModule.common', 'Register successful'));
 

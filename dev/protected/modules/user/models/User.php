@@ -18,6 +18,8 @@ class User extends EActiveRecord {
 
 	public $rememberMe;
 
+	public $cacheTime = 3600;
+
 	const FLASH_SUCCESS = 'success';
 	const FLASH_NOTICE = 'notice';
 	const FLASH_WARNING = 'warning';
@@ -119,7 +121,7 @@ class User extends EActiveRecord {
 			array(
 				'name, email, password',
 				'length',
-				'max'=> 255
+				'max' => 255
 			),
 
 			array(
@@ -140,7 +142,14 @@ class User extends EActiveRecord {
 	public function relations () {
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
-		return array();
+		return CMap::mergeArray(parent::relations(),
+			array(
+			     'profile' => array(
+				     self::HAS_ONE,
+				     'UserProfile',
+				     'uid'
+			     )
+			));
 	}
 
 	/**
@@ -149,7 +158,7 @@ class User extends EActiveRecord {
 	public function attributeLabels () {
 		return array(
 			'id'               => 'ID',
-			'name'             => Yii::t('userModule.common', 'ФИО'),
+			'name'             => Yii::t('userModule.common', 'Имя'),
 			'email'            => Yii::t('userModule.common', 'Email адрес'),
 			'password'         => Yii::t('userModule.common', 'Пароль'),
 			'originalPassword' => Yii::t('userModule.common', 'Пароль'),
@@ -171,7 +180,7 @@ class User extends EActiveRecord {
 		$criteria->compare('email', $this->email, true);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria'=> $criteria,
+		                                           'criteria' => $criteria,
 		                                      ));
 	}
 
@@ -225,6 +234,10 @@ class User extends EActiveRecord {
 		if ( $this->getIsNewRecord() ) {
 			$this->ctime = time();
 			$this->active = self::USER_ACTIVE;
+
+			if ( !$this->name ) {
+				list($this->name) = explode('@', $this->email);
+			}
 		}
 
 		return parent::beforeSave();
@@ -375,7 +388,7 @@ class User extends EActiveRecord {
 		// Form the prefix that specifies hash algorithm type and cost parameter.
 		$salt = '$2a$' . str_pad((int) $cost, 2, '0', STR_PAD_RIGHT) . '$';
 		// Append the random salt string in the required base64 format.
-		$salt .= strtr(substr(base64_encode($rand), 0, 22), array('+'=> '.'));
+		$salt .= strtr(substr(base64_encode($rand), 0, 22), array('+' => '.'));
 		return $salt;
 	}
 
@@ -384,5 +397,13 @@ class User extends EActiveRecord {
 		$pass = substr(str_shuffle($chars), 0, $length);
 
 		return $pass;
+	}
+
+	public function getId () {
+		return $this->id;
+	}
+
+	public function getName () {
+		return $this->name;
 	}
 }

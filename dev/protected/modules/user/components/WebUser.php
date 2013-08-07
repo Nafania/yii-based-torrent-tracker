@@ -31,4 +31,8 @@ class WebUser extends AuthWebUser {
 		}
 		return $this->_model;
 	}
+
+	public function getProfile () {
+		return $this->getModel()->profile;
+	}
 }

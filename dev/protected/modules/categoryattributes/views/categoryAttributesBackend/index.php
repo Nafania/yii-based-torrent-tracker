@@ -38,9 +38,9 @@ $this->widget('zii.widgets.grid.CGridView',
 			     'filter' => array(0 => Yii::t('main', 'Нет'), 1 => Yii::t('main', 'Да'))
 		     ),
 		     array(
-			     'name'  => 'measure',
+			     'name'  => 'description',
 			     'value' => function ( $data ) {
-				     return $data->measure;
+				     return $data->description;
 			     },
 		     ),
 		     array(

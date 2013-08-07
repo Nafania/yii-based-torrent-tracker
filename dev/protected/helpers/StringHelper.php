@@ -87,23 +87,4 @@ class StringHelper {
 
 		return $beg . $ellipsis . $end;
 	}
-
-	static function makeClickable ( $text ) {
-		$preg_autolinks = array(
-			'pattern' => array(
-				"'[\w\+]+://[A-z0-9\.\?\+\-/_=&%#:;]+[\w/=]+'sie",
-				"'([^/])(www\.[A-z0-9\.\?\+\-/_=&%#:;]+[\w/=]+)'sie",
-				"'[\w]+[\w\-\.]+@[\w\-\.]+\.[\w]+'si",
-			),
-			'replacement' => array(
-				"'<a href=\"\\0\" target=\"_blank\">\\0</a>'",
-				"'<a href=\"http://\\2\" target=\"_blank\">http://\\2</a>'",
-				'<a href="mailto:$0">$0</a>',
-			),
-		);
-
-		return preg_replace($preg_autolinks['pattern'], $preg_autolinks['replacement'], $text);
-	}
-
 }
-?>

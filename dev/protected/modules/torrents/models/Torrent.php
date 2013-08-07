@@ -11,11 +11,13 @@
  * @property integer        $seeders
  * @property integer        $leechers
  * @property integer        $mtime
- * @property info_hash      $info_hash
- * @property uid $uid
+ * @property string         $info_hash
+ * @property integer        $uid
  * @property TorrentGroup   torrentGroup
  */
 class Torrent extends EActiveRecord {
+
+	public $cacheTime = 3600;
 
 	/**
 	 * Returns the static model of the specified AR class.
@@ -85,6 +87,7 @@ class Torrent extends EActiveRecord {
 				     // attribute value column
 				     // Default is 'value'
 				     'valueField'       => 'value',
+				     'cacheId'          => 'cache',
 				     // Model FK name
 				     // By default taken from primaryKey
 				     //'modelTableFk'     => primaryKey,
@@ -273,12 +276,26 @@ class Torrent extends EActiveRecord {
 	}
 
 	public function getSeparateAttribute () {
-		$sep = $this->torrentGroup->category->attrs(array(
-		                                                 'condition' => 'separate = 1',
-		                                                 'limit'     => 1
-		                                            ));
+		if ( $this->title ) {
+			return $this->title;
+		}
+		$sepAttr = $this->torrentGroup->category->attrs(array(
+		                                                     'condition' => 'separate = 1',
+		                                                ));
 
-		return $this->getEavAttribute($sep[0]->getId());
+		$return = array();
+		foreach ( $sepAttr AS $attribute ) {
+			$prepend = ($attribute->prepend ? $attribute->prepend . ' ' : '');
+			$append = ($attribute->append ? ' ' . $attribute->append : '');
+
+			$return[] = $prepend . $this->getEavAttribute($attribute->id) . $append;
+		}
+
+		$return = implode(' - ', $return);
+
+		$this->saveAttributes(array('title' => $return));
+
+		return $return;
 	}
 
 	public function getDownloads () {
@@ -296,5 +313,9 @@ class Torrent extends EActiveRecord {
 	public function getDownloadPath () {
 		return Yii::getPathOfAlias('webroot') . '/uploads/torrents/' . date('Y.m.d',
 			$this->ctime) . '/' . $this->getId() . '.torrent';
+	}
+
+	public function getTitle () {
+		return $this->torrentGroup->getTitle() . ' ' . Yii::app()->config->get('torrentsModule.torrentsNameDelimiter') . ' ' . $this->getSeparateAttribute();
 	}
 }

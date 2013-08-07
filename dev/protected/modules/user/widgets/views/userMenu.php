@@ -2,9 +2,7 @@
 if ( Yii::app()->getUser()->getIsGuest() ) {
 	$cs = Yii::app()->getClientScript();
 	$cs->registerScript(__FILE__, '$("#restoreModalLink").click(function(){$("#loginModal").modal("hide")});
-	$(".modal").on("hidden", function () {
-	    $(".help-block.error").hide();
-	});');
+	$(".modal").on("hidden", function () {$(".help-block.error").hide();});');
 
 	$this->beginWidget('bootstrap.widgets.TbModal', array('id' => 'loginModal')); ?>
 	<?php $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',

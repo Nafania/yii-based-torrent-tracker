@@ -42,7 +42,7 @@ class Controller extends CController {
 		parent::init();
 		$this->attachBehaviors($this->behaviors());
 
-		Yii::app()->getComponent('bootstrap');
+
 
 		return true;
 	}
@@ -52,6 +52,8 @@ class Controller extends CController {
 	}
 
 	public function beforeRender ( $view ) {
+		Yii::app()->getComponent('bootstrap');
+
 		$this->pageTitle = ($this->pageTitle ? $this->pageTitle . ' :: ' : '') . Yii::app()->config->get('base.siteName');
 
 		$pageDescription = (!empty($this->pageDescription) ? $this->pageDescription : Yii::app()->config->get('base.defaultDescription'));

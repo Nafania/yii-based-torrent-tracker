@@ -15,6 +15,8 @@
  */
 class Category extends EActiveRecord {
 
+	public $cacheTime = 3600;
+
 	//public $categoryAttributes = array();
 
 	/**
@@ -78,6 +80,12 @@ class Category extends EActiveRecord {
 		);
 	}
 
+	public function defaultScope() {
+		return array(
+			'order' => 'lft ASC'
+		);
+	}
+
 	/**
 	 * Retrieves a list of models based on the current search/filter conditions.
 	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
@@ -94,6 +102,9 @@ class Category extends EActiveRecord {
 
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
+		                                           'sort' => array(
+			                                           'defaultOrder' => 't.lft ASC'
+		                                           )
 		                                      ));
 	}
 

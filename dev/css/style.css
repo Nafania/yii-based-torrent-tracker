@@ -1,11 +1,10 @@
-a:focus {
+a:focus, .btn:focus {
     outline: none;
 }
 
 .accordion-heading .accordion-toggle {
     display: inline;
 }
-
 
 .accordion-heading {
     padding: 5px;
@@ -19,12 +18,12 @@ a:focus {
     padding: 8px 10px 8px 15px;
 }
 
-.media-body > p img {
+.comment .img-polaroid {
     width: 100px;
 }
 
 footer > div {
-    border-top:1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 body {
@@ -33,4 +32,65 @@ body {
 
 .modal > form {
     margin: 0;
+}
+
+.newTorrents .ui-tabs, .ui-tabs-panel {
+    padding: 1em 0 !important;
+}
+
+.attributeDescription {
+    font-size: 9px;
+    font-weight: bold;
+    vertical-align: text-bottom;
+}
+
+.fancybox.youtube:after {
+    content: url("/images/media_playback_start.png");
+    position: relative;
+    left: -70px;
+    top: 10px;
+}
+
+.commentsBlock {
+    margin-bottom: 20px;
+}
+
+.commentText.rating-1 {
+    opacity: 0.8;
+}
+
+.commentText.rating-2 {
+    opacity: 0.7;
+}
+
+.commentText.rating-3 {
+    opacity: 0.6;
+}
+
+.commentText.rating-4 {
+    opacity: 0.5;
+}
+
+.commentText.rating-5 {
+    opacity: 0.4;
+}
+
+.commentText.rating-6 {
+    opacity: 0.3;
+}
+
+.commentText.rating-7 {
+    opacity: 0.375;
+}
+
+.commentText.rating-8 {
+    opacity: 0.3;
+}
+
+.commentText.rating-9 {
+    opacity: 0.2;
+}
+
+.commentText.rating-10 {
+    opacity: 0.1;
 }

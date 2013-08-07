@@ -8,12 +8,14 @@ $cs = Yii::app()->getClientScript();
 $cs->registerCssFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fancyapps-fancyBox/source/jquery.fancybox.css');
 $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fancyapps-fancyBox/source/jquery.fancybox.js');
 $cs->registerScript(__FILE__ . 'fancybox', '$(".fancybox").fancybox();', CClientScript::POS_LOAD);
-$cs->registerScript(__FILE__ . 'accordition', '  location.hash && $(location.hash + ".collapse").collapse("show");', CClientScript::POS_LOAD)
+$cs->registerScript(__FILE__ . 'accordion',
+	'  location.hash && $(location.hash + ".collapse").collapse("show");',
+	CClientScript::POS_LOAD)
 ?>
-<h1><?php echo $model->getTitle() ?></h1>
-<div class="row-fluid">
+	<h1><?php echo $model->getTitle() ?></h1>
+	<div class="row-fluid">
 	<div class="span3">
-	<?php   $img = CHtml::image($model->getImageUrl(365, 500), $model->getTitle(), array('class' => 'img-polaroid'));
+	<?php   $img = CHtml::image($model->getImageUrl(300, 0), $model->getTitle(), array('class' => 'img-polaroid'));
 		echo CHtml::link($img,
 			$model->getImageUrl(),
 			array(
@@ -35,11 +37,17 @@ $cs->registerScript(__FILE__ . 'accordition', '  location.hash && $(location.has
 			<dt><?php echo Yii::t('tagsModule.common', 'Tags'); ?></dt>
 			<dd>
 			<?php
-				$tags = '';
-				foreach ( $model->getTags() AS $key => $tag ) {
-					$tags .= ($tags ? ', ' : '') . CHtml::link($tag);
+				if ( $model->getTags() ) {
+					$tags = '';
+					foreach ( $model->getTags() AS $key => $tag ) {
+						$tags .= ($tags ? ', ' : '') . CHtml::link($tag,
+							array(
+							     '/torrents/default/index',
+							     'tags' => $tag
+							));
+					}
+					echo $tags;
 				}
-				echo $tags;
 				?>
 			</dd>
 		</dl>
@@ -48,7 +56,7 @@ $cs->registerScript(__FILE__ . 'accordition', '  location.hash && $(location.has
 
 		<?php foreach ( $model->torrents(array('order' => 'ctime DESC')) AS $key => $torrent ) { ?>
 
-			<div class="accordion-group">
+				<div class="accordion-group">
                 <div class="accordion-heading">
 	                <?php echo CHtml::link('<i class="icon-download"></i>',
 		                array(
@@ -59,39 +67,72 @@ $cs->registerScript(__FILE__ . 'accordition', '  location.hash && $(location.has
 		                     'class'               => 'btn',
 		                     'data-toggle'         => 'tooltip',
 		                     'data-original-title' => Yii::t('torrentsModule',
-			                     'Скачать {torrentName}',
-			                     array('{torrentName}' => $model->getTitle()))
+			                     'Скачать {torrentGroupName} / {torrentName}',
+			                     array(
+			                          '{torrentGroupName}' => $model->getTitle(),
+			                          '{torrentName}'      => $torrent->getSeparateAttribute()
+			                     ))
 		                )) ?>
-	                <a href="#" class="btn" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule',
-		                'Пожаловаться на {torrentName}',
-		                array('{torrentName}' => $model->getTitle())); ?>"><i class="icon-warning-sign"></i></a>
-                    <a href="#" class="btn" data-comments-for="<?php echo $torrent->getId() ?>" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule',
-	                    'Смотреть комментарии для {torrentName}',
-	                    array('{torrentName}' => $model->getTitle())); ?>"><i class="icon-comment"></i></a>
+	                <a href="<?php echo Yii::app()->createUrl('/reports/default/create/',
+		                array(
+		                     'modelName' => get_class($torrent),
+		                     'modelId'   => $torrent->getId()
+		                )); ?>" data-action="report" class="btn" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('reportsModule.common',
+		                'Пожаловаться на {torrentGroupName} / {torrentName}',
+		                array(
+		                     '{torrentGroupName}' => $model->getTitle(),
+		                     '{torrentName}'      => $torrent->getSeparateAttribute()
+		                )); ?>"><i class="icon-warning-sign"></i></a>
+	                <a href="#" class="btn" data-comments-for="<?php echo $torrent->getId() ?>" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule',
+		                'Смотреть комментарии только для {torrentGroupName} / {torrentName}',
+		                array(
+		                     '{torrentGroupName}' => $model->getTitle(),
+		                     '{torrentName}'      => $torrent->getSeparateAttribute()
+		                )); ?>"><i class="icon-comment"></i></a>
 
-	                <a class="accordion-toggle" data-toggle="collapse" href="#collapse<?php echo md5($torrent->getSeparateAttribute()) ?>"><?php echo $torrent->getSeparateAttribute() ?></a>
+	                <?php
+	                if ( Yii::app()->getUser()->checkAccess('torrentsUpdate') ) {
+		                ?>
+		                <a href="<?php echo Yii::app()->createUrl('/torrents/default/updateTorrent/',
+			                array(
+			                     'id'   => $torrent->getId()
+			                )); ?>" class="btn" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule.common',
+			                'Редактировать {torrentGroupName} / {torrentName}',
+			                array(
+			                     '{torrentGroupName}' => $model->getTitle(),
+			                     '{torrentName}'      => $torrent->getSeparateAttribute()
+			                )); ?>"><i class="icon-edit"></i></a>
+		                <?php
+	                }
+	                ?>
+
+	                <a class="accordion-toggle" data-toggle="collapse" href="#collapse<?php echo $torrent->getId() ?>"><?php echo $torrent->getSeparateAttribute() ?></a>
 
                     <span class="divider-vertical">|</span>
 
-                    <span><?php echo $torrent->getAttributeLabel('size') ?>: <abbr title="<?php echo Yii::t('torrentsModule.common',
+                    <span><?php echo $torrent->getAttributeLabel('size') ?>
+	                    : <abbr title="<?php echo Yii::t('torrentsModule.common',
 		                    '{size} bytes',
 		                    array('{size}' => $torrent->getSize())); ?>"><?php echo $torrent->getSize(true); ?></abbr></span>
 
                     <span class="divider-vertical">|</span>
 
-                    <span><?php echo $torrent->getAttributeLabel('ctime') ?>: <abbr title="<?php echo $torrent->getCtime('d.m.Y H:i'); ?>"><?php echo TimeHelper::timeAgoInWords($torrent->getCtime()); ?></abbr></span>
+                    <span><?php echo $torrent->getAttributeLabel('ctime') ?>
+	                    : <abbr title="<?php echo $torrent->getCtime('d.m.Y H:i'); ?>"><?php echo TimeHelper::timeAgoInWords($torrent->getCtime()); ?></abbr></span>
 
                     <span class="divider-vertical">|</span>
 
-                    <span><?php echo Yii::t('torrentsModule.common', 'Peers') ?>: <i class="icon-upload" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo $torrent->getAttributeLabel('seeders') ?>"></i> <?php echo $torrent->getSeeders(); ?>
+                    <span><?php echo Yii::t('torrentsModule.common', 'Peers') ?>
+	                    : <i class="icon-upload" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo $torrent->getAttributeLabel('seeders') ?>"></i> <?php echo $torrent->getSeeders(); ?>
 	                    <i class="icon-download" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo $torrent->getAttributeLabel('leechers') ?>"></i> <?php echo $torrent->getLeechers(); ?></span>
 
                     <span class="divider-vertical">|</span>
 
-                    <span><?php echo $torrent->getAttributeLabel('downloads') ?>: <?php echo $torrent->getDownloads(); ?></span>
+                    <span><?php echo $torrent->getAttributeLabel('downloads') ?>
+	                    : <?php echo $torrent->getDownloads(); ?></span>
                 </div>
 
-            <div id="collapse<?php echo md5($torrent->getSeparateAttribute()) ?>" class="accordion-body collapse">
+            <div id="collapse<?php echo $torrent->getId() ?>" class="accordion-body collapse">
                 <div class="accordion-inner">
                     <dl class="dl-horizontal">
 	                    <?php
@@ -106,5 +147,18 @@ $cs->registerScript(__FILE__ . 'accordition', '  location.hash && $(location.has
         </div>
 			<?php } ?>
 	</div>
+<div class="commentsBlock">
+<?php $this->widget('application.modules.comments.widgets.CommentsTreeWidget',
+		array(
+		     'model' => $model,
+		)); ?>
 </div>
-	</div>
+		<?php $this->widget('application.modules.comments.widgets.AnswerWidget',
+			array(
+			     'model'    => $model,
+			     'torrents' => $model->torrents
+			)); ?>
+</div>
+</div>
+
+<?php $this->widget('application.modules.reports.widgets.ReportModal'); ?>

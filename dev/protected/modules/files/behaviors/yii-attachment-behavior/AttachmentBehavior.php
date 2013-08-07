@@ -139,11 +139,11 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 	 * @return string image src
 	 */
 	public function getImageUrl ( $width = 0, $height = 0, $absolutePath = false ) {
-		if ( $this->Owner->{$this->attribute} ) {
-			$src = $this->Owner->{$this->attribute};
-		}
-		elseif ( $this->fallback_image ) {
-			$src = $this->fallback_image;
+		$width = (!$width ? false : $width);
+		$height = (!$height ? false : $height);
+
+		if ( $this->getOwner()->{$this->attribute} ) {
+			$src = $this->getOwner()->{$this->attribute};
 		}
 		else {
 			$src = '';
@@ -154,12 +154,22 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				Yii::import('application.modules.files.helpers.*');
 				$src = ImageHelper::adaptiveThumb($width, $height, $src);
 			} catch ( Exception $exc ) {
+				var_dump($src, $this->getImagePath());
+				Yii::log('Cant convert image ' . $this->getImagePath() . ' with error ' . $exc->getMessage(),
+					'warning');
+			}
+		}
+		elseif ( (!$width || !$height) && $src ) {
+			try {
+				Yii::import('application.modules.files.helpers.*');
+				$src = ImageHelper::thumb($width, $height, $src);
+			} catch ( Exception $exc ) {
 				Yii::log('Cant convert image ' . $this->getImagePath() . ' with error ' . $exc->getMessage(),
 					'warning');
 			}
 		}
 		else {
-			$src = '/' . $src;
+			$src = ( $src ? '/' . $src : $this->fallback_image);
 		}
 
 		return Yii::app()->getBaseUrl($absolutePath) . $src;

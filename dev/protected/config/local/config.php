@@ -67,6 +67,7 @@ return array(
 			'showScriptName'   => false,
 			'useStrictParsing' => true,
 			'rules'            => array(
+				'/' => 'site/index',
 				'gii'                               => 'gii',
 				'gii/<controller:\w+>'              => 'gii/<controller>',
 				'gii/<controller:\w+>/<action:\w+>' => 'gii/<controller>/<action>',
@@ -75,7 +76,7 @@ return array(
 
 		'db'           => array(
 			'connectionString'      => 'mysql:host=localhost;dbname=yii-torrent',
-			'schemaCachingDuration' => false,
+			'schemaCachingDuration' => 3600,
 			'username'              => 'root',
 			'password'              => '',
 			'enableParamLogging'    => true,
@@ -97,7 +98,7 @@ return array(
 					'levels' => 'error, warning',
 				),
 				// uncomment the following to show log messages on web pages
-				/*array( // configuration for the toolbar
+				array( // configuration for the toolbar
 					'class'     => 'ext.yii-debug-toolbar.YiiDebugToolbarRoute',
 					'ipFilters' => array(
 						'127.0.0.1',
@@ -119,7 +120,7 @@ return array(
 		),
 
 		'cache'        => array(
-			'class' => 'system.caching.CDummyCache',
+			'class' => 'system.caching.CFileCache',
 		),
 
 		'mail'         => array(
@@ -140,12 +141,12 @@ return array(
 
 			'mergeJs'  => false,
 			//def:true
-			//'compressMergedJs'      => false,
+			'compressMergedJs'      => false,
 			//def:false
 
 			'mergeCss' => false,
 			//def:true
-			//'compressMergedCss'     => false,
+			'compressMergedCss'     => false,
 			//def:false
 
 			//'serverBaseUrl'         => 'http://localhost',
@@ -158,7 +159,7 @@ return array(
 			//def:10, see curl_setopt() doc
 
 			//'appVersion'            => 1.0
-			//if set, it will be appended to the urls of the merged scripts/css
+			//if set, it will be appended to the urls of the merged scripts/css*/
 			'packages' => array(
 				'common' => array(
 					'baseUrl' => '/js/',
