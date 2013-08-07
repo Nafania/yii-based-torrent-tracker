@@ -310,12 +310,16 @@ class EEavBehavior extends CActiveRecordBehavior {
      * @return CActiveRecord
      */
     public function loadEavAttributes($attributes) {
+	    if ( $this->getOwner()->getIsNewRecord() ) {
+		    return $this->getOwner();
+	    }
         // If exists cache, return it.
         $data = $this->cache->get($this->getCacheKey());
         if ($data !== FALSE) {
             $this->attributes->mergeWith($data, FALSE);
             return $this->getOwner();
         }
+
         // Query DB.
         $data = $this->getLoadEavAttributesCommand($attributes)->query();
         foreach($data as $row) {

@@ -135,16 +135,7 @@ class RatingRelations extends EActiveRecord {
 		                                         'modelId'   => $this->modelId
 		                                    ));
 
-		if ( $Rating ) {
-			$Rating->saveCounters(array('rating' => ($this->state == self::RATING_STATE_PLUS ? 1 : -1)));
-		}
-		else {
-			$Rating = new Rating();
-			$Rating->modelName = $this->modelName;
-			$Rating->modelId = $this->modelId;
-			$Rating->rating = ($this->state == self::RATING_STATE_PLUS ? 1 : -1);
-			$Rating->save();
-		}
+		$this->_addRating($Rating);
 
 		$modelName = $this->modelName;
 		if ( method_exists($modelName, 'getOwner') ) {
@@ -156,17 +147,21 @@ class RatingRelations extends EActiveRecord {
 				                                         'modelId'   => $owner->getId(),
 				                                    ));
 
-				if ( $Rating ) {
-					$Rating->saveCounters(array('rating' => ($this->state == self::RATING_STATE_PLUS ? 1 : -1)));
-				}
-				else {
-					$Rating = new Rating();
-					$Rating->modelName = get_class($owner);
-					$Rating->modelId = $owner->getId();
-					$Rating->rating = ($this->state == self::RATING_STATE_PLUS ? 1 : -1);
-					$Rating->save();
-				}
+				$this->_addRating($Rating, get_class($owner), $owner->getId());
 			}
+		}
+	}
+
+	private function _addRating ( $model, $modelName = false, $modelId = 0 ) {
+		if ( $model ) {
+			$model->saveCounters(array('rating' => ($this->state == self::RATING_STATE_PLUS ? 1 : -1)));
+		}
+		else {
+			$Rating = new Rating();
+			$Rating->modelName = ( $modelName ? $modelName : $this->modelName );
+			$Rating->modelId = ( $modelId ? $modelId : $this->modelId );
+			$Rating->rating = ($this->state == self::RATING_STATE_PLUS ? 1 : -1);
+			$Rating->save();
 		}
 	}
 

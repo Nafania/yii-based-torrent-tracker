@@ -50,12 +50,12 @@ class StaticPage extends EActiveRecord {
 	 */
 	public function attributeLabels () {
 		return array(
-			'id'                  => Yii::t('staticpagesModule.common', 'Id'),
-			'title'               => Yii::t('staticpagesModule.common', 'Title'),
-			'pageTitle'           => Yii::t('staticpagesModule.common', 'Page Title'),
-			'content'             => Yii::t('staticpagesModule.common', 'Content'),
-			'url'                 => Yii::t('staticpagesModule.common', 'Url'),
-			'published'                 => Yii::t('staticpagesModule.common', 'Published'),
+			'id'        => Yii::t('staticpagesModule.common', 'Id'),
+			'title'     => Yii::t('staticpagesModule.common', 'Title'),
+			'pageTitle' => Yii::t('staticpagesModule.common', 'Page Title'),
+			'content'   => Yii::t('staticpagesModule.common', 'Content'),
+			'url'       => Yii::t('staticpagesModule.common', 'Url'),
+			'published' => Yii::t('staticpagesModule.common', 'Published'),
 		);
 	}
 
@@ -77,11 +77,11 @@ class StaticPage extends EActiveRecord {
 		$criteria->compare('published', $this->published);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria'=> $criteria,
+		                                           'criteria' => $criteria,
 		                                      ));
 	}
 
-	public function scopes() {
+	public function scopes () {
 		return array(
 			'published' => array(
 				'condition' => 'published = ' . self::PUBLISHED,
@@ -101,7 +101,7 @@ class StaticPage extends EActiveRecord {
 	}
 
 	public function findByUrl ( $url ) {
-		return $this->find('url=:url', array(':url'=> $url));
+		return $this->find('url=:url', array(':url' => $url));
 	}
 
 	public function getId () {
@@ -113,7 +113,10 @@ class StaticPage extends EActiveRecord {
 	}
 
 	public function getUrl () {
-		return array('/staticpages/default/index', 'view' => $this->url);
+		return array(
+			'/staticpages/default/index',
+			'view' => $this->url
+		);
 	}
 
 	public function getPageTitle () {

@@ -98,6 +98,7 @@ class Torrent extends EActiveRecord {
 				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
 				     // Empty by default
 				     'attributesPrefix' => '',
+				     'preload' => false,
 			     )
 			));
 	}

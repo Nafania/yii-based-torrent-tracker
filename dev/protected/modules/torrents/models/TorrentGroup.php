@@ -108,6 +108,7 @@ class TorrentGroup extends EActiveRecord {
 				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
 				     // Empty by default
 				     'attributesPrefix' => '',
+				     'preload' => false,
 			     )
 			),
 			array(
@@ -172,7 +173,7 @@ class TorrentGroup extends EActiveRecord {
 		//return array('/torrents/default/view', 'id' => $this->getId(), 'title' => $this->getTitle());
 		return array(
 			'/torrents/default/view',
-			'id' => $this->getId()
+			'id' => $this->getId(),
 		);
 	}
 
@@ -181,11 +182,16 @@ class TorrentGroup extends EActiveRecord {
 	}
 
 	public function getDescription () {
+		if ( $this->description ) {
+			return $this->description;
+		}
 		//TODO: get proper description and more fast
 		$attributes = $this->getEavAttributeKeys();
 		foreach ( $attributes AS $attr ) {
 			if ( $attr->type == Attribute::TYPE_TEXTAREA ) {
-				return $this->getEavAttribute($attr->id);
+				$description = $this->getEavAttribute($attr->id);
+				$this->saveAttributes(array('description' => $description));
+				return $description;
 			}
 		}
 	}
