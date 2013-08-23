@@ -9,9 +9,42 @@ $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
         else {
             data = {};
         }
-        options.data = $.param($.extend(data, { csrf:$('meta[name="csrf"]').attr('content') }));
+        options.data = $.param($.extend(data, { csrf: $('meta[name="csrf"]').attr('content') }));
     }
 });
-$(function() {
-    $('.loading').ajaxStart(function () {$(this).show();}).ajaxStop(function () {$(this).hide();});
+$(document).ajaxError(function (event, request, settings) {
+    var data = eval("(" + request.responseText + ")");
+    var errTxt = '';
+    if (!data) {
+        return;
+    }
+    if (data.data.errors) {
+        $.each(data.data.errors, function (key, val) {
+            errTxt += val + "\n";
+        });
+    } else {
+        errTxt = data.message;
+    }
+    $('.top-right').notify({
+        message: { html: errTxt },
+        fadeOut: {
+            enabled: true,
+            delay: 9000
+        },
+        type: 'error'
+    }).show();
+});
+
+$(function () {
+    $('body').append('<div class="notifications top-right"></div>');
+    $('.loading').ajaxStart(function () {
+        $(this).show();
+    }).ajaxStop(function () {
+            $(this).hide();
+        });
+
+    $(document).on('click', 'a[href="/user/login"]', function (e) {
+        e.preventDefault();
+        $("#loginModal").modal("show")
+    });
 });

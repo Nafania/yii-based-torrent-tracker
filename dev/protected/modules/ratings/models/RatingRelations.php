@@ -57,6 +57,23 @@ class RatingRelations extends EActiveRecord {
 				     'length',
 				     'max' => 255
 			     ),
+			     array(
+				     'modelId',
+				     'exists',
+				     'className' => $this->modelName,
+			     ),
+			     array(
+				     'modelName',
+				     'unique',
+				     'criteria' => array(
+					     'condition' => 'modelId=:modelId AND uId = :uId',
+					     'params'    => array(
+						     ':modelId' => $this->modelId,
+						     ':uId'     => $this->uId,
+					     ),
+				     ),
+				     'message' => Yii::t('ratingsModule.common', 'Вы уже добавляли рейтинг за это действие')
+			     ),
 			     // The following rule is used by search().
 			     // Please remove those attributes that should not be searched.
 			     array(
@@ -92,23 +109,10 @@ class RatingRelations extends EActiveRecord {
 
 			$this->uId = Yii::app()->getUser()->getId();
 
-			$validator = CValidator::createValidator('unique',
-				$this,
-				'modelName',
-				array(
-				     'criteria' => array(
-					     'condition' => 'modelId=:modelId AND uId = :uId',
-					     'params'    => array(
-						     ':modelId' => $this->modelId,
-						     ':uId' => $this->uId,
-					     )
-				     )
-				));
-			$this->getValidatorList()->insertAt(0, $validator);
-
 			$modelName = $this->modelName;
 			if ( method_exists($modelName, 'getOwner') ) {
-				if ( $modelName::model()->findByPk($this->modelId)->getOwner()->getId() == $this->uId ) {
+				$owner = $modelName::model()->findByPk($this->modelId)->getOwner();
+				if ( $owner && $owner->getId() == $this->uId ) {
 					$this->addError('uid', Yii::t('commentsModule.common', 'Cant create own rating'));
 					return false;
 				}
@@ -130,6 +134,8 @@ class RatingRelations extends EActiveRecord {
 	}
 
 	protected function afterSave () {
+		parent::afterSave();
+
 		$Rating = Rating::model()->findByPk(array(
 		                                         'modelName' => $this->modelName,
 		                                         'modelId'   => $this->modelId
@@ -158,8 +164,8 @@ class RatingRelations extends EActiveRecord {
 		}
 		else {
 			$Rating = new Rating();
-			$Rating->modelName = ( $modelName ? $modelName : $this->modelName );
-			$Rating->modelId = ( $modelId ? $modelId : $this->modelId );
+			$Rating->modelName = ($modelName ? $modelName : $this->modelName);
+			$Rating->modelId = ($modelId ? $modelId : $this->modelId);
 			$Rating->rating = ($this->state == self::RATING_STATE_PLUS ? 1 : -1);
 			$Rating->save();
 		}

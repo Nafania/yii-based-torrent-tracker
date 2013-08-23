@@ -4,11 +4,13 @@
  * This is the model class for table "users".
  *
  * The followings are the available columns in table 'users':
- * @property integer $id
- * @property string  $name
- * @property string  $email
- * @property string  $password
- * @property string  $resetHash
+ * @property integer     $id
+ * @property string      $name
+ * @property string      $email
+ * @property string      $password
+ * @property string      $resetHash
+ * @property UserProfile $profile
+ * @property integer     $emailConfirmed
  */
 class User extends EActiveRecord {
 
@@ -24,6 +26,7 @@ class User extends EActiveRecord {
 	const FLASH_NOTICE = 'notice';
 	const FLASH_WARNING = 'warning';
 	const FLASH_ERROR = 'error';
+	const FLASH_INFO = 'info';
 
 	const USER_ACTIVE = 1;
 	const USER_NOT_ACTIVE = 0;
@@ -41,10 +44,6 @@ class User extends EActiveRecord {
 	}
 
 	public function init () {
-		if ( !defined('CRYPT_BLOWFISH') || !CRYPT_BLOWFISH ) {
-			throw new CHttpException(500, "This application requires that PHP was compiled with Blowfish support for crypt().");
-		}
-
 		parent::init();
 	}
 
@@ -107,14 +106,31 @@ class User extends EActiveRecord {
 			),
 
 			/*
-			* restore form
+			* update form
 			*/
 			array(
-				'email',
+				'email, name',
 				'required',
-				'on' => 'createRequest'
+				'on' => 'update'
 			),
-
+			array(
+				'email',
+				'unique',
+				'on' => 'update'
+			),
+			/*
+			 * socialLogin
+			 */
+			array(
+				'name',
+				'required',
+				'on' => 'socialLogin'
+			),
+			array(
+				'email',
+				'unique',
+				'on' => 'socialLogin'
+			),
 			/*
 			* base rules
 			*/
@@ -144,11 +160,16 @@ class User extends EActiveRecord {
 		// class name for the relations automatically generated below.
 		return CMap::mergeArray(parent::relations(),
 			array(
-			     'profile' => array(
+			     'profile'        => array(
 				     self::HAS_ONE,
 				     'UserProfile',
 				     'uid'
-			     )
+			     ),
+			     'socialAccounts' => array(
+				     self::HAS_MANY,
+				     'UserSocialAccount',
+				     'uId'
+			     ),
 			));
 	}
 
@@ -214,7 +235,6 @@ class User extends EActiveRecord {
 
 	public function beforeSave () {
 		switch ( $this->scenario ) {
-			case 'createRequest':
 			case 'register':
 				$this->originalPassword = $this->password;
 				$this->password = $this->hashPassword($this->password);
@@ -228,6 +248,23 @@ class User extends EActiveRecord {
 				$this->originalPassword = $this->password = $this->generatePassword();
 				$this->password = $this->hashPassword($this->password);
 				$this->resetHash = '';
+				break;
+
+			case 'update':
+				if ( $this->password ) {
+					$this->originalPassword = $this->password;
+					$this->password = $this->hashPassword($this->password);
+				}
+				else {
+					unset($this->password);
+				}
+
+				$old = User::model()->findByPk($this->getId());
+
+				if ( $old->getEmail() <> $this->getEmail() ) {
+					$this->emailConfirmed = 0;
+				}
+
 				break;
 		}
 
@@ -243,9 +280,10 @@ class User extends EActiveRecord {
 		return parent::beforeSave();
 	}
 
-	public function afterSave () {
+	protected function afterSave () {
+		parent::afterSave();
+
 		switch ( $this->scenario ) {
-			case 'createRequest':
 			case 'register':
 				$this->password = $this->originalPassword;
 				$this->sendCreate();
@@ -336,6 +374,38 @@ class User extends EActiveRecord {
 		}
 	}
 
+	public function sendConfirmEmail () {
+		Yii::import('ext.mail.*');
+
+		$code = md5(time() . $this->getId() . time());
+
+		$message = new YiiMailMessage;
+		$message->view = 'application.modules.user.views.mail.confirmEmail';
+		$message->setBody(array(
+		                       'model' => $this,
+		                       'code'  => $code
+		                  ),
+			'text/html');
+
+		$message->subject = Yii::t('userModule.common',
+			'Подтверждение вашего email адреса на {siteName}',
+			array('{siteName}' => Yii::app()->config->get('base.siteName')));
+		$message->from = Yii::app()->config->get('base.fromEmail');
+		$message->to = $this->email;
+
+		if ( Yii::app()->mail->send($message) ) {
+			$UserConfirmCode = new UserConfirmCode();
+			$UserConfirmCode->uId = $this->getId();
+			$UserConfirmCode->confirmCode = $code;
+			$UserConfirmCode->save(false);
+
+			return true;
+		}
+		else {
+			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+		}
+	}
+
 	/**
 	 * Checks if the given password is correct.
 	 *
@@ -344,7 +414,10 @@ class User extends EActiveRecord {
 	 * @return boolean whether the password is valid
 	 */
 	public function validatePassword ( $password ) {
-		return crypt($password, $this->password) === $this->password;
+		if ( !$this->password ) {
+			return false;
+		}
+		return CPasswordHelper::verifyPassword($password, $this->password);
 	}
 
 	/**
@@ -355,41 +428,7 @@ class User extends EActiveRecord {
 	 * @return string hash
 	 */
 	public function hashPassword ( $password ) {
-		return crypt($password, $this->generateSalt());
-	}
-
-	/**
-	 * Generates a salt that can be used to generate a password hash.
-	 *
-	 * The {@link http://php.net/manual/en/function.crypt.php PHP `crypt()` built-in function}
-	 * requires, for the Blowfish hash algorithm, a salt string in a specific format:
-	 *  - "$2a$"
-	 *  - a two digit cost parameter
-	 *  - "$"
-	 *  - 22 characters from the alphabet "./0-9A-Za-z".
-	 *
-	 * @param int cost parameter for Blowfish hash algorithm
-	 *
-	 * @return string the salt
-	 */
-	protected function generateSalt ( $cost = 10 ) {
-		if ( !is_numeric($cost) || $cost < 4 || $cost > 31 ) {
-			throw new CException(Yii::t('userModule.common', 'Cost parameter must be between 4 and 31.'));
-		}
-		// Get some pseudo-random data from mt_rand().
-		$rand = '';
-		for ( $i = 0; $i < 8; ++$i ) {
-			$rand .= pack('S', mt_rand(0, 0xffff));
-		}
-		// Add the microtime for a little more entropy.
-		$rand .= microtime();
-		// Mix the bits cryptographically.
-		$rand = sha1($rand, true);
-		// Form the prefix that specifies hash algorithm type and cost parameter.
-		$salt = '$2a$' . str_pad((int) $cost, 2, '0', STR_PAD_RIGHT) . '$';
-		// Append the random salt string in the required base64 format.
-		$salt .= strtr(substr(base64_encode($rand), 0, 22), array('+' => '.'));
-		return $salt;
+		return CPasswordHelper::hashPassword($password);
 	}
 
 	public function generatePassword ( $length = 8 ) {
@@ -405,5 +444,16 @@ class User extends EActiveRecord {
 
 	public function getName () {
 		return $this->name;
+	}
+
+	public function getEmail () {
+		return $this->email;
+	}
+
+	public function getUrl () {
+		return array(
+			'/user/default/view',
+			'id' => $this->getId()
+		);
 	}
 }

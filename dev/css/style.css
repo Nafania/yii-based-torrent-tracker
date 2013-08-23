@@ -94,3 +94,75 @@ body {
 .commentText.rating-10 {
     opacity: 0.1;
 }
+.dl-horizontal dd {
+    margin-bottom: 5px;
+}
+
+.dl-horizontal dd:last-child {
+    margin-bottom: 0;
+}
+
+.errorMessage {
+    color: red;
+}
+
+
+.sorter a.asc:after {
+    border-bottom: 4px solid #000000;
+    border-top: medium none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    content: "";
+    display: inline-block;
+    height: 0;
+    vertical-align: top;
+    width: 0;
+    margin: 5px 0 0 5px;
+}
+.sorter a.desc:after {
+    border-right: 4px solid transparent;
+    border-top: 4px solid #000000;
+    border-left: 4px solid transparent;
+    content: "";
+    display: inline-block;
+    height: 0;
+    vertical-align: top;
+    width: 0;
+    margin: 5px 0 0 5px;
+
+}
+.commentContainer {
+    margin-top: 20px;
+}
+
+#fileList-grid {
+    padding-top: 0;
+}
+
+.torrentGroupRating .progress {
+    height: 2px;
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+
+.torrentGroupRating {
+    width:83px;
+}
+
+.notifications {
+    width:300px;
+}
+
+.torrentGroupOperations {
+    margin-top: 10px;
+    margin-left: 0 !important;
+}
+
+.commentReply {
+    display: block;
+    margin-top: 10px;
+}
+
+#blogPostsListView {
+    padding-top: 0;
+}

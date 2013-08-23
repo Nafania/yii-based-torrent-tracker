@@ -1,20 +1,17 @@
 <?php
 
-class CommentsModule extends CWebModule
-{
+class CommentsModule extends CWebModule {
 	private $_assetsUrl;
 
-	public function init()
-	{
+	public function init () {
 		// this method is called when the module is being created
 		// you may place code here to customize the module or the application
 
 		// import the module-level models and components
 		$this->setImport(array(
-			'comments.models.*',
-			'comments.components.*',
-		    'comments.helpers.*'
-		));
+		                      'comments.models.*',
+		                      'comments.components.*'
+		                 ));
 	}
 
 	public function getAssetsUrl () {
@@ -30,7 +27,7 @@ class CommentsModule extends CWebModule
 		self::_addBehaviors();
 	}
 
-	private  static function _addUrlRules () {
+	private static function _addUrlRules () {
 		Yii::app()->pd->addUrlRules(array(
 		                                 'yiiadmin/comments/backend/<action:\w+>/*' => 'comments/commentsBackend/<action>',
 		                                 'yiiadmin/comments/backend/*'              => 'comments/commentsBackend',
@@ -52,5 +49,11 @@ class CommentsModule extends CWebModule
 	}
 
 	private static function _addBehaviors () {
+		Yii::app()->pd->registerBehavior('TorrentGroup',
+			array(
+			     'deleteComments' => array(
+				     'class' => 'application.modules.comments.behaviors.DeleteCommentsBehavior'
+			     )
+			));
 	}
 }

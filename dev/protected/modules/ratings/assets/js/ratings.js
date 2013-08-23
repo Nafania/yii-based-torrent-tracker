@@ -4,6 +4,13 @@ $(document).on('click', 'a[data-action=rating]', function (e) {
     var elem = $(this);
     var url = elem.attr('href');
 
+    if ( elem.hasClass('btn') ) {
+        elem.addClass('load');
+    }
+    else {
+        elem.children('i').addClass('icon-load');
+    }
+
     $.ajax({
         url: url,
         data: {modelName: elem.data('model'), modelId: elem.data('id'), state: elem.data('state')},
@@ -24,8 +31,11 @@ $(document).on('click', 'a[data-action=rating]', function (e) {
             else if (rating < 0) {
                 badge.addClass('badge-important');
             }
+        },
+        complete: function () {
+            elem.removeClass('load');
+            elem.children('i').removeClass('icon-load');
         }
-
     });
 });
 

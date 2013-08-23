@@ -26,11 +26,8 @@ class GetTorrentTitleBehavior extends CActiveRecordBehavior {
 		$return = array_unique($return);
 		$return = implode(' ' . Yii::app()->config->get('torrentsModule.torrentsNameDelimiter') . ' ', $return);
 
-		$sql = 'UPDATE {{torrentGroups}} SET title = :title WHERE id = :id';
-		$command = $connection->createCommand($sql);
-		$command->bindValue(':title', $return);
-		$command->bindValue(':id', $this->getOwner()->getId());
-		$command->execute();
+		$this->getOwner()->title = $return;
+		$this->getOwner()->save();
 
 		return $return;
 	}

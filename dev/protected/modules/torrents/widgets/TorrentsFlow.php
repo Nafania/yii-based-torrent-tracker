@@ -47,11 +47,12 @@ class TorrentsFlow extends CWidget {
 		$torrentsGroup = TorrentGroup::model()->findAll($criteria);
 
 		if ( $torrentsGroup ) {
-		return $this->render('_torrentsFlowTab',
-			array(
-			     'torrentsGroup' => $torrentsGroup,
-			     'catId' => $catId,
-			), true);
+			return $this->render('_torrentsFlowTab',
+				array(
+				     'torrentsGroup' => $torrentsGroup,
+				     'catId'         => $catId,
+				),
+				true);
 		}
 	}
 }

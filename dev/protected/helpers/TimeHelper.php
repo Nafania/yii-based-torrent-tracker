@@ -139,7 +139,7 @@ class TimeHelper {
 
 		$backwards = ($inSeconds > $now);
 
-		$format = 'j/n/y';
+		$format = Yii::app()->getLocale()->getDateFormat();
 		$end = '+1 month';
 
 		if ( is_array($options) ) {
@@ -252,7 +252,7 @@ class TimeHelper {
 		$diff = $futureTime - $pastTime;
 
 		if ( $diff > abs($now - strtotime($end)) ) {
-			$relativeDate = Yii::t('time', 'on {date}', array('{date}' => date($format, $inSeconds)));
+			$relativeDate = Yii::app()->dateFormatter->format($format, $inSeconds);
 		}
 		else {
 			if ( self::isToday($inSeconds) ) {

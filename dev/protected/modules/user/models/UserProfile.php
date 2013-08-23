@@ -36,7 +36,7 @@ class UserProfile extends EActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return CMap::mergeArray(parent::rules(), array(
-			array('uid, picture', 'required'),
+			array('uid', 'required'),
 			array('uid', 'numerical', 'integerOnly'=>true),
 			array('picture', 'length', 'max'=>255),
 			// The following rule is used by search().
@@ -69,7 +69,7 @@ class UserProfile extends EActiveRecord
 	{
 		return array(
 			'uid' => 'Uid',
-			'picture' => 'Picture',
+			'picture' => Yii::t('userModule.common', 'Avatar'),
 		);
 	}
 

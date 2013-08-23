@@ -42,7 +42,7 @@ class Controller extends CController {
 		parent::init();
 		$this->attachBehaviors($this->behaviors());
 
-
+		Yii::app()->getComponent('bootstrap');
 
 		return true;
 	}
@@ -52,7 +52,7 @@ class Controller extends CController {
 	}
 
 	public function beforeRender ( $view ) {
-		Yii::app()->getComponent('bootstrap');
+		parent::beforeRender($view);
 
 		$this->pageTitle = ($this->pageTitle ? $this->pageTitle . ' :: ' : '') . Yii::app()->config->get('base.siteName');
 
@@ -90,6 +90,17 @@ class Controller extends CController {
 
 		$this->addOgMeta('url', Yii::app()->getBaseUrl(true) . Yii::app()->getRequest()->requestUri);
 		$this->addOgMeta('language', Yii::app()->getLanguage());
+
+		//TODO: remove code from here
+		if ( !Yii::app()->getUser()->getIsGuest() ) {
+
+			if ( !Yii::app()->getUser()->getModel()->emailConfirmed ) {
+				Yii::app()->user->setFlash(User::FLASH_WARNING,
+					Yii::t('userModule.common',
+						'Ваш email не подтвержден. Пожалуйста, подтвердите его на странице <a href="{url}">настроек</a> вашего аккаунта, иначе вы не сможете пользоваться всеми функциями сайта.',
+						array('{url}' => Yii::app()->createUrl('/user/default/settings'))));
+			}
+		}
 
 		return true;
 

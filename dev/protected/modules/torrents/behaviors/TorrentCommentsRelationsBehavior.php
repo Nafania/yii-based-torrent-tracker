@@ -8,11 +8,12 @@ class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 		parent::attach($owner);
 		//parent::beforeFind($e);
 
-		$criteria = new CDbCriteria();
+		//anger loading disabled due some errors with cache validation
+		//$criteria = new CDbCriteria();
 		//$criteria->select = 'commentId, torrentId';
-		$criteria->with = array('torrentComments', 'torrent');
+		//$criteria->with = array('torrentComments', 'torrent');
 
-		$owner->getDbCriteria()->mergeWith($criteria);
+		//$owner->getDbCriteria()->mergeWith($criteria);
 	}
 
 	public function getTorrentId () {

@@ -144,7 +144,7 @@ abstract class AuthItemController extends AuthController
 		$descendants = $am->getDescendants($name);
 		$descendantDp = new PermissionDataProvider(array_values($descendants), $dpConfig);
 
-		$childOptions = $this->getItemChildOptions($item->name);
+		$childOptions = $this->getItemChildOptions($item->name, array_keys($descendants));
 		if (!empty($childOptions))
 			$childOptions = array_merge(array('' => Yii::t('AuthModule.main', 'Select item') . ' ...'), $childOptions);
 
@@ -232,7 +232,7 @@ abstract class AuthItemController extends AuthController
 	 * @param string $itemName name of the item.
 	 * @return array the child options.
 	 */
-	protected function getItemChildOptions($itemName)
+	protected function getItemChildOptions($itemName, $excluded = array())
 	{
 		$options = array();
 
@@ -250,7 +250,7 @@ abstract class AuthItemController extends AuthController
 
 			foreach ($authItems as $childName => $childItem)
 			{
-				if (in_array($childItem->type, $validChildTypes) && !isset($exclude[$childName]))
+				if (in_array($childItem->type, $validChildTypes) && !isset($exclude[$childName]) && !in_array($childName, $excluded))
 					$options[$this->capitalize($this->getItemTypeText($childItem->type, true))][$childName] = $childItem->description;
 			}
 		}

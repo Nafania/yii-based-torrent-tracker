@@ -24,6 +24,10 @@ class TopMenu extends CWidget {
 					'label' => 'Upload',
 					'url'   => array('/torrents/default/create'),
 				),
+				array(
+					'label' => 'Blogs',
+					'url'   => array('/blogs/default/index'),
+				),
 			),
 		);
 
@@ -92,8 +96,12 @@ class TopMenu extends CWidget {
 						                                        'url'   => array('/user/default/view', 'id' => Yii::app()->getUser()->getId()),
 					                                        ),
 					                                        array(
+						                                        'label' => 'Мои блоги',
+						                                        'url'   => array('/blogs/default/my'),
+					                                        ),
+					                                        array(
 						                                        'label' => 'Настройки',
-						                                        'url'   => '#'
+						                                        'url'   => array('/user/default/settings'),
 					                                        ),
 					                                        array(
 						                                        'label' => 'Закладки',

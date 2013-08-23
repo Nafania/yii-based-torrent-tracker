@@ -27,7 +27,7 @@ foreach ( $attributes AS $attribute ) {
 		     'class' => ($attribute->required ? 'required' : '') . ($hasErrors ? ' error' : '')
 		));
 	echo '<div class="rowInput' . ($attribute->separate ? ' separate' : '') . '">' . $attribute->getInputField($value,
-		$hasErrors) . '</div>';
+		$hasErrors, array('class' => 'span5')) . '</div>';
 	if ( $hasErrors ) {
 		echo '<span class="help-block error">';
 		foreach ( $attribute->getErrors() AS $key => $val ) {

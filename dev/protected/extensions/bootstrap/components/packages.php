@@ -64,4 +64,8 @@ return array(
 		'baseUrl' => $this->getAssetsUrl(),
 		'js' => 'moment.min.js',
 	),
+	'loading' => array(
+		'baseUrl' => $this->getAssetsUrl(),
+		'css' => array('css/loading.css'),
+	),
 );

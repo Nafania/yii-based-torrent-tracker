@@ -50,7 +50,7 @@ class FilesModule extends CWebModule {
 				     ),
 				     'attribute' => 'picture',
 				     # Default image to return if no image path is found in the DB
-				     //'fallback_image' => 'images/sample_image.gif',
+				     'fallback_image' => '/images/NoImageAvailable.jpg',
 				     'path'      => "uploads/images/:model/:id/:fileNameMd5.:ext",
 			     ),
 			));
@@ -67,30 +67,20 @@ class FilesModule extends CWebModule {
 				     ),
 				     'attribute' => 'picture',
 				     # Default image to return if no image path is found in the DB
-				     'fallback_image' => '/images/profile_mask2.png',
+				     'fallback_image' => '/images/no_photo.png',
 				     'path'      => "uploads/images/:model/:id/:fileNameMd5.:ext",
 			     ),
 			));
 
-		/*Yii::app()->pd->registerBehavior('Category',
+		Yii::app()->pd->registerBehavior('BlogPost',
 			array(
-			     'image' => array(
-				     'class'     => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
-				     'types'     => array(
-					     'gif',
-					     'jpg',
-					     'png',
-					     'jpeg'
-				     ),
-				     'attribute' => 'picture',
-				     # Default image to return if no image path is found in the DB
-				     //'fallback_image' => 'images/sample_image.gif',
-				     'path'      => "uploads/images/:model/:id/:fileNameMd5.:ext",
+			     '_update' => array(
+				     'class'     => 'application.modules.files.behaviors.UpdateModelsBehavior',
 			     ),
-			));*/
+			));
 	}
 
-	private function _addModelRules () {
+	private static function _addModelRules () {
 		Yii::app()->pd->addModelRules('TorrentGroup',
 			array(
 			     'picture',

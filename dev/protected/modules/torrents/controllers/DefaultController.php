@@ -9,8 +9,7 @@ class DefaultController extends Controller {
 		//return CMap::mergeArray(parent::filters(),
 		return array(
 			'postOnly + delete',
-			'ajaxOnly + getMapData, getTags',
-			array('application.modules.auth.filters.AuthFilter - getMapData, getTags'),
+			'ajaxOnly + fileList, tagsSuggest',
 			// we only allow deletion via POST request
 		);
 		//));
@@ -280,6 +279,7 @@ class DefaultController extends Controller {
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
+					$TorrentGroup->title = '';
 					$TorrentGroup->save(false);
 
 					$this->processAttributes($TorrentGroup);
@@ -326,7 +326,7 @@ class DefaultController extends Controller {
 		$TorrentGroup = $Torrent->torrentGroup;
 
 		$title = Yii::t('torrentsModule.common',
-			'Загрузка торрента "{title}"',
+			'Редактирование торрента "{title}"',
 			array('{title}' => $TorrentGroup->getTitle()));
 		$this->breadcrumbs = array(
 			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
@@ -361,6 +361,7 @@ class DefaultController extends Controller {
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
+					$Torrent->title = '';
 					$Torrent->gId = $TorrentGroup->getId();
 					$Torrent->save(false);
 
@@ -410,15 +411,63 @@ class DefaultController extends Controller {
 	public function actionDelete ( $id ) {
 		if ( Yii::app()->request->isPostRequest ) {
 			// we only allow deletion via POST request
-			$this->loadModel($id)->delete();
+			$model = TorrentGroup::model()->findByPk($id);
+			if ( $model === null ) {
+				Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
+			}
 
-			// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
-			if ( !isset($_GET['ajax']) ) {
-				$this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('admin'));
+
+			if ( $model->delete() ) {
+				Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+					Yii::t('torrentsModule.common',
+						'Группа торрентов удалена успешно'));
+				Ajax::send(Ajax::AJAX_SUCCESS,
+					Yii::t('torrentsModule.common', 'Группа торрентов удалена успешно'),
+					array(
+					     'location' => Yii::app()->createUrl('/torrents/default/index')
+					));
+			}
+			else {
+				Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+					Yii::t('torrentsModule.common',
+						'При удалении группы торрентов возникли ошибки'));
+				Ajax::send(Ajax::AJAX_ERROR,
+					Yii::t('torrentsModule.common', 'При удалении группы торрентов возникли ошибки'));
 			}
 		}
 		else {
-			throw new CHttpException(400, 'Invalid request. Please do not repeat this request again.');
+			Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
+		}
+	}
+
+	public function actionDeleteTorrent ( $id ) {
+		if ( Yii::app()->request->isPostRequest ) {
+			// we only allow deletion via POST request
+			$model = Torrent::model()->findByPk($id);
+			if ( $model === null ) {
+				Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Торрент не найден'));
+			}
+
+			if ( $model->delete() ) {
+				$url = $model->torrentGroup->getUrl();
+				Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+					Yii::t('torrentsModule.common',
+						'Торрент удален успешно'));
+				Ajax::send(Ajax::AJAX_SUCCESS,
+					Yii::t('torrentsModule.common', 'Торрент удален успешно'),
+					array(
+					     'location' => Yii::app()->createUrl(array_shift($url), $url)
+					));
+			}
+			else {
+				Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+					Yii::t('torrentsModule.common',
+						'При удалении торрента возникли ошибки'));
+				Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'При удалении торрента возникли ошибки'));
+			}
+		}
+		else {
+			Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Торрент не найден'));
 		}
 	}
 
@@ -448,12 +497,13 @@ class DefaultController extends Controller {
 		$model->searchWithTags($tags);
 		$model->searchWithCategory($category);
 
-		$dataProvider = $model->with('category', 'category.attrs', 'torrents')->search();
+		$dataProvider = $model->search();
 
-		$this->render('index',
-			array(
-			     'dataProvider' => $dataProvider,
-			));
+		Ajax::renderAjax('index', array(
+		                             'dataProvider' => $dataProvider
+
+		                          ), false, false, true);
+
 	}
 
 	public function actionSuggest ( $term, $category ) {
@@ -475,6 +525,66 @@ class DefaultController extends Controller {
 			);
 		}
 		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', $return);
+	}
+
+	public function actionFileList ( $id ) {
+		$Torrent = Torrent::model()->findByPk($id);
+
+		if ( !$Torrent ) {
+			throw new CHttpException(404);
+		}
+
+		$torrent = new TorrentComponent($Torrent->getDownloadPath());
+		$contents = $torrent->content();
+		ksort($contents);
+
+		$data = array();
+
+		foreach ( $contents AS $filename => $size ) {
+			$data[] = array(
+				'filename' => $filename,
+				'size'     => $size
+			);
+		}
+
+		$dataProvider = new CArrayDataProvider($data, array(
+		                                                   'sort'       => array(
+			                                                   'attributes' => array(
+				                                                   'filename',
+				                                                   'size'
+			                                                   ),
+		                                                   ),
+
+		                                                   'pagination' => array(
+			                                                   'pageSize' => 50,
+		                                                   ),
+		                                              ));
+
+		Ajax::renderAjax('fileList', array('dataProvider' => $dataProvider), false, true, true);
+	}
+
+	public function actionTagsSuggest ( $q ) {
+		$criteria = new CDbCriteria();
+		$criteria->addSearchCondition('t.name', $q, true);
+		$criteria->group = 't.name';
+		$tags = Torrent::model()->getAllTags($criteria);
+
+		$result = array();
+
+		foreach ( $tags AS $tag ) {
+			$result[] = array(
+				'id'   => $tag,
+				'text' => $tag
+			);
+		}
+
+		Ajax::send(Ajax::AJAX_SUCCESS,
+			'ok',
+			array(
+			     'tags'  => $result,
+			     'total' => sizeof($result)
+			));
+
 	}
 
 	/**
@@ -541,6 +651,14 @@ class DefaultController extends Controller {
 				$errors = true;
 				$attr->addError('title',
 					Yii::t('yii', '{attribute} cannot be blank.', array('{attribute}' => $attr->title)));
+			}
+			if ( $attr->validator ) {
+				$validator = CValidator::createValidator($attr->validator, $attr, $attr->id);
+				$validator->validate($attr, $attr->id);
+
+				if ( $errorsText = $attr->getErrors() ) {
+					$errors = true;
+				}
 			}
 		}
 

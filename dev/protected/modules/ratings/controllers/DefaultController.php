@@ -1,6 +1,7 @@
 <?php
 
 class DefaultController extends Controller {
+	//TODO: set ajaxOnly filter
 	public function actionCreate () {
 		$modelName = Yii::app()->getRequest()->getParam('modelName', '');
 		$modelId = Yii::app()->getRequest()->getParam('modelId', 0);

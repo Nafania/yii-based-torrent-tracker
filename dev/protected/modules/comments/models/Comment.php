@@ -124,6 +124,9 @@ class Comment extends EActiveRecord {
 
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
+			if ( defined('IN_CONVERT') ) {
+				return true;
+			}
 			if ( $this->getIsNewRecord() ) {
 				$this->ownerId = Yii::app()->getUser()->getId();
 				$this->ctime = time();

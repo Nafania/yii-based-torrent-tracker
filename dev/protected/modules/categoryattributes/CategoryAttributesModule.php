@@ -41,7 +41,7 @@ class CategoryAttributesModule extends CWebModule {
 		                            ));
 	}
 
-	private function _addBehaviors () {
+	private static function _addBehaviors () {
 		Yii::import('application.modules.categoryattributes.models.*');
 
 		Yii::app()->pd->registerBehavior('Category',
@@ -52,7 +52,7 @@ class CategoryAttributesModule extends CWebModule {
 			));
 	}
 
-	private function _addModelRules () {
+	private static function _addModelRules () {
 		Yii::app()->pd->addModelRules('Category',
 			array(
 			     'categoryAttributes',
@@ -60,7 +60,7 @@ class CategoryAttributesModule extends CWebModule {
 			));
 	}
 
-	private function _addRelations () {
+	private static function _addRelations () {
 		Yii::app()->pd->addRelations('Category',
 			'categoryattributes',
 			array(

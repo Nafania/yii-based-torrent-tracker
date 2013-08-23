@@ -31,6 +31,7 @@ class AuthFilter extends CFilter {
 
 		if ( ($module = $controller->getModule()) !== null ) {
 			$itemName .= $module->getId() . '.';
+			if (Yii::app()->user->checkAccess($itemName.'*')) return true;
 		}
 
 		$itemName .= $controller->getId();

@@ -13,6 +13,7 @@
  * @property integer        $mtime
  * @property string         $info_hash
  * @property integer        $uid
+ * @property string         title
  * @property TorrentGroup   torrentGroup
  */
 class Torrent extends EActiveRecord {
@@ -48,6 +49,10 @@ class Torrent extends EActiveRecord {
 				'info_hash',
 				'required',
 				'on' => 'insert'
+			),
+			array(
+				'info_hash',
+				'unique'
 			),
 			array(
 				'info_hash',
@@ -98,7 +103,7 @@ class Torrent extends EActiveRecord {
 				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
 				     // Empty by default
 				     'attributesPrefix' => '',
-				     'preload' => false,
+				     'preload'          => false,
 			     )
 			));
 	}
@@ -158,6 +163,9 @@ class Torrent extends EActiveRecord {
 
 	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
+			if ( defined('IN_CONVERT') ) {
+				return true;
+			}
 			if ( $this->info_hash instanceof CUploadedFile && !empty($this->info_hash->name) ) {
 
 				$torrent = new TorrentComponent($this->info_hash->getTempName());
@@ -183,9 +191,11 @@ class Torrent extends EActiveRecord {
 		if ( parent::beforeSave() ) {
 			$this->mtime = time();
 
-			if ( $this->getIsNewRecord() ) {
-				$this->ctime = time();
-				$this->uid = Yii::app()->getUser()->getId();
+			if ( !defined('IN_CONVERT') ) {
+				if ( $this->getIsNewRecord() ) {
+					$this->ctime = time();
+					$this->uid = Yii::app()->getUser()->getId();
+				}
 			}
 
 			/* @var $current Torrent */
@@ -264,16 +274,30 @@ class Torrent extends EActiveRecord {
 	public function getEavAttributesWithKeys () {
 		$attributes = $this->torrentGroup->category->attrs(array('condition' => 'common=0'));
 
-		$attrs = array();
+		$ids = array();
 		foreach ( $attributes AS $attribute ) {
-			$val = $this->getEavAttribute($attribute->getId());
+			$ids[] = $attribute->getId();
+		}
+
+		$attrs = $this->getEavAttributes($ids);
+
+		$i = 0;
+		$return = array();
+		foreach ( $attrs AS $val ) {
+			$attribute = $attributes[$i];
+			++$i;
 			if ( !$val || $attribute->separate ) {
 				continue;
 			}
-			$attrs[$attribute->getTitle()] = nl2br($val);
+			$val = nl2br($val);
+			if ( $attribute->validator == 'url' ) {
+				$val = TextHelper::makeClickable($val);
+			}
+
+			$return[$attribute->getTitle()] = $val;
 		}
 
-		return $attrs;
+		return $return;
 	}
 
 	public function getSeparateAttribute () {
@@ -294,7 +318,9 @@ class Torrent extends EActiveRecord {
 
 		$return = implode(' - ', $return);
 
-		$this->saveAttributes(array('title' => $return));
+		$this->title = $return;
+
+		$this->save();
 
 		return $return;
 	}

@@ -7,8 +7,9 @@
  * @property integer $commentId
  * @property integer $torrentId
  */
-class TorrentCommentsRelations extends CActiveRecord
+class TorrentCommentsRelations extends EActiveRecord
 {
+	public $cacheTime = 3600;
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.

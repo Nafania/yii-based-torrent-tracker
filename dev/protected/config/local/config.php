@@ -1,5 +1,5 @@
 <?php
-$yii = 'Z:\home\yii-1.1.13.e9e4a0\framework\yii.php';
+$yii = 'Z:\home\yii-1.1.14.f0fee9\framework\yii.php';
 
 return array(
 
@@ -12,11 +12,9 @@ return array(
 
 	// autoloading model and component classes
 	'import'     => array(
-		'application.models.*',
 		'application.components.*',
 		'application.helpers.*',
 		'application.extensions.*',
-		'application.behaviors.*',
 
 		'application.modules.yiiadmin.components.*',
 	),
@@ -24,10 +22,10 @@ return array(
 	'modules'    => array(
 		// uncomment the following to enable the Gii tool
 		'gii' => array(
-			'class'    => 'system.gii.GiiModule',
-			'password' => '1234567890',
+			'class'          => 'system.gii.GiiModule',
+			'password'       => '1234567890',
 			'generatorPaths' => array(
-			'bootstrap.gii'
+				'bootstrap.gii'
 			),
 		),
 	),
@@ -57,8 +55,8 @@ return array(
 		),
 
 		'bootstrap'    => array(
-			'class'                    => 'ext.bootstrap.components.Bootstrap',
-			'responsiveCss'            => true,
+			'class'         => 'ext.bootstrap.components.Bootstrap',
+			'responsiveCss' => true,
 			//'republishAssetsOnRequest' => false,
 		),
 
@@ -67,7 +65,7 @@ return array(
 			'showScriptName'   => false,
 			'useStrictParsing' => true,
 			'rules'            => array(
-				'/' => 'site/index',
+				'/'                                 => 'site/index',
 				'gii'                               => 'gii',
 				'gii/<controller:\w+>'              => 'gii/<controller>',
 				'gii/<controller:\w+>/<action:\w+>' => 'gii/<controller>/<action>',
@@ -98,7 +96,7 @@ return array(
 					'levels' => 'error, warning',
 				),
 				// uncomment the following to show log messages on web pages
-				array( // configuration for the toolbar
+				/*array( // configuration for the toolbar
 					'class'     => 'ext.yii-debug-toolbar.YiiDebugToolbarRoute',
 					'ipFilters' => array(
 						'127.0.0.1',
@@ -121,6 +119,7 @@ return array(
 
 		'cache'        => array(
 			'class' => 'system.caching.CDummyCache',
+			'keyPrefix' => 'tor_',
 		),
 
 		'mail'         => array(
@@ -135,18 +134,18 @@ return array(
 			'csrfTokenName'        => 'csrf'
 		),
 		'clientScript' => array(
-			'class'    => 'ext.nsclientscript.NLSClientScript',
+			'class'             => 'ext.nsclientscript.NLSClientScript',
 			//'excludePattern' => '/\.tpl/i', //js regexp, files with matching paths won't be filtered is set to other than 'null'
 			//'includePattern' => '/\.php/', //js regexp, only files with matching paths will be filtered if set to other than 'null'
 
-			'mergeJs'  => false,
+			'mergeJs'           => false,
 			//def:true
-			'compressMergedJs'      => false,
+			'compressMergedJs'  => false,
 			//def:false
 
-			'mergeCss' => false,
+			'mergeCss'          => false,
 			//def:true
-			'compressMergedCss'     => false,
+			'compressMergedCss' => false,
 			//def:false
 
 			//'serverBaseUrl'         => 'http://localhost',
@@ -160,7 +159,7 @@ return array(
 
 			//'appVersion'            => 1.0
 			//if set, it will be appended to the urls of the merged scripts/css*/
-			'packages' => array(
+			'packages'          => array(
 				'common' => array(
 					'baseUrl' => '/js/',
 					'js'      => array('common.js'),
@@ -169,12 +168,11 @@ return array(
 						'bbq'
 					),
 				),
-			)
+			),
 		),
-
 		'config'       => array(
 			'class' => 'EConfig',
 			'cache' => 3600,
 		),
-	),
+	)
 );

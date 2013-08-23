@@ -55,7 +55,7 @@ class DefaultController extends Controller {
 	 * @param $model array the model to be validated
 	 */
 	protected function performAjaxValidation ( $model ) {
-		if ( isset($_POST['ajax']) && $_POST['ajax'] === 'comment-form' ) {
+		if ( isset($_POST['ajax']) ) {
 			echo CActiveForm::validate($model);
 			Yii::app()->end();
 		}

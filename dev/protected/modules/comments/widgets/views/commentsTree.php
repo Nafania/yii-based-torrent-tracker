@@ -1,4 +1,4 @@
-
+<div class="commentsBlock">
 <?php if ( sizeof($comments) > 0 ){ ?>
 
         <?php foreach ( $comments as $comment ) {
@@ -6,3 +6,4 @@
 		} ?>
 
 	<?php } ?>
+</div>

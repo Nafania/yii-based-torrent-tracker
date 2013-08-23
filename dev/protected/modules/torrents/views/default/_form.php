@@ -11,8 +11,6 @@
 	     'action' => Yii::app()->createUrl('/torrents/default/create')
 	)); ?>
 
-	<p class="help-block">Fields with <span class="required">*</span> are required.</p>
-
 <?php echo $form->errorSummary(array($category, $model)); ?>
 
 <?php echo $form->dropDownListRow($category,

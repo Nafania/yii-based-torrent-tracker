@@ -110,8 +110,9 @@ class CategoryAttributesBackendController extends YAdminController {
 			throw new CHttpException(404);
 		}
 		$model->setScenario('adminUpdate');
-		$chars = $model->chars;
+		$chars = ( $model->chars ? $model->chars : array(new CategoryAttrChars('adminCreate')) );
 		$counter = sizeof($chars) - 1;
+		$validators = CValidator::$builtInValidators;
 
 		$this->performAjaxValidation(CMap::mergeArray(array($model), $chars));
 
@@ -167,6 +168,7 @@ class CategoryAttributesBackendController extends YAdminController {
 			     'model'   => $model,
 			     'chars'   => $chars,
 			     'counter' => $counter,
+			     'validators' => $validators,
 			     'action'  => Yii::app()->createUrl('categoryattributes/categoryAttributesBackend/update',
 				     array('id' => $id))
 			));

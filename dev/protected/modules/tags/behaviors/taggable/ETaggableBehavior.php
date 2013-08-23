@@ -116,13 +116,25 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 
 	/**
 	 * Allows to print object.
+	 *
+	 * @param bool $trim if need to trim each tag or not (trim must be used with select2)
+	 *
 	 * @return string
 	 */
-	public function toString () {
+	public function toString ( $trim = false ) {
 		$this->loadTags();
 
 		if ( is_array($this->tags) ) {
-			return implode(', ', $this->tags);
+			if ( $trim ) {
+				$tags = '';
+				foreach ( $this->tags AS $tag ) {
+					$tags .= ( $tags ? ',' : '' ) . $tag;
+				}
+				return $tags;
+			}
+			else {
+				return implode(', ', $this->tags);
+			}
 		}
 	}
 
@@ -176,7 +188,14 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 	public function addTags ( $tags ) {
 		$this->loadTags();
 		$tags = $this->toTagsArray($tags);
-		$this->tags = array_unique(array_merge($this->tags, $tags));
+		if ( is_array($this->tags) ) {
+			$this->tags = array_merge($this->tags, $tags);
+		}
+		else {
+			$this->tags = $tags;
+		}
+
+		$this->tags = array_unique($this->tags);
 
 		return $this->getOwner();
 	}
@@ -750,9 +769,9 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 		$conn->createCommand(sprintf("DELETE
                  FROM `%s`
                  WHERE %s = %d",
-				$this->getTagBindingTableName(),
-				$this->getModelTableFkName(),
-				$this->getOwner()->primaryKey))->execute();
+			$this->getTagBindingTableName(),
+			$this->getModelTableFkName(),
+			$this->getOwner()->primaryKey))->execute();
 	}
 
 	/**
@@ -790,15 +809,15 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 			$conn->createCommand(sprintf("UPDATE %s
 					SET %s = %s + %s
 					WHERE %s in (SELECT %s FROM %s WHERE %s = %d)",
-					$this->tagTable,
-					$this->tagTableCount,
-					$this->tagTableCount,
-					$count,
-					$this->tagTablePk,
-					$this->tagBindingTableTagId,
-					$this->getTagBindingTableName(),
-					$this->getModelTableFkName(),
-					$this->getOwner()->primaryKey))->execute();
+				$this->tagTable,
+				$this->tagTableCount,
+				$this->tagTableCount,
+				$count,
+				$this->tagTablePk,
+				$this->tagBindingTableTagId,
+				$this->getTagBindingTableName(),
+				$this->getModelTableFkName(),
+				$this->getOwner()->primaryKey))->execute();
 		}
 	}
 }

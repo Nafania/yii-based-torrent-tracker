@@ -4,14 +4,16 @@
  * This is the model class for table "torrentGroups".
  *
  * The followings are the available columns in table 'torrentGroups':
- * @property integer   $id
- * @property integer   $title
- * @property integer   $ctime
- * @property string    $picture
- * @property integer   $mtime
- * @property Category  $category
- * @property uid       $uid
- * @property Torrent[] torrents
+ * @property integer       $id
+ * @property integer       $title
+ * @property integer       $ctime
+ * @property string        $picture
+ * @property integer       $mtime
+ * @property Category      $category
+ * @property integer       $uid
+ * @property Torrent[]     torrents
+ * @property string        description
+ *
  */
 class TorrentGroup extends EActiveRecord {
 	private $eavAttributes;
@@ -23,7 +25,7 @@ class TorrentGroup extends EActiveRecord {
 	 *
 	 * @param string $className active record class name.
 	 *
-	 * @return TorrentGroups the static model class
+	 * @return TorrentGroup the static model class
 	 */
 	public static function model ( $className = __CLASS__ ) {
 		return parent::model($className);
@@ -51,7 +53,7 @@ class TorrentGroup extends EActiveRecord {
 				     'on' => 'upload'
 			     ),
 			     array(
-				     'id, ctime, mtime',
+				     'id, ctime, mtime, cId',
 				     'numerical',
 				     'integerOnly' => true
 			     ),
@@ -108,13 +110,21 @@ class TorrentGroup extends EActiveRecord {
 				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
 				     // Empty by default
 				     'attributesPrefix' => '',
-				     'preload' => false,
+				     'preload'          => false,
 			     )
 			),
 			array(
 			     'getTorrentTitleBehavior' => array(
 				     'class' => 'application.modules.torrents.behaviors.GetTorrentTitleBehavior'
 			     )
+			),
+			array(
+			     'SlugBehavior' => array(
+				     'class'           => 'application.modules.torrents.behaviors.SlugBehavior.aii.behaviors.SlugBehavior',
+				     'sourceAttribute' => 'title',
+				     'slugAttribute'   => 'slug',
+				     'mode'            => 'translit',
+			     ),
 			));
 	}
 
@@ -123,11 +133,11 @@ class TorrentGroup extends EActiveRecord {
 	 */
 	public function attributeLabels () {
 		return array(
-			'id'      => 'ID',
-			'title'   => 'Title',
-			'ctime'   => 'Ctime',
-			'picture' => 'Picture',
-			'mtime'   => 'Mtime',
+			'id'      => Yii::t('torrentsModule.common', 'Id'),
+			'title'   => Yii::t('torrentsModule.common', 'Title'),
+			'ctime'   => Yii::t('torrentsModule.common', 'Create time'),
+			'picture' => Yii::t('torrentsModule.common', 'Picture'),
+			'mtime'   => Yii::t('torrentsModule.common', 'Modify time'),
 		);
 	}
 
@@ -160,9 +170,11 @@ class TorrentGroup extends EActiveRecord {
 		if ( parent::beforeSave() ) {
 			//$this->mtime = time();
 
-			if ( $this->getIsNewRecord() ) {
-				$this->ctime = $this->mtime = time();
-				$this->uid = Yii::app()->getUser()->getId();
+			if ( !defined('IN_CONVERT') ) {
+				if ( $this->getIsNewRecord() ) {
+					$this->ctime = $this->mtime = time();
+					$this->uid = Yii::app()->getUser()->getId();
+				}
 			}
 
 			return true;
@@ -173,7 +185,8 @@ class TorrentGroup extends EActiveRecord {
 		//return array('/torrents/default/view', 'id' => $this->getId(), 'title' => $this->getTitle());
 		return array(
 			'/torrents/default/view',
-			'id' => $this->getId(),
+			'id'    => $this->getId(),
+			'title' => $this->getSlugTitle(),
 		);
 	}
 
@@ -182,7 +195,7 @@ class TorrentGroup extends EActiveRecord {
 	}
 
 	public function getDescription () {
-		if ( $this->description ) {
+		if ( $this->description !== '' ) {
 			return $this->description;
 		}
 		//TODO: get proper description and more fast
@@ -199,18 +212,29 @@ class TorrentGroup extends EActiveRecord {
 	public function getEavAttributesWithKeys () {
 		$attributes = $this->getEavAttributeKeys();
 
-		$attrs = array();
+		$ids = array();
 		foreach ( $attributes AS $attribute ) {
-			$val = $this->getEavAttribute($attribute->getId());
+			$ids[] = $attribute->getId();
+		}
+
+		$attrs = $this->getEavAttributes($ids);
+
+		$i = 0;
+		$return = array();
+		foreach ( $attrs AS $val ) {
+			$attribute = $attributes[$i];
+			++$i;
 			if ( !$val ) {
 				continue;
 			}
+
 			$prepend = ($attribute->prepend ? $attribute->prepend . ' ' : '');
 			$append = ($attribute->append ? ' ' . $attribute->append : '');
-			$attrs[$attribute->getTitle()] = $prepend . nl2br($val) . $append;
+			$return[$attribute->getTitle()] = $prepend . nl2br($val) . $append;
+
 		}
 
-		return $attrs;
+		return $return;
 	}
 
 	public function getSeparateAttributes () {

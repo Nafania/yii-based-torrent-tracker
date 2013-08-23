@@ -1,6 +1,6 @@
 <?php
 /**
- *  @var $comment Comment
+ * @var $comment Comment
  */
 ?>
 <?php
@@ -9,25 +9,45 @@ $tid = $comment->getTorrentId();
 
 <div class="media commentContainer" data-comments-for="<?php echo $tid ?>" id="comment-<?php echo $comment->getId(); ?>" data-id="<?php echo $comment->getId(); ?>">
     <a class="pull-left" href="#">
-	    <?php echo CHtml::image($comment->user->profile->getImageUrl(32, 32),
-		    $comment->user->getName(),
+	    <?php
+	    if ( $comment->user ) {
+		    $img = $comment->user->profile->getImageUrl(32, 32);
+		    $alt = $comment->user->getName();
+	    }
+	    else {
+		    $img = '/images/no_photo.png';
+		    $alt = '';
+	    }
+	    echo CHtml::image($img,
+		    $alt,
 		    array(
-		         'class' => 'media-object',
-		         'width' => '32',
+		         'class'  => 'media-object',
+		         'width'  => '32',
 		         'height' => '32'
-		    )) ?>
+		    ));
+	    ?>
     </a>
 
     <div class="media-body comment">
-        <h6 class="media-heading"><a href="#"><?php echo $comment->user->getName();?></a>, <abbr title="<?php echo Yii::app()->dateFormatter->formatDateTime($comment->ctime); ?>"><?php echo TimeHelper::timeAgoInWords($comment->ctime);?></abbr>
+        <h6 class="media-heading">
+	        <?php
+	        if ( $comment->user ) {
+		        echo CHtml::link($comment->user->getName());
+	        }
+	        else {
+		        echo '<i>' . Yii::t('userModule.common', 'Account deleted') . '</i>';
+	        }
+	        ?>
+	        , <abbr title="<?php echo Yii::app()->dateFormatter->formatDateTime($comment->ctime); ?>"><?php echo TimeHelper::timeAgoInWords($comment->ctime);?></abbr>
 	        <?php if ( $tid ) {
 		        echo '<small> ' . Yii::t('torrentsModule.common',
 			        'for') . ' ' . $comment->torrentGroup->getSeparateAttribute($tid) . '</small>';
 	        }?>
 	        <?php
-	        $widget = $this->widget('application.modules.ratings.widgets.CommentsRating', array(
-	                                                                                 'model' => $comment
-	                                                                            ));
+	        $widget = $this->widget('application.modules.ratings.widgets.CommentsRating',
+		        array(
+		             'model' => $comment
+		        ));
 	        $rating = $widget->getRating();
 	        ?>
 	        <a href="<?php echo Yii::app()->createUrl('/reports/default/create/',
@@ -38,7 +58,7 @@ $tid = $comment->getTorrentId();
 		        'Пожаловаться на комментарий'); ?>"><i class="icon-warning-sign"></i></a>
 	        </h6>
 
-        <div class="commentText <?php echo 'rating' . ( $rating < -10 ? -10 : $rating ); ?>"><?php echo TextHelper::parseText($comment->getText());?></div>
+        <div class="commentText <?php echo 'rating' . ($rating < -10 ? -10 : $rating); ?>"><?php echo TextHelper::parseText($comment->getText());?></div>
 	    <?php if ( Yii::app()->getUser()->checkAccess('comments.default.loadAnswerBlock') ) { ?>
 		    <span><?php echo CHtml::link(Yii::t('commentsModule.common', 'Reply'),
 				    '#',

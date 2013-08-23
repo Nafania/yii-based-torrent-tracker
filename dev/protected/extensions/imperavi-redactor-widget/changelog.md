@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.2.9
+----
+
+- #30: Fixed an error when adding plug-in with a custom baseUrl (Veaceslav Medvedev)
+- Imperavi redactor updated to 9.1.1 (samdark)
+
+1.2.8
+-----
+
+- Imperavi redactor updated to 9.1.0 (samdark)
+- Languages updated (samdark)
+
 1.2.7
 -----
 

@@ -33,7 +33,7 @@ class CategoryModule extends CWebModule {
 		                            ));
 	}
 
-	private function _addBehaviors () {
+	private static function _addBehaviors () {
 		Yii::app()->pd->registerBehavior('Category',
 			array(
 			     'nestedSetBehavior' => array(
@@ -46,7 +46,7 @@ class CategoryModule extends CWebModule {
 			));
 	}
 
-	private function _addRelations () {
+	private static function _addRelations () {
 
 		Yii::app()->pd->addRelations('TorrentGroup',
 			'category',

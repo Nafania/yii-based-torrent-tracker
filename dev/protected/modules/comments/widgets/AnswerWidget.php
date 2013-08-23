@@ -4,7 +4,7 @@ class AnswerWidget extends CWidget {
 	public $modelId;
 	public $modelName;
 	public $parentId = 0;
-	public $torrents;
+	public $torrents = array();
 
 	public function init () {
 		parent::init();

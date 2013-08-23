@@ -39,6 +39,16 @@ class TagsModule extends CWebModule
 		        )
 		    )
 		);
+
+		Yii::app()->pd->registerBehavior('BlogPost', array(
+		        'tags' => array(
+		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
+		            'modelTableName' => 'BlogPost',
+		            'cacheID' => 'cache',
+		            'createTagsAutomatically' => true,
+		        )
+		    )
+		);
 	}
 
 	protected static function _addUrlRules () {

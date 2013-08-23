@@ -11,7 +11,7 @@
 <?php
 	$form = $this->beginWidget('CActiveForm',
 		array(
-		     'id'                     => 'comment-form',
+		     'id'                     => 'comment-form' . uniqid(),
 		     'enableAjaxValidation'   => true,
 		     'enableClientValidation' => true,
 		     'action'                 => Yii::app()->createUrl('/comments/default/create'),
@@ -49,7 +49,7 @@
 		));
 	?>
 	<?php //echo $form->labelEx($comment, 'torrentId'); ?>
-	<?php if ( !$parentId ) {
+	<?php if ( !$parentId && $torrents ) {
 		echo $form->dropDownList($comment,
 			'torrentId',
 			CHtml::listData($torrents,

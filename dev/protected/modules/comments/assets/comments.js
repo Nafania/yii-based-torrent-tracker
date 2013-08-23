@@ -9,7 +9,9 @@ $(document).on('click', '.commentReply', function (e) {
 
     if (elem.data('activated') == '1') {
         elem.data('activated', 0);
-        elem.nextAll('.answerBlock').fadeOut('slow');
+        elem.nextAll('.answerBlock').fadeOut('slow', function () {
+            $(this).remove();
+        });
         return false;
     }
 

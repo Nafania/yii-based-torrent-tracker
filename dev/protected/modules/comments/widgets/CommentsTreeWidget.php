@@ -13,15 +13,15 @@ class CommentsTreeWidget extends CWidget {
 	}
 
 	public function run () {
+		$criteria = new CDbCriteria();
+		$criteria->condition = 't.modelName = :modelName AND t.modelId = :modelId';
+		$criteria->params = array(
+			'modelName' => get_class($this->model),
+			'modelId' => $this->model->getPrimaryKey(),
+		);
 		//TODO: when cache enabled comments not shown with anger loading
-		$comments = Comment::model()->with(array('user', 'user.profile', 'rating', 'torrent', 'torrent.torrentGroup'))->findAllByAttributes(array(
-		                                                       'modelName' => get_class($this->model),
-		                                                       'modelId' => $this->model->getPrimaryKey()
-		                                                  ));
-		/*$comments = Comment::model()->with()->findAllByAttributes(array(
-				                                                       'modelName' => get_class($this->model),
-				                                                       'modelId' => $this->model->getPrimaryKey()
-				                                                  ));*/
+		//$comments = Comment::model()->with(array('user', 'user.profile', 'rating', 'torrent', 'torrent.torrentGroup'))->findAll($criteria);
+		$comments = Comment::model()->findAll($criteria);
 
 		$comments = Comment::buildTree($comments);
 

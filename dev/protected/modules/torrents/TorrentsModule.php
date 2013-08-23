@@ -29,6 +29,7 @@ class TorrentsModule extends CWebModule {
 		self::_addModelRules();
 		self::_addBehaviors();
 		self::_addModelsRelations();
+		self::_setImport();
 
 		Yii::app()->pd->addAdminModule('torrents', 'Models management');
 	}
@@ -41,7 +42,8 @@ class TorrentsModule extends CWebModule {
 		                                 'torrents/'                                => 'torrents/default/index',
 		                                 'torrents/<action:\w+>/*'                  => 'torrents/default/<action>',
 		                                 'torrents/<controller:\w+>/<action:\w+>/*' => 'torrents/<controller>/<action>',
-		                            ));
+
+		                            ), false);
 	}
 
 
@@ -66,7 +68,7 @@ class TorrentsModule extends CWebModule {
 			'application.modules.torrents.models.*');
 	}
 
-	private function _addModelRules () {
+	private static function _addModelRules () {
 		Yii::app()->pd->addModelRules('Category',
 			array(
 			     'id',
@@ -87,7 +89,7 @@ class TorrentsModule extends CWebModule {
 			));
 	}
 
-	private function _addBehaviors () {
+	private static function _addBehaviors () {
 		Yii::app()->pd->registerBehavior('Category',
 			array(
 			     'torrentNameRulesBehavior' => array(
@@ -101,5 +103,11 @@ class TorrentsModule extends CWebModule {
 				     'class' => 'application.modules.torrents.behaviors.TorrentCommentsRelationsBehavior'
 			     )
 			));
+	}
+
+	private function _setImport() {
+		Yii::app()->pd->setImport(
+			array('application.modules.torrents.models.*')
+		);
 	}
 }

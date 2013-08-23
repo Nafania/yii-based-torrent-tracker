@@ -321,7 +321,7 @@ class EEavBehavior extends CActiveRecordBehavior {
         }
 
         // Query DB.
-        $data = $this->getLoadEavAttributesCommand($attributes)->query();
+	    $data = $this->getLoadEavAttributesCommand($attributes)->query();
         foreach($data as $row) {
             $attribute = $this->stripPrefix($row[$this->attributeField]);
             $value = $row[$this->valueField];

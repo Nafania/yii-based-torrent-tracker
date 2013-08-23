@@ -23,8 +23,8 @@ class EActiveRecord extends CActiveRecord {
 
 	protected function afterSave () {
 		if ( $this->cacheTime ) {
-			Yii::trace('Model ' . get_class($this) . ' cache cleared');
-			Yii::app()->cache->set(get_class($this), time(), 0);
+			Yii::trace('Model ' . get_class($this) . ' cache cleared at ' . date('d.m.Y H:i:s'));
+			Yii::app()->cache->set($this->getCacheKey(), time(), 0);
 		}
 
 		parent::afterSave();
@@ -32,8 +32,9 @@ class EActiveRecord extends CActiveRecord {
 
 	protected function beforeFind () {
 		if ( $this->cacheTime ) {
-			$this->cache($this->cacheTime, new CTagCacheDependency(get_class($this)));
-			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds');
+			$dependency = new CTagCacheDependency($this->getCacheKey());
+			$this->cache($this->cacheTime, $dependency);
+			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds at ' . date('d.m.Y H:i:s') . ' last change at ' . date('d.m.Y H:i:s', $dependency->generateDependentData()));
 		}
 
 		return parent::beforeFind();
@@ -41,10 +42,14 @@ class EActiveRecord extends CActiveRecord {
 
 	protected function afterDelete () {
 		if ( $this->cacheTime ) {
-			Yii::app()->cache->set(get_class($this), time(), 0);
-			Yii::trace('Model ' . get_class($this) . ' cache cleared');
+			Yii::app()->cache->set($this->getCacheKey(), time(), 0);
+			Yii::trace('Model ' . get_class($this) . ' cache cleared at ' . date('d.m.Y H:i:s'));
 		}
 
 		return parent::afterDelete();
+	}
+
+	private function getCacheKey () {
+		return 'EActiveRecordModelCache'  . get_class($this);
 	}
 }

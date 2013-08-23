@@ -280,9 +280,20 @@ class PluginsDispatcher extends CApplicationComponent {
 		}
 
 		foreach ( $this->plugins['modelRules'][$modelName] AS $key => $rule ) {
-				$modelRules[] = $rule;
+			$modelRules[] = $rule;
 		}
 
 		return $modelRules;
 	}
+
+	/**
+	 * Register application components
+	 *
+	 * @param array $components
+	 */
+	public function setImport ( array $import ) {
+		Yii::app()->setImport($import);
+	}
+
+
 }
