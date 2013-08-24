@@ -27,7 +27,7 @@
 		     'imageUpload'   => Yii::app()->createUrl('files/default/upload'),
 		     'uploadFields'  => array(
 			     Yii::app()->getRequest()->csrfTokenName => Yii::app()->getRequest()->getCsrfToken(),
-			     'modelName'                             => get_class($comment)
+			     'modelName'                             => get_class($blogPost)
 		     )
 	     ),
 	));?>
