@@ -6,13 +6,11 @@ class DefaultController extends Controller {
 	 * @return array action filters
 	 */
 	public function filters () {
-		//return CMap::mergeArray(parent::filters(),
-		return array(
-			'postOnly + delete',
-			'ajaxOnly + fileList, tagsSuggest',
-			// we only allow deletion via POST request
-		);
-		//));
+		return CMap::mergeArray(parent::filters(),
+			array(
+			     'postOnly + delete, deleteTorrent',
+			     'ajaxOnly + fileList, tagsSuggest',
+			));
 	}
 
 	/**
@@ -76,9 +74,9 @@ class DefaultController extends Controller {
 					$TorrentGroup->mtime = time();
 					$TorrentGroup->save(false);
 
-					foreach ( $Attributes AS $Attribute ) {
-						$this->processAttributes($Torrent, $Attribute->id);
-					}
+					//foreach ( $Attributes AS $Attribute ) {
+					$this->processAttributes($Torrent);
+					//}
 
 					$transaction->commit();
 
@@ -259,6 +257,7 @@ class DefaultController extends Controller {
 			array('{title}' => $TorrentGroup->getTitle()));
 		$this->breadcrumbs = array(
 			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
+			$TorrentGroup->getTitle()                   => $TorrentGroup->getUrl(),
 			$title
 		);
 		$this->pageTitle = $title;
@@ -327,9 +326,10 @@ class DefaultController extends Controller {
 
 		$title = Yii::t('torrentsModule.common',
 			'Редактирование торрента "{title}"',
-			array('{title}' => $TorrentGroup->getTitle()));
+			array('{title}' => $Torrent->getTitle()));
 		$this->breadcrumbs = array(
 			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
+			$TorrentGroup->getTitle()                   => $TorrentGroup->getUrl(),
 			$title
 		);
 		$this->pageTitle = $title;
@@ -409,66 +409,46 @@ class DefaultController extends Controller {
 	 * @param integer $id the ID of the model to be deleted
 	 */
 	public function actionDelete ( $id ) {
-		if ( Yii::app()->request->isPostRequest ) {
-			// we only allow deletion via POST request
-			$model = TorrentGroup::model()->findByPk($id);
-			if ( $model === null ) {
-				Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
-			}
+		$model = TorrentGroup::model()->findByPk($id);
+		if ( $model === null ) {
+			throw new CHttpException(404, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
+		}
 
 
-			if ( $model->delete() ) {
-				Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
-					Yii::t('torrentsModule.common',
-						'Группа торрентов удалена успешно'));
-				Ajax::send(Ajax::AJAX_SUCCESS,
-					Yii::t('torrentsModule.common', 'Группа торрентов удалена успешно'),
-					array(
-					     'location' => Yii::app()->createUrl('/torrents/default/index')
-					));
-			}
-			else {
-				Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
-					Yii::t('torrentsModule.common',
-						'При удалении группы торрентов возникли ошибки'));
-				Ajax::send(Ajax::AJAX_ERROR,
-					Yii::t('torrentsModule.common', 'При удалении группы торрентов возникли ошибки'));
-			}
+		if ( $model->delete() ) {
+			Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+				Yii::t('torrentsModule.common',
+					'Группа торрентов удалена успешно'));
 		}
 		else {
-			Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
+			Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+				Yii::t('torrentsModule.common',
+					'При удалении группы торрентов возникли ошибки'));
 		}
+		$this->redirect(Yii::app()->getUser()->returnUrl);
 	}
 
 	public function actionDeleteTorrent ( $id ) {
-		if ( Yii::app()->request->isPostRequest ) {
-			// we only allow deletion via POST request
-			$model = Torrent::model()->findByPk($id);
-			if ( $model === null ) {
-				Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Торрент не найден'));
-			}
+		// we only allow deletion via POST request
+		$model = Torrent::model()->findByPk($id);
+		if ( $model === null ) {
+			throw new CHttpException(404, Yii::t('torrentsModule.common', 'Торрент не найден'));
+		}
 
-			if ( $model->delete() ) {
-				$url = $model->torrentGroup->getUrl();
-				Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
-					Yii::t('torrentsModule.common',
-						'Торрент удален успешно'));
-				Ajax::send(Ajax::AJAX_SUCCESS,
-					Yii::t('torrentsModule.common', 'Торрент удален успешно'),
-					array(
-					     'location' => Yii::app()->createUrl(array_shift($url), $url)
-					));
-			}
-			else {
-				Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
-					Yii::t('torrentsModule.common',
-						'При удалении торрента возникли ошибки'));
-				Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'При удалении торрента возникли ошибки'));
-			}
+		$url = $model->torrentGroup->getUrl();
+
+		if ( $model->delete() ) {
+			Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+				Yii::t('torrentsModule.common',
+					'Торрент удален успешно'));
 		}
 		else {
-			Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Торрент не найден'));
+			Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+				Yii::t('torrentsModule.common',
+					'При удалении торрента возникли ошибки'));
 		}
+
+		$this->redirect($url);
 	}
 
 	/**
@@ -499,10 +479,14 @@ class DefaultController extends Controller {
 
 		$dataProvider = $model->search();
 
-		Ajax::renderAjax('index', array(
-		                             'dataProvider' => $dataProvider
+		Ajax::renderAjax('index',
+			array(
+			     'dataProvider' => $dataProvider
 
-		                          ), false, false, true);
+			),
+			false,
+			false,
+			true);
 
 	}
 

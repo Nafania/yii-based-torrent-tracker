@@ -24,7 +24,7 @@ class EActiveRecord extends CActiveRecord {
 	protected function afterSave () {
 		if ( $this->cacheTime ) {
 			Yii::trace('Model ' . get_class($this) . ' cache cleared at ' . date('d.m.Y H:i:s'));
-			Yii::app()->cache->set($this->getCacheKey(), time(), 0);
+			Yii::app()->cache->set($this->getCacheKey(), microtime(true), 0);
 		}
 
 		parent::afterSave();
@@ -42,7 +42,7 @@ class EActiveRecord extends CActiveRecord {
 
 	protected function afterDelete () {
 		if ( $this->cacheTime ) {
-			Yii::app()->cache->set($this->getCacheKey(), time(), 0);
+			Yii::app()->cache->set($this->getCacheKey(), microtime(true), 0);
 			Yii::trace('Model ' . get_class($this) . ' cache cleared at ' . date('d.m.Y H:i:s'));
 		}
 

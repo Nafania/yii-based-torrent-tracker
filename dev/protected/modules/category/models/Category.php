@@ -116,6 +116,12 @@ class Category extends EActiveRecord {
 		return $this->name;
 	}
 
+	public function getUrl() {
+		return array(
+			'/category/default/view', 'id' => $this->getId(),
+		);
+	}
+
 	public function getTree ( $url = "" ) {
 		$models = self::model()->findAll(array('order' => 'lft'));
 		if ( count($models) == 0 ) {

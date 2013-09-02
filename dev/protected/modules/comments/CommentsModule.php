@@ -46,6 +46,20 @@ class CommentsModule extends CWebModule {
 			     'ownerId',
 			),
 			'application.modules.comments.models.*');
+
+		Yii::app()->pd->addRelations('TorrentGroup',
+			'commentsCount',
+			array(
+			     CActiveRecord::STAT,
+			     'Comment',
+			     'modelId',
+			     'condition' => 'modelName = :modelName',
+			     'params'    => array(
+				     'modelName' => 'TorrentGroup'
+
+			     )
+			),
+			'application.modules.comments.models.*');
 	}
 
 	private static function _addBehaviors () {

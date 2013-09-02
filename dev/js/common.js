@@ -13,18 +13,26 @@ $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
     }
 });
 $(document).ajaxError(function (event, request, settings) {
-    var data = eval("(" + request.responseText + ")");
-    var errTxt = '';
-    if (!data) {
+    if (request.status === 0 || request.readyState === 0) {
         return;
     }
-    if (data.data.errors) {
-        $.each(data.data.errors, function (key, val) {
-            errTxt += val + "\n";
-        });
-    } else {
-        errTxt = data.message;
+    var errTxt = '';
+    try {
+        var data = eval("(" + request.responseText + ")");
+        if (!data) {
+            return;
+        }
+        if (data.data.errors) {
+            $.each(data.data.errors, function (key, val) {
+                errTxt += val + "\n";
+            });
+        } else {
+            errTxt = data.message;
+        }
+    } catch (e) {
+        errTxt = request.responseText;
     }
+
     $('.top-right').notify({
         message: { html: errTxt },
         fadeOut: {
@@ -46,5 +54,14 @@ $(function () {
     $(document).on('click', 'a[href="/user/login"]', function (e) {
         e.preventDefault();
         $("#loginModal").modal("show")
+    });
+
+    $(document).on('click', 'a:not([data-action])[href*="/delete"]', function (e) {
+        e.preventDefault();
+        console.log($(this));
+
+        if (confirm('Are you sure?')) {
+            $.yii.submitForm(this, $(this).attr('href'), {'csrf': $('meta[name="csrf"]').attr('content')});
+        }
     });
 });

@@ -78,6 +78,21 @@
 			    echo ' | ' . $tagsStr;
 		    }
 		    ?>
+		    |
+		    <?php
+		    $widget = $this->widget('application.modules.ratings.widgets.CommentsRating',
+			    array(
+			         'model' => $blogPost
+			    ));
+		    $rating = $widget->getRating();
+		    ?>
+		    |
+		    <a href="<?php echo Yii::app()->createUrl('/reports/default/create/',
+			    array(
+			         'modelName' => get_class($blogPost),
+			         'modelId'   => $blogPost->getId()
+			    )); ?>" data-action="report" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('reportsModule.common',
+			    'Пожаловаться на запись в блоге'); ?>"><i class="icon-warning-sign"></i></a>
      </p>
 
 	</div>
@@ -93,3 +108,4 @@
 	     'model'    => $blogPost,
 	     'torrents' => $model->torrents
 	)); ?>
+<?php $this->widget('application.modules.reports.widgets.ReportModal'); ?>

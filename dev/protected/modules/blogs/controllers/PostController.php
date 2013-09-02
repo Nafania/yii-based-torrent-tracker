@@ -31,18 +31,17 @@ class PostController extends Controller {
 			array(
 			     '{blogTitle}' => $blog->getTitle(),
 			));
-		$this->breadcrumbs[Yii::t('blogsModule.common', 'Блоги')] = array('/blogs/default/index');
-		$this->breadcrumbs[Yii::t('blogsModule.common',
-			'Просмотр блога "{blogPostName}"',
-			array('{blogPostName}' => $blog->getTitle()))] = array(
-			'/blogs/default/view',
-			'id' => $blog->getId()
+		$this->breadcrumbs = array(
+			Yii::t('blogsModule.common', 'Блоги')             => array('/blogs/default/index'),
+			Yii::t('blogsModule.common',
+				'Просмотр блога "{blogPostName}"',
+				array('{blogPostName}' => $blog->getTitle())) => $blog->getUrl(),
+			Yii::t('blogsModule.common',
+				'Создание записи в блоге "{blogTitle}"',
+				array(
+				     '{blogTitle}' => $blog->getTitle(),
+				))
 		);
-		$this->breadcrumbs[] = Yii::t('blogsModule.common',
-			'Создание записи в блоге "{blogTitle}"',
-			array(
-			     '{blogTitle}' => $blog->getTitle(),
-			));
 
 		$blogPost = new BlogPost();
 
@@ -89,10 +88,7 @@ class PostController extends Controller {
 		$this->breadcrumbs[Yii::t('blogsModule.common', 'Блоги')] = array('/blogs/default/index');
 		$this->breadcrumbs[Yii::t('blogsModule.common',
 			'Просмотр блога "{blogPostName}"',
-			array('{blogPostName}' => $blog->getTitle()))] = array(
-			'/blogs/default/view',
-			'id' => $blog->getId()
-		);
+			array('{blogPostName}' => $blog->getTitle()))] = $blog->getUrl();
 		$this->breadcrumbs[] = Yii::t('blogsModule.common',
 			'Редактирование записи в блоге "{blogTitle}"',
 			array(
@@ -134,10 +130,7 @@ class PostController extends Controller {
 		$this->breadcrumbs[Yii::t('blogsModule.common', 'Блоги')] = array('/blogs/default/index');
 		$this->breadcrumbs[Yii::t('blogsModule.common',
 			'Просмотр блога "{blogPostName}"',
-			array('{blogPostName}' => $blog->getTitle()))] = array(
-			'/blogs/default/view',
-			'id' => $blog->getId()
-		);
+			array('{blogPostName}' => $blog->getTitle()))] = $blog->getUrl();
 		$this->breadcrumbs[] = Yii::t('blogsModule.common',
 			'Просмотр записи "{blogTitle}"',
 			array(

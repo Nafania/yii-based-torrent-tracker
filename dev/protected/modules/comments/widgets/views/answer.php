@@ -15,6 +15,9 @@
 		     'enableAjaxValidation'   => true,
 		     'enableClientValidation' => true,
 		     'action'                 => Yii::app()->createUrl('/comments/default/create'),
+		     'htmlOptions'            => array(
+			     'class' => 'answerForm'
+		     ),
 		     'clientOptions'          => array(
 			     'validateOnSubmit' => true,
 			     'afterValidate'    => 'js:function(form,data,hasError){
@@ -39,6 +42,7 @@
                                                     $(data.data.view).appendTo(".commentsBlock");
                                                 }
                                             }
+                                            $("html, body").animate({scrollTop: $("#comment-" + data.data.id).position().top }, 100);
                                        },
 
                                        });

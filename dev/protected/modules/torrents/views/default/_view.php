@@ -5,7 +5,12 @@
 ?>
 <div class="media">
 	<?php
-	$img = CHtml::image($data->getImageUrl(100, 0), $data->getTitle(), array('class' => 'media-object img-polaroid', 'style' => 'width:100px'));
+	$img = CHtml::image($data->getImageUrl(100, 0),
+		$data->getTitle(),
+		array(
+		     'class' => 'media-object img-polaroid',
+		     'style' => 'width:100px'
+		));
 	echo CHtml::link($img, $data->getUrl(), array('class' => 'pull-left'));
 	?>
 
@@ -15,10 +20,23 @@
         <p><?php echo StringHelper::cutStr($data->getDescription()); ?></p>
 
         <p>
-	        <strong><?php echo CHtml::link($data->category->getTitle(), array('/torrents/default/index', 'category' => $data->category->getTitle())) ?></strong><?php
+	        <?php
+	        if ( $commentsCount = $data->commentsCount ) {
+		        echo CHtml::link('<i class="icon-comment"></i> ' . $commentsCount, CMap::mergeArray($data->getUrl(), array('#' => 'comments'))) . ', ';
+	        }
+	        ?>
+	        <strong><?php echo CHtml::link($data->category->getTitle(),
+			        array(
+			             '/torrents/default/index',
+			             'category' => $data->category->getTitle()
+			        )) ?></strong><?php
 	        if ( $tags = $data->getTags() ) {
 		        foreach ( $tags AS $tag ) {
-			        echo ', <strong>' . CHtml::link($tag, array('/torrents/default/index', 'tags' => $tag)) . '</strong>';
+			        echo ', <strong>' . CHtml::link($tag,
+				        array(
+				             '/torrents/default/index',
+				             'tags' => $tag
+				        )) . '</strong>';
 		        }
 	        }
 	        foreach ( $data->getSeparateAttributes() AS $id => $attr ) {

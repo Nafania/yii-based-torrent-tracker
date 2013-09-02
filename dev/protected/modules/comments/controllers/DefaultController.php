@@ -13,14 +13,14 @@ class DefaultController extends Controller {
 		if ( isset($_POST['Comment']) ) {
 			$comment->attributes = $_POST['Comment'];
 
-			if ( $comment->save() ) {
+			if ( $comment->saveNode() ) {
 				$view = $this->renderPartial('application.modules.comments.widgets.views._commentView',
 					array('comment' => $comment),
 					true);
 
 				Ajax::send(Ajax::AJAX_SUCCESS,
 					Yii::t('commentsModule.common', 'Comment added successfully'),
-					array('view' => $view, 'parentId' => (int) $comment->parentId));
+					array('view' => $view, 'parentId' => (int) $comment->parentId, 'id' => (int) $comment->getId()));
 			}
 			else {
 				Ajax::send(Ajax::AJAX_ERROR, Yii::t('commentsModule.common', 'Some errors during save occurred'));
@@ -36,6 +36,7 @@ class DefaultController extends Controller {
 		$comment = new Comment();
 
 		Yii::app()->getClientScript()->scriptMap['jquery.js'] = false;
+		//var_dump(Yii::app()->getClientScript()->scriptMap);
 		$view = $this->renderPartial('application.modules.comments.widgets.views.answer',
 			array(
 			     'comment' => $comment,

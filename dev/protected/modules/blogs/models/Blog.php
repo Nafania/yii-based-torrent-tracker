@@ -86,6 +86,18 @@ class Blog extends EActiveRecord {
 			));
 	}
 
+
+	public function behaviors () {
+		return CMap::mergeArray(parent::behaviors(),
+			array(
+			     'SlugBehavior' => array(
+				     'class'           => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
+				     'sourceAttribute' => 'title',
+				     'slugAttribute'   => 'slug',
+				     'mode'            => 'translit',
+			     ),
+			));
+	}
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
@@ -157,7 +169,8 @@ class Blog extends EActiveRecord {
 	public function getUrl () {
 		return array(
 			'/blogs/default/view',
-			'id' => $this->getId()
+			'id' => $this->getId(),
+			'title' => $this->getSlugTitle(),
 		);
 	}
 }

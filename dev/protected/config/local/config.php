@@ -57,6 +57,8 @@ return array(
 		'bootstrap'    => array(
 			'class'         => 'ext.bootstrap.components.Bootstrap',
 			'responsiveCss' => true,
+			'ajaxJsLoad' => false,
+			'ajaxCssLoad' => false,
 			//'republishAssetsOnRequest' => false,
 		),
 
@@ -118,7 +120,7 @@ return array(
 		),
 
 		'cache'        => array(
-			'class' => 'system.caching.CDummyCache',
+			'class' => 'system.caching.CApcCache',
 			'keyPrefix' => 'tor_',
 		),
 

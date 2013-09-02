@@ -14,11 +14,11 @@
  * @property string  $modelName
  * @property integer $modelId
  */
-class Comment extends EActiveRecord {
+class Comment extends EActiveRecord implements ChangesInterface {
 
 	const APPROVED = 0;
 
-	public  $childs;
+	public $childs;
 
 	public $cacheTime = 3600;
 
@@ -47,37 +47,47 @@ class Comment extends EActiveRecord {
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		//TODO реализовать валидацию данных модели, корректность id и типа модели
-		return CMap::mergeArray(parent::rules(), array(
+		return CMap::mergeArray(parent::rules(),
 			array(
-				'text, modelId, modelName',
-				'required'
-			),
-			array(
-				'text',
-				'filter',
-				'filter' => array(
-					new CHtmlPurifier(),
-					'purify'
-				)
-			),
-			array(
-				'modelId, parentId',
-				'numerical',
-				'integerOnly' => true
-			),
-			array(
-				'modelName',
-				'length',
-				'max' => 45
-			),
-			// The following rule is used by search().
-			// Please remove those attributes that should not be searched.
-			array(
-				'id, text, ownerId, ctime, mtime, status, parentId, modelName, modelId',
-				'safe',
-				'on' => 'search'
-			),
-		));
+			     array(
+				     'text, modelId, modelName',
+				     'required'
+			     ),
+			     array(
+				     'text',
+				     'filter',
+				     'filter' => array(
+					     new CHtmlPurifier(),
+					     'purify'
+				     )
+			     ),
+			     array(
+				     'modelId, parentId',
+				     'numerical',
+				     'integerOnly' => true
+			     ),
+			     array(
+				     'modelName',
+				     'length',
+				     'max' => 45
+			     ),
+			     // The following rule is used by search().
+			     // Please remove those attributes that should not be searched.
+			     array(
+				     'id, text, ownerId, ctime, mtime, status, parentId, modelName, modelId',
+				     'safe',
+				     'on' => 'search'
+			     ),
+			));
+	}
+
+	public function behaviors() {
+		return CMap::mergeArray(parent::behaviors(), array(
+		                                                'AdjacencyListBehavior' => array(
+			                                                'class' => 'application.modules.comments.behaviors.AdjacencyListBehavior',
+			                                                'parentAttribute' => 'parentId',
+		                                                )
+		                                             ));
 	}
 
 	/**
@@ -137,7 +147,7 @@ class Comment extends EActiveRecord {
 		}
 	}
 
-	public function defaultScope() {
+	public function defaultScope () {
 		return array(
 			'order' => 't.parentId ASC, t.ctime ASC'
 		);
@@ -177,5 +187,31 @@ class Comment extends EActiveRecord {
 
 	public function getOwner () {
 		return $this->user;
+	}
+
+	public function getParentId () {
+		return $this->parentId;
+	}
+
+	public function getChangesText () {
+		return Yii::t('commentsModule.common', 'Добавлен ответ на ваш комментарий');
+	}
+
+	public function getChangesTitle (){
+		return Yii::t('commentsModule.common', 'Ответ на ваш комментарий');
+	}
+
+	public function getMtime () {
+		return $this->mtime;
+	}
+
+	public function getUrl () {
+		$modelName = $this->modelName;
+		$owner = $modelName::model()->findByPk($this->modelId);
+		return CMap::mergeArray($owner->getUrl(), array('#' => 'comment-' . $this->getId()));
+	}
+
+	public function getChangesIcon () {
+		return 'comment';
 	}
 }

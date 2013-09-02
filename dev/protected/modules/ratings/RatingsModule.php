@@ -81,9 +81,21 @@ class RatingsModule extends CWebModule {
 			     'together'  => true,
 			),
 			'application.modules.ratings.models.*');
+
+		Yii::app()->pd->addRelations('BlogPost',
+			'rating',
+			array(
+			     CActiveRecord::HAS_ONE,
+			     'Rating',
+			     'modelId',
+			     'joinType' => 'LEFT JOIN',
+			     'on' => 'rating.modelName = \'BlogPost\'',
+			     'together'  => true,
+			),
+			'application.modules.ratings.models.*');
 	}
 
-	private function _addBehaviors() {
+	private static function _addBehaviors() {
 		Yii::app()->pd->registerBehavior('TorrentGroup',
 			array(
 			     'deleteRatings' => array(
@@ -91,6 +103,18 @@ class RatingsModule extends CWebModule {
 			     )
 			));
 		Yii::app()->pd->registerBehavior('Comment',
+			array(
+			     'deleteRatings' => array(
+				     'class' => 'application.modules.ratings.behaviors.DeleteRatingsBehavior'
+			     )
+			));
+		Yii::app()->pd->registerBehavior('User',
+			array(
+			     'deleteRatings' => array(
+				     'class' => 'application.modules.ratings.behaviors.DeleteRatingsBehavior'
+			     )
+			));
+		Yii::app()->pd->registerBehavior('BlogPost',
 			array(
 			     'deleteRatings' => array(
 				     'class' => 'application.modules.ratings.behaviors.DeleteRatingsBehavior'

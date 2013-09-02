@@ -27,10 +27,12 @@ class DefaultController extends Controller {
 		$this->pageTitle = Yii::t('blogsModule.common',
 			'Просмотр блога "{blogPostName}"',
 			array('{blogPostName}' => $model->getTitle()));
-		$this->breadcrumbs[Yii::t('blogsModule.common', 'Блоги')] = array('index');
-		$this->breadcrumbs[] = Yii::t('blogsModule.common',
-			'Просмотр блога "{blogPostName}"',
-			array('{blogPostName}' => $model->getTitle()));
+		$this->breadcrumbs = array(
+			Yii::t('blogsModule.common', 'Блоги') => array('index'),
+			Yii::t('blogsModule.common',
+						'Просмотр блога "{blogPostName}"',
+						array('{blogPostName}' => $model->getTitle()))
+		);
 
 		$blogPost = BlogPost::model()->forBlog($id);
 		$blogPost->unsetAttributes(); // clear any default values

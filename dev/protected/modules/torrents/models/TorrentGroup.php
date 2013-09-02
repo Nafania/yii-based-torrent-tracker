@@ -15,7 +15,7 @@
  * @property string        description
  *
  */
-class TorrentGroup extends EActiveRecord {
+class TorrentGroup extends EActiveRecord implements ChangesInterface {
 	private $eavAttributes;
 
 	public $cacheTime = 3600;
@@ -120,7 +120,7 @@ class TorrentGroup extends EActiveRecord {
 			),
 			array(
 			     'SlugBehavior' => array(
-				     'class'           => 'application.modules.torrents.behaviors.SlugBehavior.aii.behaviors.SlugBehavior',
+				     'class'           => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
 				     'sourceAttribute' => 'title',
 				     'slugAttribute'   => 'slug',
 				     'mode'            => 'translit',
@@ -281,5 +281,21 @@ class TorrentGroup extends EActiveRecord {
 			$criteria->compare('category.name', $category);
 			$this->getDbCriteria()->mergeWith($criteria);
 		}
+	}
+
+	public function getChangesText () {
+		return Yii::t('torrentsModule.common', 'В группу "{groupName}" добавлен новый торрент', array('{groupName}' => $this->getTitle()));
+	}
+
+	public function getChangesTitle () {
+		return Yii::t('torrentsModule.common', 'Добавлен новый торрент');
+	}
+
+	public function getMtime() {
+		return $this->mtime;
+	}
+
+	public function getChangesIcon () {
+		return 'download';
 	}
 }

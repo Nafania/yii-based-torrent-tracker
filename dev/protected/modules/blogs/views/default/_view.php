@@ -71,7 +71,7 @@
 			<?php
 			$this->widget('bootstrap.widgets.TbButton',
 				array(
-				     'buttonType' => 'submitLink',
+				     'buttonType' => 'link',
 				     'type'       => 'danger',
 				     'label'      => 'Delete',
 				     'url'         => array(

@@ -94,6 +94,7 @@ body {
 .commentText.rating-10 {
     opacity: 0.1;
 }
+
 .dl-horizontal dd {
     margin-bottom: 5px;
 }
@@ -105,7 +106,6 @@ body {
 .errorMessage {
     color: red;
 }
-
 
 .sorter a.asc:after {
     border-bottom: 4px solid #000000;
@@ -119,6 +119,7 @@ body {
     width: 0;
     margin: 5px 0 0 5px;
 }
+
 .sorter a.desc:after {
     border-right: 4px solid transparent;
     border-top: 4px solid #000000;
@@ -131,6 +132,7 @@ body {
     margin: 5px 0 0 5px;
 
 }
+
 .commentContainer {
     margin-top: 20px;
 }
@@ -146,11 +148,11 @@ body {
 }
 
 .torrentGroupRating {
-    width:83px;
+    width: 83px;
 }
 
 .notifications {
-    width:300px;
+    width: 300px;
 }
 
 .torrentGroupOperations {
@@ -158,11 +160,30 @@ body {
     margin-left: 0 !important;
 }
 
+.torrentGroupOperations.nav-pills {
+    display: table;
+    width: 100%;
+    text-align: center;
+}
+
+.torrentGroupOperations.nav-pills > li {
+    display: table-cell;
+    width: 1%;
+    float: none;
+}
+
+.torrentGroupOperations.nav-pills > li a {
+    text-align: center;
+}
 .commentReply {
     display: block;
     margin-top: 10px;
 }
 
 #blogPostsListView {
+    padding-top: 0;
+}
+
+.list-view {
     padding-top: 0;
 }

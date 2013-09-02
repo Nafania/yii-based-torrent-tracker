@@ -31,7 +31,9 @@ class AuthFilter extends CFilter {
 
 		if ( ($module = $controller->getModule()) !== null ) {
 			$itemName .= $module->getId() . '.';
-			if (Yii::app()->user->checkAccess($itemName.'*')) return true;
+			if ( Yii::app()->user->checkAccess($itemName . '*') ) {
+				return true;
+			}
 		}
 
 		$itemName .= $controller->getId();
@@ -52,7 +54,12 @@ class AuthFilter extends CFilter {
 			$user->loginRequired();
 		}
 		else {
-			throw new CHttpException(401, 'Access denied.');
+			if ( Yii::app()->getRequest()->getIsAjaxRequest() ) {
+				Ajax::send(Ajax::AJAX_ERROR, Yii::t('common', 'Access denied'));
+			}
+			else {
+				throw new CHttpException(401, Yii::t('common', 'Access denied'));
+			}
 		}
 	}
 }

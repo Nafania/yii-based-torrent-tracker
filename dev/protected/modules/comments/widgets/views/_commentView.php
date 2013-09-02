@@ -8,31 +8,34 @@ $tid = $comment->getTorrentId();
 ?>
 
 <div class="media commentContainer" data-comments-for="<?php echo $tid ?>" id="comment-<?php echo $comment->getId(); ?>" data-id="<?php echo $comment->getId(); ?>">
-    <a class="pull-left" href="#">
-	    <?php
-	    if ( $comment->user ) {
-		    $img = $comment->user->profile->getImageUrl(32, 32);
-		    $alt = $comment->user->getName();
-	    }
-	    else {
-		    $img = '/images/no_photo.png';
-		    $alt = '';
-	    }
-	    echo CHtml::image($img,
-		    $alt,
-		    array(
-		         'class'  => 'media-object',
-		         'width'  => '32',
-		         'height' => '32'
-		    ));
-	    ?>
-    </a>
 
-    <div class="media-body comment">
+	<?php
+	if ( $comment->user ) {
+		$img = $comment->user->profile->getImageUrl(32, 32);
+		$alt = $comment->user->getName();
+		$url = $comment->user->getUrl();
+	}
+	else {
+		$img = '/images/no_photo.png';
+		$alt = '';
+		$url = '';
+	}
+	echo CHtml::link(CHtml::image($img,
+		$alt,
+		array(
+		     'class'  => 'media-object',
+		     'width'  => '32',
+		     'height' => '32'
+		)),
+		$url,
+		array('class' => 'pull-left'));
+	?>
+
+	<div class="media-body comment">
         <h6 class="media-heading">
 	        <?php
 	        if ( $comment->user ) {
-		        echo CHtml::link($comment->user->getName());
+		        echo CHtml::link($comment->user->getName(), $comment->user->getUrl());
 	        }
 	        else {
 		        echo '<i>' . Yii::t('userModule.common', 'Account deleted') . '</i>';
@@ -59,14 +62,14 @@ $tid = $comment->getTorrentId();
 	        </h6>
 
         <div class="commentText <?php echo 'rating' . ($rating < -10 ? -10 : $rating); ?>"><?php echo TextHelper::parseText($comment->getText());?></div>
-	    <?php if ( Yii::app()->getUser()->checkAccess('comments.default.loadAnswerBlock') ) { ?>
-		    <span><?php echo CHtml::link(Yii::t('commentsModule.common', 'Reply'),
-				    '#',
-				    array('class' => 'commentReply')); ?></span>
-	    <?php } ?>
+		<?php if ( Yii::app()->getUser()->checkAccess('comments.default.loadAnswerBlock') ) { ?>
+			<span><?php echo CHtml::link(Yii::t('commentsModule.common', 'Reply'),
+					'#',
+					array('class' => 'commentReply')); ?></span>
+		<?php } ?>
 
-	    <?php if ( count($comment->childs) > 0 ) {
-		    $this->render('commentsTree', array('comments' => $comment->childs));
-	    }?>
+		<?php if ( count($comment->childs) > 0 ) {
+			$this->render('_commentsTree', array('comments' => $comment->childs));
+		}?>
 	</div>
 </div>

@@ -11,10 +11,12 @@ class AnswerWidget extends CWidget {
 
 		Yii::import('application.modules.comments.models.*');
 
-		if ( $this->model ) {
-			$this->modelId = $this->model->getPrimaryKey();
-			$this->modelName = get_class($this->model);
+		if ( !$this->model instanceof CActiveRecord ) {
+			throw new CException('Model must be instanceof CActiveRecord');
 		}
+
+		$this->modelId = $this->model->getPrimaryKey();
+		$this->modelName = get_class($this->model);
 
 		if ( !$this->modelName || !$this->modelId ) {
 			throw new CException('Not enough data');

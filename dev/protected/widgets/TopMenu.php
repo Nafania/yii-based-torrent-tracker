@@ -1,6 +1,8 @@
 <?php
 class TopMenu extends CWidget {
 	public function run () {
+		Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('subscriptions')->getAssetsUrl() . '/js/events.js');
+
 		$this->render('topMenu',
 			array(
 			     'items' => $this->_getItems()
@@ -8,6 +10,25 @@ class TopMenu extends CWidget {
 	}
 
 	private function _getItems () {
+		//TODO move events generate to events module
+		$events = Event::model()->unreaded()->forCurrentUser()->findAll();
+
+		$eventItems = array();
+
+		foreach ( $events AS $event ) {
+			$icon = $event->getIcon();
+			$eventItems[] = array(
+				'label'       => '<i class="icon-' . $icon . '"></i> ' . CHtml::encode($event->getText()),
+				'url'         => $event->getUrl(),
+				'linkOptions' => array(
+					'data-action'   => 'event',
+					'data-id'       => $event->getId(),
+					'data-eventurl' => Yii::app()->createUrl('/subscriptions/event/read')
+				)
+			);
+		}
+		$sizeOfEvents = sizeof($events);
+
 		$items = array(
 			'class'       => 'bootstrap.widgets.TbMenu',
 			'encodeLabel' => false,
@@ -93,7 +114,10 @@ class TopMenu extends CWidget {
 					                                        ),
 					                                        array(
 						                                        'label' => 'Профиль',
-						                                        'url'   => array('/user/default/view', 'id' => Yii::app()->getUser()->getId()),
+						                                        'url'   => array(
+							                                        '/user/default/view',
+							                                        'id' => Yii::app()->getUser()->getId()
+						                                        ),
 					                                        ),
 					                                        array(
 						                                        'label' => 'Мои блоги',
@@ -115,28 +139,11 @@ class TopMenu extends CWidget {
 				                                        ),
 			                                        ),
 			                                        array(
-				                                        'label'   => 'Лента  <span class="badge badge-success">2</span> ',
-				                                        'url'     => '#',
+				                                        'label'   => 'Лента' . ( $sizeOfEvents ? ' <span class="badge badge-success">' . $sizeOfEvents . '</span> ' : '' ),
+				                                        'url'     => ( $sizeOfEvents ? '#' : '' ),
 				                                        'visible' => !Yii::app()->getUser()->getIsGuest(),
-				                                        'items'   => array(
-					                                        array(
-						                                        'label' => '<i class="icon-envelope"></i> Новое сообщение',
-						                                        'url'   => '#',
-					                                        ),
-					                                        array(
-						                                        'label' => '<i class="icon-download-alt"></i> Добавлен новый торрент',
-						                                        'url'   => '#'
-					                                        ),
-					                                        array(
-						                                        'label' => '<i class="icon-user"></i> Вас добавили в друзья',
-						                                        'url'   => '#'
-					                                        ),
-					                                        array(
-						                                        'label' => '<i class="icon-tag"></i> Вы получили новый значок',
-						                                        'url'   => '#'
-					                                        ),
+				                                        'items'   => $eventItems
 
-				                                        ),
 			                                        ),
 			                                        '---'
 			                                   ),

@@ -18,18 +18,24 @@ class BlogsModule extends CWebModule {
 
 	public static function register () {
 		self::_addUrlRules();
+		self::_setImport();
 
 		Yii::app()->pd->addAdminModule('blogs', 'Models management');
 	}
 
-	protected static function _addUrlRules () {
+	private static function _addUrlRules () {
 		Yii::app()->pd->addUrlRules(array(
 		                                 'yiiadmin/blogs/backend/<action:\w+>/*' => 'blogs/blogsBackend/<action>',
 		                                 'yiiadmin/blogs/backend/*'              => 'blogs/blogsBackend',
 
+		                                 'blogs/'                                => 'blogs/default/index',
 		                                 'blogs/post/<action:\w+>/*'             => 'blogs/post/<action>',
 		                                 'blogs/<action:\w+>/*'                  => 'blogs/default/<action>',
 		                                 'blogs/<controller:\w+>/<action:\w+>/*' => 'blogs/<controller>/<action>',
 		                            ));
+	}
+
+	private static function _setImport () {
+		Yii::app()->pd->setImport(array('application.modules.blogs.models.*'));
 	}
 }

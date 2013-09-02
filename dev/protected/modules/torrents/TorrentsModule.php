@@ -105,7 +105,7 @@ class TorrentsModule extends CWebModule {
 			));
 	}
 
-	private function _setImport() {
+	private static function _setImport() {
 		Yii::app()->pd->setImport(
 			array('application.modules.torrents.models.*')
 		);

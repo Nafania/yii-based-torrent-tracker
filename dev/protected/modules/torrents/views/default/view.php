@@ -24,38 +24,11 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 			     'rel'   => 'group'
 			));
 		?>
-		<div class="span12 text-center torrentGroupOperations">
-			<?php if ( Yii::app()->getUser()->checkAccess('torrents.default.createTorrent') ) { ?>
-				<a href="<?php echo Yii::app()->createUrl('/torrents/default/createTorrent',
-					array('gId' => $model->getId())) ?>" class="btn pull-left" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule',
-					'Добавить торрент в группу') ?>"><i class="icon-upload"></i></a>
-			<?php } ?>
-
-			<?php if ( Yii::app()->getUser()->checkAccess('torrents.default.updateGroup') ) { ?>
-				<a href="<?php echo Yii::app()->createUrl('/torrents/default/updateGroup',
-					array('id' => $model->getId())) ?>" class="btn" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule',
-					'Редактировать группу торрентов') ?>"><i class="icon-edit"></i></a>
-			<?php } ?>
-
-			<?php if ( Yii::app()->getUser()->checkAccess('torrents.default.delete') ) {
-				$cs->registerScript('torrentDelete',
-					"$('a.torrentGroupDelete, a.torrentDelete').on('click', function(e) {
-											e.preventDefault();
-											if ( confirm(" . CJavaScript::encode(Yii::t('torrentsModule.common',
-						'Вы уверены, что хотите удалить этот элемент?')) . ") ) {
-						$(this).addClass('load');
-				        $.post($(this).attr('href'), {csrf: " . CJavaScript::encode(Yii::app()->getRequest()->getCsrfToken()) . "}, function(data) {
-				          if ( data.data.location ) {
-				            window.location.replace(data.data.location);
-				          }
-				        }, 'json');}
-				});");
-				?>
-				<a href="<?php echo Yii::app()->createUrl('/torrents/default/delete',
-					array('id' => $model->getId())) ?>" class="btn pull-right torrentGroupDelete" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule',
-					'Удалить группу торрентов') ?>"><i class="icon-trash"></i></a>
-			<?php } ?>
-		</div>
+		<?php
+		$this->widget('application.modules.torrents.widgets.TorrentGroupMenu', array(
+		                                                                            'model' => $model
+		                                                                       ));
+		?>
 
 	</div>
 
@@ -212,7 +185,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 		<?php } ?>
 	</div>
 
-	<?php $this->widget('application.modules.comments.widgets.CommentsTreeWidget',
+		<?php $this->widget('application.modules.comments.widgets.CommentsTreeWidget',
 			array(
 			     'model' => $model,
 			)); ?>

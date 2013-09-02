@@ -1,9 +1,10 @@
-<div class="commentsBlock">
-<?php if ( sizeof($comments) > 0 ){ ?>
+<div class="commentsBlock" id="comments">
+<?php
+$this->render('_commentsTree',
+	array(
+		'comments' => $comments
+	)
+);
+?>
 
-        <?php foreach ( $comments as $comment ) {
-			$this->render('application.modules.comments.widgets.views._commentView', array('comment' => $comment));
-		} ?>
-
-	<?php } ?>
 </div>

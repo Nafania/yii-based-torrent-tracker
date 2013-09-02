@@ -33,7 +33,7 @@ class Ajax extends CComponent {
 
 			Yii::app()->end();
 		}
-		Yii::app()->user->setFlash('flashMessage', $message);
+
 		if ( !empty($data['redirectUrl']) ) {
 			Yii::app()->getController()->redirect($data['redirectUrl']);
 		}

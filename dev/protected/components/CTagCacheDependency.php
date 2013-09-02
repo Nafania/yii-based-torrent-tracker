@@ -41,7 +41,7 @@ class CTagCacheDependency extends CCacheDependency
         {
 	        $t = $this->cache->get($this->tag);
 	        if ($t === false) {
-		        $t = time();
+		        $t = microtime(true);
 		        $this->cache->set($this->tag, $t);
 	        }
             return $t;

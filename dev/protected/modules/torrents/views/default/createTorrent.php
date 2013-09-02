@@ -17,8 +17,6 @@ $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	     )
 	)); ?>
 
-<h1><?php echo $torrentGroup->getTitle() ?></h1>
-
 <?php
 echo $form->fileFieldRow($torrent, 'info_hash', array('class' => 'span5'));
 
