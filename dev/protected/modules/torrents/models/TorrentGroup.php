@@ -195,7 +195,7 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 	}
 
 	public function getDescription () {
-		if ( $this->description !== '' ) {
+		if ( $this->description !== null ) {
 			return $this->description;
 		}
 		//TODO: get proper description and more fast
