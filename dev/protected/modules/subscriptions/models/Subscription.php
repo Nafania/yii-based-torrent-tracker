@@ -18,7 +18,7 @@ class Subscription extends EActiveRecord {
 	 *
 	 * @param string $className active record class name.
 	 *
-	 * @return Torrent the static model class
+	 * @return Subscription the static model class
 	 */
 	public static function model ( $className = __CLASS__ ) {
 		return parent::model($className);
@@ -58,7 +58,13 @@ class Subscription extends EActiveRecord {
 
 	public function relations () {
 		return CMap::mergeArray(parent::relations(),
-			array());
+			array(
+			     'user' => array(
+				     'User',
+				     self::BELONGS_TO,
+				     'uId'
+			     )
+			));
 	}
 
 

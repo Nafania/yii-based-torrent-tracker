@@ -1,9 +1,9 @@
 <?php
 /**
  * @var CActiveForm       $form
- * @var Attribute $model
+ * @var Attribute         $model
  * @var CategoryAttrChars $chars
- * @var $counter
+ * @var                   $counter
  */
 
 Yii::app()->getClientScript()->registerScript('Attribute_type',
@@ -18,8 +18,9 @@ Yii::app()->getClientScript()->registerScript('Attribute_type',
 
 });');
 
-Yii::app()->getClientScript()->registerScript('deleteHandler', "$(document).on('click', 'a.delete',function() {
-	if ( confirm('" . YiiadminModule::t('Вы уверены, что хотите удалить данный элемент?') . "') ) {
+Yii::app()->getClientScript()->registerScript('deleteHandler',
+	"$(document).on('click', 'a.delete',function() {
+		if ( confirm('" . YiiadminModule::t('Вы уверены, что хотите удалить данный элемент?') . "') ) {
 		if ( $('.characteristics').children('fieldset').length > 1 ) {
 			$(this).parents('fieldset').remove();
 		}
@@ -27,29 +28,30 @@ Yii::app()->getClientScript()->registerScript('deleteHandler', "$(document).on('
 			$(this).parents('fieldset').find('input,textarea,select').val('');
 		}
 	}
-	return false;});"
-);
+	return false;});");
 
-Yii::app()->getClientScript()->registerScript('addHandler', "$(document).on('click', 'a.add-handler', function() {
-	++counter;
-	var fieldset = $(this).parents('.characteristics').find('fieldset').last();
-	var clone = fieldset.clone();
-	var html;
-	var oldCounter = counter - 1;
-	html = clone.html();
-	html = html.replace(new RegExp('_' + oldCounter + '_','g'), '_' + counter + '_');
-	html = html.replace(new RegExp('\\\[' + oldCounter + '\\\]', 'g'), '[' + counter + ']');
-	clone.html(html);
-	clone.find('input,textarea,select').val('');
-	clone.find('input,textarea,select').removeClass('error');
-	clone.find('.errorMessage').hide();
-	$(clone).insertAfter(fieldset);
-	return false;});"
-);
+Yii::app()->getClientScript()->registerScript('addHandler',
+	"$(document).on('click', 'a.add-handler', function() {
+		++counter;
+		var fieldset = $(this).parents('.characteristics').find('fieldset').last();
+		var clone = fieldset.clone();
+		var html;
+		var oldCounter = counter - 1;
+		html = clone.html();
+		html = html.replace(new RegExp('_' + oldCounter + '_','g'), '_' + counter + '_');
+		html = html.replace(new RegExp('\\\[' + oldCounter + '\\\]', 'g'), '[' + counter + ']');
+		clone.html(html);
+		clone.find('input,textarea,select').val('');
+		clone.find('input,textarea,select').removeClass('error');
+		clone.find('.errorMessage').hide();
+		$(clone).insertAfter(fieldset);
+		return false;});");
 
 echo '<h1>' . Yii::t('CategoryAttributesModule', 'Создание аттрибута') . '</h1>';
-$this->renderPartial('_form', array(
-                                   'model' => $model,
-                                   'chars' => $chars,
-                                   'counter' => $counter
-                              ));
+$this->renderPartial('_form',
+	array(
+	     'model'      => $model,
+	     'chars'      => $chars,
+	     'counter'    => $counter,
+	     'validators' => $validators,
+	));

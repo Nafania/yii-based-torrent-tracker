@@ -1,6 +1,7 @@
 <?php
 /**
- * @var $model TorrentGroup
+ * @var $model   TorrentGroup
+ * @var $torrent Torrent
  */
 ?>
 <?php
@@ -16,48 +17,50 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 	<div class="row-fluid">
 	<div class="span3">
 	<?php
-		$img = CHtml::image($model->getImageUrl(290, 0), $model->getTitle(), array('class' => 'img-polaroid'));
-		echo CHtml::link($img,
-			$model->getImageUrl(),
-			array(
-			     'class' => 'fancybox',
-			     'rel'   => 'group'
-			));
-		?>
-		<?php
-		$this->widget('application.modules.torrents.widgets.TorrentGroupMenu', array(
-		                                                                            'model' => $model
-		                                                                       ));
-		?>
+	$img = CHtml::image($model->getImageUrl(290, 0), $model->getTitle());
+	echo CHtml::link($img,
+		$model->getImageUrl(),
+		array(
+		     'class' => 'fancybox img-polaroid torrentImage',
+		     'rel'   => 'group'
+		));
+	?>
+	<?php
+	$this->widget('application.modules.torrents.widgets.TorrentGroupMenu',
+		array(
+		     'model' => $model
+		));
+	?>
 
 	</div>
 
 	<div class="span9">
 	<dl class="dl-horizontal">
 			<?php
-		foreach ( $model->getEavAttributesWithKeys() AS $name => $value ) {
-			echo '<dt>' . $name . '</dt>';
-			echo '<dd>' . $value . '</dd>';
-		}
-		?>
+			foreach ( $model->getEavAttributesWithKeys() AS $name => $value ) {
+				echo '<dt>' . $name . '</dt>';
+				echo '<dd>' . $value . '</dd>';
+			}
+			?>
 
 
 		<?php
-		if ( $model->getTags() ) { ?>
+		if ($model->getTags()) {
+		?>
 		<dt><?php echo Yii::t('tagsModule.common', 'Tags'); ?></dt>
 						<dd>
 				<?php
-							$tags = '';
-							foreach ( $model->getTags() AS $key => $tag ) {
-								$tags .= ($tags ? ', ' : '') . CHtml::link($tag,
-									array(
-									     '/torrents/default/index',
-									     'tags' => $tag
-									));
-							}
-							echo $tags . '</dd>';
-							}
-							?>
+				$tags = '';
+				foreach ( $model->getTags() AS $key => $tag ) {
+					$tags .= ($tags ? ', ' : '') . CHtml::link($tag,
+							array(
+							     '/torrents/default/index',
+							     'tags' => $tag
+							));
+				}
+				echo $tags . '</dd>';
+				}
+				?>
 
 
 		<dt><?php echo Yii::t('ratingsModule.common', 'Rating'); ?></dt>
@@ -73,30 +76,26 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 
 <?php foreach ( $model->torrents(array('order' => 'ctime DESC')) AS $key => $torrent ) { ?>
 
-			<div class="accordion-group">
+	<div class="accordion-group">
 	<div class="accordion-heading">
 	<?php echo CHtml::link('<i class="icon-download"></i>',
-			array(
-			     '/torrents/default/download',
-			     'id' => $torrent->getId()
-			),
-			array(
-			     'class'               => 'btn btn-mini',
-			     'data-toggle'         => 'tooltip',
-			     'data-original-title' => Yii::t('torrentsModule',
-				     'Скачать {torrentName}',
-				     array(
-				          '{torrentName}' => $torrent->getTitle()
-				     ))
-			)) ?>
+		array(
+		     '/torrents/default/download',
+		     'id' => $torrent->getId()
+		),
+		array(
+		     'class'               => 'btn btn-mini',
+		     'data-toggle'         => 'tooltip',
+		     'data-original-title' => Yii::t('torrentsModule',
+			     'Скачать {torrentName}',
+			     array(
+			          '{torrentName}' => $torrent->getTitle()
+			     ))
+		)) ?>
 
 		<?php if ( Yii::app()->getUser()->checkAccess('reports.default.create') ) { ?>
 
-			<a href="<?php echo Yii::app()->createUrl('/reports/default/create/',
-				array(
-				     'modelName' => get_class($torrent),
-				     'modelId'   => $torrent->getId()
-				)); ?>" data-action="report" class="btn btn-mini" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('reportsModule.common',
+			<a href="<?php echo Yii::app()->createUrl('/reports/default/create/'); ?>" data-model="<?php echo get_class($torrent); ?>" data-id="<?php echo $torrent->getId(); ?>" data-action="report" class="btn btn-mini" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('reportsModule.common',
 				'Пожаловаться на {torrentName}',
 				array(
 				     '{torrentName}' => $torrent->getTitle()
@@ -182,7 +181,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
                 <div class="accordion-inner"></div>
             </div>
 		</div>
-		<?php } ?>
+<?php } ?>
 	</div>
 
 		<?php $this->widget('application.modules.comments.widgets.CommentsTreeWidget',

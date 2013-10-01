@@ -17,6 +17,8 @@
 class Comment extends EActiveRecord implements ChangesInterface {
 
 	const APPROVED = 0;
+	const NOT_APPROVED = 1;
+	const DELETED = 2;
 
 	public $childs;
 
@@ -46,7 +48,6 @@ class Comment extends EActiveRecord implements ChangesInterface {
 	public function rules () {
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
-		//TODO реализовать валидацию данных модели, корректность id и типа модели
 		return CMap::mergeArray(parent::rules(),
 			array(
 			     array(
@@ -78,16 +79,22 @@ class Comment extends EActiveRecord implements ChangesInterface {
 				     'safe',
 				     'on' => 'search'
 			     ),
+			     array(
+				     'id, text, ownerId, ctime, mtime, status, parentId, modelName, modelId',
+				     'safe',
+				     'on' => 'adminSearch'
+			     ),
 			));
 	}
 
-	public function behaviors() {
-		return CMap::mergeArray(parent::behaviors(), array(
-		                                                'AdjacencyListBehavior' => array(
-			                                                'class' => 'application.modules.comments.behaviors.AdjacencyListBehavior',
-			                                                'parentAttribute' => 'parentId',
-		                                                )
-		                                             ));
+	public function behaviors () {
+		return CMap::mergeArray(parent::behaviors(),
+			array(
+			     'AdjacencyListBehavior' => array(
+				     'class'           => 'application.modules.comments.behaviors.AdjacencyListBehavior',
+				     'parentAttribute' => 'parentId',
+			     )
+			));
 	}
 
 	/**
@@ -104,6 +111,14 @@ class Comment extends EActiveRecord implements ChangesInterface {
 			'parentId'  => 'Parent',
 			'modelName' => 'Model Name',
 			'modelId'   => 'Model',
+		);
+	}
+
+	public function statusLabels () {
+		return array(
+			self::APPROVED     => Yii::t('commentsModule.common', 'Одобрен'),
+			self::NOT_APPROVED => Yii::t('commentsModule.common', 'Не одобрен'),
+			self::DELETED      => Yii::t('commentsModule.common', 'Удален'),
 		);
 	}
 
@@ -132,11 +147,25 @@ class Comment extends EActiveRecord implements ChangesInterface {
 		                                      ));
 	}
 
+	protected function beforeValidate () {
+		if ( parent::beforeValidate() ) {
+			$validator = CValidator::createValidator('exist',
+				$this,
+				'modelId',
+				array(
+				     'attributeName' => 'id',
+				     'className'     => $this->modelName,
+				     'allowEmpty'    => false,
+				));
+			$this->getValidatorList()->insertAt(0, $validator);
+
+			return true;
+		}
+		return false;
+	}
+
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
-			if ( defined('IN_CONVERT') ) {
-				return true;
-			}
 			if ( $this->getIsNewRecord() ) {
 				$this->ownerId = Yii::app()->getUser()->getId();
 				$this->ctime = time();
@@ -147,9 +176,28 @@ class Comment extends EActiveRecord implements ChangesInterface {
 		}
 	}
 
+	protected function afterSave () {
+		parent::afterSave();
+
+		if ( $this->getIsNewRecord() ) {
+			$commentCount = CommentCount::model()->findByPk(array(
+			                                                     'modelName' => $this->modelName,
+			                                                     'modelId'   => $this->modelId
+			                                                ));
+			if ( !$commentCount ) {
+				$commentCount = new CommentCount();
+				$commentCount->modelName = $this->modelName;
+				$commentCount->modelId = $this->modelId;
+			}
+			$commentCount->count += 1;
+			$commentCount->save();
+		}
+	}
+
 	public function defaultScope () {
+		$alias = $this->getTableAlias(true, false);
 		return array(
-			'order' => 't.parentId ASC, t.ctime ASC'
+			'order' => "$alias.parentId ASC, $alias.ctime ASC"
 		);
 	}
 
@@ -178,8 +226,14 @@ class Comment extends EActiveRecord implements ChangesInterface {
 	}
 
 	public function getText () {
-		return $this->text;
+		switch ( $this->status ) {
+			case self::APPROVED:
+				return $this->text;
+			case self::DELETED:
+				return '<span class="commentDeleted">' . Yii::t('commentsModule.common', 'Comment deleted') . '</span>';
+		}
 	}
+
 
 	public function getTitle () {
 		return $this->id;
@@ -194,10 +248,17 @@ class Comment extends EActiveRecord implements ChangesInterface {
 	}
 
 	public function getChangesText () {
-		return Yii::t('commentsModule.common', 'Добавлен ответ на ваш комментарий');
+		$modelName = $this->modelName;
+		$owner = $modelName::model()->findByPk($this->modelId);
+
+		return Yii::t('commentsModule.common',
+			'Добавлен ответ на ваш комментарий к "{title}"',
+			array(
+			     '{title}' => $owner->getTitle()
+			));
 	}
 
-	public function getChangesTitle (){
+	public function getChangesTitle () {
 		return Yii::t('commentsModule.common', 'Ответ на ваш комментарий');
 	}
 
@@ -213,5 +274,17 @@ class Comment extends EActiveRecord implements ChangesInterface {
 
 	public function getChangesIcon () {
 		return 'comment';
+	}
+
+	public function getCtime ( $format = false ) {
+		if ( $format ) {
+			return Yii::app()->getDateFormatter()->formatDateTime($this->ctime);
+		}
+		return $this->ctime;
+	}
+
+	public function getStatusLabel () {
+		$labels = $this->statusLabels();
+		return (isset($labels[$this->status]) ? $labels[$this->status] : null);
 	}
 }

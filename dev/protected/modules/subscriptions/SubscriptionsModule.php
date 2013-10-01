@@ -23,6 +23,30 @@ class SubscriptionsModule extends CWebModule {
 		return $this->_assetsUrl;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getEventsMenu () {
+		$events = Event::model()->unreaded()->forCurrentUser()->findAll();
+
+		$eventItems = array();
+
+		foreach ( $events AS $event ) {
+			$icon = $event->getIcon();
+			$eventItems[] = array(
+				'label'       => '<i class="icon-' . $icon . '"></i> ' . CHtml::encode($event->getTitle()),
+				'url'         => $event->getUrl(),
+				'linkOptions' => array(
+					'data-toggle'         => 'tooltip',
+					'data-original-title' => $event->getText(),
+					'data-placement'      => 'right',
+				)
+			);
+		}
+
+		return $eventItems;
+	}
+
 
 	public static function register () {
 		self::_addUrlRules();
@@ -54,6 +78,13 @@ class SubscriptionsModule extends CWebModule {
 			array(
 			     'commentsAnswerBehavior' => array(
 				     'class' => 'application.modules.subscriptions.behaviors.CommentsAnswerBehavior'
+			     )
+			));
+
+		Yii::app()->pd->registerBehavior('Comment',
+			array(
+			     'blogCommentBehavior' => array(
+				     'class' => 'application.modules.subscriptions.behaviors.BlogCommentBehavior'
 			     )
 			));
 	}

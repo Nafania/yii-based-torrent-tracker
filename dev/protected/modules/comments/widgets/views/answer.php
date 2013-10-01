@@ -1,7 +1,7 @@
 <?php
 /* @var $this AnswerWidget */
 /* @var $comment Comment */
-/* @var $form CActiveForm */
+/* @var $form TbActiveForm */
 ?>
 <?php if ( !Yii::app()->getUser()->checkAccess('comments.default.create') ) {
 	return;
@@ -9,7 +9,7 @@
 ?>
 <div class="answerBlock">
 <?php
-	$form = $this->beginWidget('CActiveForm',
+	$form = $this->beginWidget('ext.bootstrap.widgets.TbActiveForm',
 		array(
 		     'id'                     => 'comment-form' . uniqid(),
 		     'enableAjaxValidation'   => true,
@@ -32,7 +32,7 @@
                                             $(form).prevAll(".commentReply").data("activated", 0);
                                             if ( data.data.parentId ) {
                                                 $(form).remove();
-                                                $(data.data.view).appendTo("#comment-" + data.data.parentId + " > div.comment");
+                                                $(data.data.view).appendTo("#comment-" + data.data.parentId + " > div.media-body");
                                             }
                                             else {
                                                 if ( $(".commentContainer").length ) {
@@ -54,7 +54,7 @@
 	?>
 	<?php //echo $form->labelEx($comment, 'torrentId'); ?>
 	<?php if ( !$parentId && $torrents ) {
-		echo $form->dropDownList($comment,
+		echo $form->dropDownListRow($comment,
 			'torrentId',
 			CHtml::listData($torrents,
 				'id',

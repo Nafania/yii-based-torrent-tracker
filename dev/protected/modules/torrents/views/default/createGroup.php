@@ -6,17 +6,6 @@
  */
 ?>
 <?php
-$cs = Yii::app()->getClientScript();
-$cs->registerScript('select2RemoveVal',
-	"$('#tags').on('removed',
-	function(choice){
-	var val = $.trim(choice.val);
-	var select = $(this);
-	select.val(select.val().split(',').filter(function(el){
-	return el !== val;
-	}).join(','))});",
-	CClientScript::POS_LOAD);
-
 $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	array(
 	     'id' => 'torrent-form',
@@ -45,7 +34,7 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	array(
 	     'asDropDownList' => false,
 	     'name'           => 'tags',
-	     'value'          => $torrent->tags->toString(),
+	     'value'          => $torrent->tags->toString(true),
 	     'options'        => array(
 		     //'containerCssClass' => 'span5',
 		     'width' => '40.1709%',
@@ -97,7 +86,7 @@ $this->widget('bootstrap.widgets.TbSelect2',
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => 'Upload',
+			     'label'      => ( $torrentGroup->getIsNewRecord() ? Yii::t('torrentsModule.common', 'Upload') : Yii::t('torrentsModule.common', 'Save') ),
 			)); ?>
 	</div>
 

@@ -1,0 +1,10 @@
+{
+  "name": "Yii-torrentSubscriptionsModule",
+  "version": "0.0.1",
+  "description": "Events handler",
+  "main": "app.js",
+  "author": "Nafania",
+  "dependencies" : {
+    "socket.io": ""
+  }
+}

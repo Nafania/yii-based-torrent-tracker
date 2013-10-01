@@ -62,6 +62,13 @@ class Event extends EActiveRecord {
 			array());
 	}
 
+	public function defaultScope () {
+		$alias = $this->getTableAlias(true, false);
+		return array(
+			'order' => "$alias.ctime DESC"
+		);
+	}
+
 	public function scopes () {
 		return array(
 			'unreaded' => array(
@@ -79,6 +86,25 @@ class Event extends EActiveRecord {
 		);
 	}
 
+	protected function afterSave () {
+		parent::afterSave();
+
+		Yii::setPathOfAlias('ElephantIO',
+			Yii::getPathOfAlias('application.modules.subscriptions.extensions.elephantIO.lib.ElephantIO'));
+
+		$url = Yii::app()->config->get('subscriptionsModule.socketIOHost') . ':' . Yii::app()->config->get('subscriptionsModule.socketIOPort');
+
+		$elephant = new ElephantIO\Client($url, 'socket.io', 1, false, true, true);
+		$elephant->init();
+		$elephant->send(ElephantIO\Client::TYPE_EVENT,
+			null,
+			null,
+			json_encode(array(
+			                 'name' => 'newEvent',
+			                 'args' => array('room' => md5($this->uId)),
+			            )));
+		$elephant->close();
+	}
 
 	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
@@ -113,7 +139,7 @@ class Event extends EActiveRecord {
 		if ( parent::beforeSave() ) {
 
 			$this->url = serialize($this->url);
-			$this->icon = ( $this->icon ? $this->icon : 'envelope' );
+			$this->icon = ($this->icon ? $this->icon : 'envelope');
 
 			if ( $this->getIsNewRecord() ) {
 				$this->ctime = time();
@@ -128,7 +154,7 @@ class Event extends EActiveRecord {
 		return $this->text;
 	}
 
-	public function getUrl() {
+	public function getUrl () {
 		$url = @unserialize($this->url);
 		if ( !$url ) {
 			return '';
@@ -140,7 +166,11 @@ class Event extends EActiveRecord {
 		return $this->icon;
 	}
 
-	public function getId() {
+	public function getId () {
 		return $this->id;
+	}
+
+	public function getTitle () {
+		return $this->title;
 	}
 }

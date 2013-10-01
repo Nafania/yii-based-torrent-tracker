@@ -2,7 +2,7 @@
 
 class DefaultController extends Controller {
 	public function filters () {
-		return CMap::mergeArray(parent::filters(), array('ajaxOnly + create '));
+		return CMap::mergeArray(parent::filters(), array('ajaxOnly + create'));
 	}
 
 	public function actionCreate () {

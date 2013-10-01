@@ -10,7 +10,7 @@
 		     'stacked' => array(
 			     array(
 				     'type'        => 'success',
-				     'percent'     => $positivePercents,
+				     'percent'     => str_replace(',', '.', $positivePercents),
 				     'htmlOptions' => array(
 					     'data-toggle'         => 'tooltip',
 					     'data-placement'      => 'top',
@@ -21,7 +21,7 @@
 			     ),
 			     array(
 				     'type'        => 'danger',
-				     'percent'     => $negativePercents,
+				     'percent'     => str_replace(',', '.', $negativePercents),
 				     'htmlOptions' => array(
 					     'data-toggle'         => 'tooltip',
 					     'data-placement'      => 'top',

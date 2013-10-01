@@ -33,10 +33,10 @@ class DefaultController extends Controller {
 						'Просмотр блога "{blogPostName}"',
 						array('{blogPostName}' => $model->getTitle()))
 		);
-
-		$blogPost = BlogPost::model()->forBlog($id);
+		$blogPost = new BlogPost('search');
+		$blogPost->forBlog($id);
 		$blogPost->unsetAttributes(); // clear any default values
-		$blogPost->setScenario('search');
+		//$blogPost->setScenario('search');
 
 		$attributes = Yii::app()->getRequest()->getQuery('BlogPost', '');
 		$search = Yii::app()->getRequest()->getParam('search', '');

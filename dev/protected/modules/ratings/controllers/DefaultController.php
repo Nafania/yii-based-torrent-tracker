@@ -1,13 +1,18 @@
 <?php
 
 class DefaultController extends Controller {
-	//TODO: set ajaxOnly filter
+	public function filters () {
+		return CMap::mergeArray(parent::filters(), array('ajaxOnly + create'));
+	}
+
 	public function actionCreate () {
 		$modelName = Yii::app()->getRequest()->getParam('modelName', '');
 		$modelId = Yii::app()->getRequest()->getParam('modelId', 0);
 		$state = Yii::app()->getRequest()->getParam('state', 0);
 
-		Yii::import('application.modules.' . strtolower($modelName) . 's.models.*');
+		if ( !class_exists($modelName) ) {
+			throw new CHttpException(404);
+		}
 
 		$model = $modelName::model()->findByPk($modelId);
 
@@ -24,17 +29,17 @@ class DefaultController extends Controller {
 		$RatingRelations->state = $state;
 
 		if ( $RatingRelations->save() ) {
-			$Rating = Rating::model()->findByPk(array(
-			                                         'modelName' => $modelName,
-			                                         'modelId'   => $modelId
-			                                    ));
+			/**
+			 * запускаем пересчет рейтинга
+			 */
+			$model->calculateRating();
 
-			Ajax::send(Ajax::AJAX_SUCCESS, 'ok', array(
-			                                        'rating' => $Rating->getRating(),
+			Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('ratingsModule.common', 'Рейтинг успешно добавлен'), array(
+			                                        'rating' => (int) $model->getRating(),
 			                                     ));
 		}
 		else {
-			Ajax::send(Ajax::AJAX_ERROR, 'not ok', array(
+			Ajax::send(Ajax::AJAX_ERROR, Yii::t('ratingsModule.common', 'При добавлении рейтинга возникли ошибки'), array(
 			                                            'errors' => $RatingRelations->getErrors()
 			                                       ));
 		}

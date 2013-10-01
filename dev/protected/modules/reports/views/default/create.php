@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var $form  CActiveForm
+ * @var $model ReportContent
+ */
+?>
+
 <?php if ( !Yii::app()->getUser()->checkAccess('reports.default.create') ) {
 	return;
 }
@@ -17,13 +24,21 @@ $form = $this->beginWidget('CActiveForm',
 		     'validateOnSubmit' => true,
 		     'afterValidate'    => 'js:function(form,data,hasError){
 		                           if(!hasError){
-		                                   $.ajax({
-		                                           type:"POST",
-		                                           url:$(form).attr("action"),
-		                                           data:form.serialize(),
-		                                           dataType: "json",
-		                                           success:function(data) {
-		                                                $("#reportModal").modal("hide");
+		                                $.ajax({
+		                                type:"POST",
+		                                url:$(form).attr("action"),
+		                                data:form.serialize(),
+		                                dataType: "json",
+		                                success:function(data) {
+		                                    $("#reportModal").modal("hide");
+		                                    $(".top-right").notify({
+		                                        message: { html: data.message },
+		                                        fadeOut: {
+		                                            enabled: true,
+		                                            delay: 9000
+		                                        },
+		                                        type: "success"
+		                                    }).show();
 		                                           },
 		                                   });
 		                           }
@@ -47,20 +62,20 @@ $form = $this->beginWidget('CActiveForm',
 	<div class="modal-body">
 		<?php echo $form->textArea($report, 'text'); ?>
 		<?php echo $form->error($report, 'text'); ?>
-		<?php echo $form->hiddenField($report, 'modelName') ?>
-		<?php echo $form->hiddenField($report, 'modelId') ?>
-</div>
+		<?php echo $form->hiddenField($report, 'rId'); ?>
+		<?php echo $form->error($report, 'rId'); ?>
+	</div>
 
 	<div class="modal-footer">
 	<?php
-		echo CHtml::submitButton(Yii::t('reportsModule.common', 'Report'),
-			array('class' => 'btn btn-primary'));
-		echo CHtml::button(Yii::t('reportsModule.common', 'Cancel'),
-			array(
-			     'class'        => 'btn btn-cancel',
-			     'data-dismiss' => 'modal'
-			));
-		?>
+	echo CHtml::submitButton(Yii::t('reportsModule.common', 'Report'),
+		array('class' => 'btn btn-primary'));
+	echo CHtml::button(Yii::t('reportsModule.common', 'Cancel'),
+		array(
+		     'class'        => 'btn btn-cancel',
+		     'data-dismiss' => 'modal'
+		));
+	?>
 </div>
 <?php
 $this->endWidget();

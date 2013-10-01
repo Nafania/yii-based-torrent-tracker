@@ -48,6 +48,24 @@ class TorrentsModule extends CWebModule {
 
 
 	private static function _addModelsRelations () {
+		Yii::app()->pd->addRelations('User',
+			'torrents',
+			array(
+			     CActiveRecord::HAS_MANY,
+			     'Torrent',
+			     'uId',
+			),
+			'application.modules.torrents.models.*');
+
+		Yii::app()->pd->addRelations('User',
+			'torrentsCount',
+			array(
+			     CActiveRecord::STAT,
+			     'Torrent',
+			     'uid',
+			),
+			'application.modules.torrents.models.*');
+
 		Yii::app()->pd->addRelations('Comment',
 			'torrentComments',
 			array(

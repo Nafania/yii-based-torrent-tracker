@@ -86,16 +86,6 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 
 	private $file_extension, $filename;
 
-	private $holdAttributeName = 'holdAttribute';
-
-	public function getHoldAttribute () {
-		return $this->getOwner()->{$this->holdAttributeName};
-	}
-
-	public function setHoldAttribute ( $value ) {
-		$this->getOwner()->{$this->holdAttributeName} = $value;
-	}
-
 	/**
 	 * getter method for the attachment.
 	 * if you call it like a property ($model->Attachment) it will return the base size.
@@ -181,13 +171,16 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		$dir = $this->getParsedPath();
 
 		if ( !is_dir($dir) ) {
-			mkdir($dir, 0777, true);
+			@mkdir($dir, 0777, true);
 		}
 		return $dir;
 	}
 
 	public function getFullAttachmentPath () {
-		return Yii::getPathOfAlias('webroot') . '/' . $this->getOwner()->{$this->attribute};
+		/**
+		 * берем версию из базы, потому что новая при сохранении стирается
+		 */
+		return Yii::getPathOfAlias('webroot') . '/' . $this->getOwner()->findByPk($this->getOwner()->primaryKey)->{$this->attribute};
 	}
 
 	/**
@@ -197,7 +190,10 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		if ( $this->getOwner()->getIsNewRecord() ) {
 			return false;
 		}
-		return $this->getOwner()->{$this->attribute};
+		/**
+		 * берем версию из базы, потому что новая при сохранении стирается
+		 */
+		return $this->getOwner()->findByPk($this->getOwner()->primaryKey)->{$this->attribute};
 	}
 
 	/**
@@ -221,12 +217,6 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		}
 	}
 
-	public function afterDelete ( $event ) {
-		parent::afterDelete($event);
-
-		$this->deleteAttachment();
-	}
-
 	/*public function beforeValidate ( $e ) {
 		parent::beforeValidate($e);
 
@@ -242,6 +232,26 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		$file = CUploadedFile::getInstance($this->getOwner(), $this->attribute);
 
 		if ( !empty($file->name) ) {
+			$this->deleteAttachment();
+		}
+		else {
+			unset($this->getOwner()->{$this->attribute});
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param CModelEvent $e
+	 *
+	 * @return bool|void
+	 */
+	public function afterSave ( $e ) {
+		parent::afterSave($e);
+
+		$file = CUploadedFile::getInstance($this->getOwner(), $this->attribute);
+
+		if ( !empty($file->name) ) {
 			$this->file_extension = $file->getExtensionName();
 			$this->filename = $file->getName();
 			$path = $this->getParsedPath();
@@ -253,28 +263,20 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 			}
 
 			if ( $file->saveAs($path) ) {
-				//do not use deleteAttachment here, cause attribute empty in beforeSave
-				if ( !$this->getOwner()->getIsNewRecord() ) {
-					$model = $this->getOwner()->findByPk($this->getOwner()->getPrimaryKey());
-					@unlink($model->{$this->attribute});
-				}
-
-				$this->deleteAttachment();
-				$this->getOwner()->{$this->attribute} = $path;
+				/**
+				 * зачем менять флаг isNewRecord читайте тут http://code.google.com/p/yii/issues/detail?id=1603
+				 */
+				$this->getOwner()->isNewRecord = false;
+				$this->getOwner()->saveAttributes(array($this->attribute => $path));
+				$this->getOwner()->isNewRecord = true;
 			}
-			else {
-				return false;
-			}
-		}
-		else {
-			unset($this->getOwner()->{$this->attribute});
 		}
 
 		return true;
 	}
 
-	public function afterValidate ( $e ) {
-		parent::afterValidate($e);
+	public function beforeValidate ( $e ) {
+		parent::beforeValidate($e);
 		//CVarDumper::dump($this->getOwner(), 3, true);exit();
 
 		$CFileValidator = new CFileValidator();

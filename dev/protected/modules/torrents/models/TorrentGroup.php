@@ -158,11 +158,43 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		$criteria->compare('t.mtime', $this->mtime);
 		//$criteria->order = 'mtime DESC';
 
+		$sort = Yii::app()->getRequest()->getParam('sort');
+		/**
+		 * TODO: убрать все это в поведения
+		 */
+		/**
+		 * подключаем таблицу счетчиков только если запрошена сортировка по счетчикам
+		 */
+		if ( strpos($sort, 'commentsCount') !== false ) {
+			$criteria->select = 't.*, cc.count AS commentsCount';
+			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'TorrentGroup\' AND cc.modelId = t.id)';
+			//$criteria->group = 't.id';
+		}
+		/**
+		 * подключаем таблицу рейтингов
+		 */
+		if ( strpos($sort, 'rating') !== false ) {
+			$criteria->select .= ', r.rating';
+			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
+		}
+
+		$sort = new CSort($this);
+		$sort->defaultOrder = 'mtime DESC';
+		$sort->attributes = array(
+			'*',
+			'commentsCount' => array(
+				'asc'  => 'commentsCount ASC',
+				'desc' => 'commentsCount DESC',
+			),
+			'rating' => array(
+				'asc'  => 'rating ASC',
+				'desc' => 'rating DESC',
+			),
+		);
+
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
-		                                           'sort'     => array(
-			                                           'defaultOrder' => 'mtime DESC'
-		                                           )
+		                                           'sort'     => $sort
 		                                      ));
 	}
 
@@ -170,11 +202,9 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		if ( parent::beforeSave() ) {
 			//$this->mtime = time();
 
-			if ( !defined('IN_CONVERT') ) {
-				if ( $this->getIsNewRecord() ) {
-					$this->ctime = $this->mtime = time();
-					$this->uid = Yii::app()->getUser()->getId();
-				}
+			if ( $this->getIsNewRecord() ) {
+				$this->ctime = $this->mtime = time();
+				$this->uid = Yii::app()->getUser()->getId();
 			}
 
 			return true;
@@ -284,18 +314,29 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 	}
 
 	public function getChangesText () {
-		return Yii::t('torrentsModule.common', 'В группу "{groupName}" добавлен новый торрент', array('{groupName}' => $this->getTitle()));
+		return Yii::t('torrentsModule.common',
+			'В группу "{groupName}" добавлен новый торрент',
+			array('{groupName}' => $this->getTitle()));
 	}
 
 	public function getChangesTitle () {
 		return Yii::t('torrentsModule.common', 'Добавлен новый торрент');
 	}
 
-	public function getMtime() {
+	public function getMtime () {
 		return $this->mtime;
 	}
 
 	public function getChangesIcon () {
 		return 'download';
+	}
+
+	public function getDownloadsCount () {
+		$count = 0;
+		foreach ( $this->torrents AS $torrent ) {
+			$count += $torrent->getDownloads();
+		}
+
+		return $count;
 	}
 }

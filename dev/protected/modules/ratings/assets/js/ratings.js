@@ -31,6 +31,15 @@ $(document).on('click', 'a[data-action=rating]', function (e) {
             else if (rating < 0) {
                 badge.addClass('badge-important');
             }
+
+            $('.top-right').notify({
+                message: { html: data.message },
+                fadeOut: {
+                    enabled: true,
+                    delay: 3000
+                },
+                type: 'success'
+            }).show();
         },
         complete: function () {
             elem.removeClass('load');

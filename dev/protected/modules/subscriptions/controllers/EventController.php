@@ -8,7 +8,7 @@ class EventController extends Controller {
 	public function filters () {
 		return CMap::mergeArray(parent::filters(),
 			array(
-			     'ajaxOnly + read',
+			     'ajaxOnly + getList',
 			));
 	}
 
@@ -17,6 +17,18 @@ class EventController extends Controller {
 		$event = $this->loadModel($id);
 		$event->unread = Event::EVENT_READED;
 		$event->save();
+	}
+
+	public function actionGetList () {
+		$events = Event::model()->unreaded()->forCurrentUser()->findAll();
+
+		$view = $this->renderPartial('list', array(
+		                                  'events' => $events
+		                             ), true, false);
+
+		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', array(
+		                                          'view' => $view
+		                                     ));
 	}
 
 

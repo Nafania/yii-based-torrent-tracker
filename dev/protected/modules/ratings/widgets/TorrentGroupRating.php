@@ -12,32 +12,38 @@ class TorrentGroupRating extends CWidget {
 		$modelName = get_class($this->model);
 		$modelId = $this->model->getId();
 
-		if ( $this->model->rating ) {
-			$this->_rating = $this->model->rating->getRating();
+		$positiveRating = $negativeRating = 0;
 
-			$positiveRating = RatingRelations::model()->countByAttributes(array(
-			                                                                   'modelName' => $modelName,
-			                                                                   'modelId'   => $modelId,
-			                                                                   'state'     => RatingRelations::RATING_STATE_PLUS
-			                                                              ));
-			$negativeRating = abs($this->_rating - $positiveRating);
+		$ratings = RatingRelations::model()->findAllByAttributes(array(
+		                                                              'modelName' => $modelName,
+		                                                              'modelId'   => $modelId,
+		                                                         ));
+		foreach ( $ratings AS $rating ) {
+			if ( $rating->state == RatingRelations::RATING_STATE_PLUS ) {
+				$positiveRating += $rating->rating;
+			}
+			else {
+				$negativeRating += $rating->rating;
+			}
+		}
 
-			$positivePercents = 100 / ( $positiveRating + $negativeRating ) * $positiveRating;
+		if ( $positiveRating || $negativeRating ) {
+			$positivePercents = 100 / ($positiveRating + $negativeRating) * $positiveRating;
 			$negativePercents = 100 - $positivePercents;
 		}
 		else {
-			$this->_rating = $positiveRating = $negativeRating = $negativePercents = $positivePercents = 0;
+			$positivePercents = $negativePercents = 0;
 		}
 
 		$this->render('torrentGroupRating',
 			array(
-			     'modelName'      => $modelName,
-			     'modelId'        => $modelId,
-			     'rating'         => $this->_rating,
-			     'positiveRating' => $positiveRating,
-			     'negativeRating' => $negativeRating,
-			     'positivePercents'    => $positivePercents,
-			     'negativePercents'    => $negativePercents,
+			     'modelName'        => $modelName,
+			     'modelId'          => $modelId,
+			     'rating'           => $this->_rating,
+			     'positiveRating'   => $positiveRating,
+			     'negativeRating'   => $negativeRating,
+			     'positivePercents' => $positivePercents,
+			     'negativePercents' => $negativePercents,
 			));
 	}
 

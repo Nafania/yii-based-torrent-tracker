@@ -37,20 +37,6 @@ class Rating extends EActiveRecord {
 		// will receive user inputs.
 		return CMap::mergeArray(parent::rules(),
 			array(
-			     array(
-				     'modelName, modelId, rating',
-				     'required'
-			     ),
-			     array(
-				     'modelId, rating',
-				     'numerical',
-				     'integerOnly' => true
-			     ),
-			     array(
-				     'modelName',
-				     'length',
-				     'max' => 255
-			     ),
 			     // The following rule is used by search().
 			     // Please remove those attributes that should not be searched.
 			     array(

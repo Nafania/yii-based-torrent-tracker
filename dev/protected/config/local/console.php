@@ -45,6 +45,7 @@ return array(
 			'enableParamLogging'    => true,
 			'enableProfiling'       => true,
 			'charset'               => 'utf8',
+			'tablePrefix'           => '',
 		),
 
 		'errorHandler' => array(
@@ -86,6 +87,10 @@ return array(
 			'viewPath'      => 'application.views.mail',
 			'logging'       => true,
 			'dryRun'        => false
+		),
+		'config'       => array(
+			'class' => 'EConfig',
+			'cache' => 3600,
 		),
 	),
 );

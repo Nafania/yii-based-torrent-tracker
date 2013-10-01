@@ -1,68 +1,89 @@
 <?php
 /**
  * @var TbActiveForm $form
+ * @var Category     $category
+ * @var TorrentGroup $model
  */
 ?>
-<?php $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
+<?php
+$form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	array(
-	     'id'                   => 'torrent-form',
+	     'id'                     => 'torrent-form',
 	     'enableClientValidation' => true,
-	     'method'               => 'get',
-	     'action' => Yii::app()->createUrl('/torrents/default/create')
+	     'method'                 => 'get',
+	     'action'                 => Yii::app()->createUrl('/torrents/default/create')
 	)); ?>
 
-<?php echo $form->errorSummary(array($category, $model)); ?>
+<?php echo $form->errorSummary(array(
+                                    $category,
+                                    $model
+                               )); ?>
 
 <?php echo $form->dropDownListRow($category,
 	'id',
 	CHtml::listData(Category::model()->findAll(), 'id', 'name'),
-	array('empty' => '-')); ?>
+	array(
+	     'empty' => '-',
+	     'class' => 'span4'
+	)); ?>
+
+<div>
+<?php
+echo $form->labelEx($model,
+	'title',
+	array(
+	     'data-toggle'         => 'tooltip',
+	     'data-placement'      => 'right',
+	     'data-original-title' => Yii::t('torrentsModule.common',
+		     'Впишите сюда общее название, например, название фильма, игры, программы, автора музыкального альбома или книги и выберете его в выпадающем списке, если оно появится.'),
+	     'class'               => 'attributeDescription',
+	));
+?>
+	</div>
 
 <?php
-echo $form->labelEx($model, 'title');
-$this->widget('zii.widgets.jui.CJuiAutoComplete',
+$this->widget('bootstrap.widgets.TbSelect2',
 	array(
-	     'model' => $model,
-	     'attribute' => 'title',
-	     //'name'        => 'suggest',
-	     //'value' => Yii::app()->getRequest()->getParam('suggest', ''),
-	     'source'      => 'js:function( request, response ) {
-	        $.ajax({
-	            url: ' . CJavaScript::encode(Yii::app()->createUrl('/torrents/default/suggest')) . ',
-	            dataType: "json",
-	            data: {
-	                term: request.term,
-	                category: $("#Category_id").val()
-	            },
-	            success: function( data ) {
-	                response( $.map( data.data, function( item ) {
-	                    return {
-	                        label: item.title,
-	                        value: item.id
-	                    }
-	                }));
-	            }
-	        });
-	     }',
-	     // additional javascript options for the autocomplete plugin
-	     'options'     => array(
-		     'minLength' => '2',
-		     'select'    => 'js:function(event,ui){$(this).val(ui.item.label);$("#gId").val(ui.item.value);return false;}',
-		     'focus'     => 'js:function(event,ui){$(this).val(ui.item.label);$("#gId").val(ui.item.value);return false;}'
+	     'asDropDownList' => false,
+	     'model'          => $model,
+	     'attribute'      => 'title',
+	     'htmlOptions'    => array(
+		     'class' => 'span4'
 	     ),
-	     'htmlOptions' => array(
-		     'style' => 'height:20px;',
+	     'options'        => array(
+		     //'containerCssClass' => 'span5',
+
+		     'minimumInputLength' => 2,
+		     'multiple'           => false,
+		     'tags' => true,
+		     'ajax'               => 'js:{
+				url: ' . CJavaScript::encode(Yii::app()->createUrl('/torrents/default/suggest')) . ',
+                dataType: "json",
+                cache: true,
+                quietMillis: 100,
+                data: function ( term ) {
+				return {
+					term: term, category: $("#Category_id").val()
+                    };
+                },
+                results: function ( data ) {
+					return {
+						results: data.data.titles};
+                }}',
 	     ),
+	     'events'         => array(
+		     'change' => 'js:function(e){$("#gId").val(e.val);}'
+	     )
 	));
 echo CHtml::hiddenField('gId', Yii::app()->getRequest()->getParam('gId', 0));
 ?>
 
-	<div class="form-actions">
+<div class="form-actions">
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => 'Next',
+			     'label'      => Yii::t('torrentsModule.common', 'Next'),
 			)); ?>
 	</div>
 

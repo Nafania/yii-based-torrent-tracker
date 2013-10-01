@@ -1,6 +1,6 @@
 <?php /* @var $this AuthController */ ?>
 
-<?php $this->beginContent($this->module->appLayout); ?>
+<?php $this->beginContent($this->module->defaultLayout); ?>
 
 <div class="auth-module">
 

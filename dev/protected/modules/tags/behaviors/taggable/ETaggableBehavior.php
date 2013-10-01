@@ -128,7 +128,7 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 			if ( $trim ) {
 				$tags = '';
 				foreach ( $this->tags AS $tag ) {
-					$tags .= ( $tags ? ',' : '' ) . $tag;
+					$tags .= ($tags ? ',' : '') . $tag;
 				}
 				return $tags;
 			}
@@ -473,8 +473,8 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 						     $this->getModelTableFkName()    => $this->getOwner()->primaryKey,
 						     $this->tagBindingTableTagId     => $tagId,
 						     $this->tagBindingTableModelName => $this->modelTableName,
-						))->execute();
-					;
+						     'userId'                        => Yii::app()->getUser()->getId(),
+						))->execute();;
 				}
 				$this->updateCount(+1);
 			}
@@ -788,7 +788,6 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 
 		$values = array(
 			$this->tagTableName => $tag,
-			'userId'            => Yii::app()->getUser()->getId(),
 		);
 
 		$builder->createInsertCommand($this->tagTable, $values)->execute();

@@ -79,14 +79,6 @@
 		    }
 		    ?>
 		    |
-		    <?php
-		    $widget = $this->widget('application.modules.ratings.widgets.CommentsRating',
-			    array(
-			         'model' => $blogPost
-			    ));
-		    $rating = $widget->getRating();
-		    ?>
-		    |
 		    <a href="<?php echo Yii::app()->createUrl('/reports/default/create/',
 			    array(
 			         'modelName' => get_class($blogPost),

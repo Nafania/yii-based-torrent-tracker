@@ -163,9 +163,6 @@ class Torrent extends EActiveRecord {
 
 	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
-			if ( defined('IN_CONVERT') ) {
-				return true;
-			}
 			if ( $this->info_hash instanceof CUploadedFile && !empty($this->info_hash->name) ) {
 
 				$torrent = new TorrentComponent($this->info_hash->getTempName());
@@ -191,11 +188,9 @@ class Torrent extends EActiveRecord {
 		if ( parent::beforeSave() ) {
 			$this->mtime = time();
 
-			if ( !defined('IN_CONVERT') ) {
-				if ( $this->getIsNewRecord() ) {
-					$this->ctime = time();
-					$this->uid = Yii::app()->getUser()->getId();
-				}
+			if ( $this->getIsNewRecord() ) {
+				$this->ctime = time();
+				$this->uid = Yii::app()->getUser()->getId();
 			}
 
 			/* @var $current Torrent */
@@ -244,7 +239,7 @@ class Torrent extends EActiveRecord {
 
 	public function getTorrentFilePath () {
 		$dir = Yii::getPathOfAlias('webroot') . '/uploads/torrents/' . date('Y.m.d',
-			$this->ctime) . '/';
+				$this->ctime) . '/';
 		if ( !is_dir($dir) ) {
 			@mkdir($dir, 0777, true);
 		}

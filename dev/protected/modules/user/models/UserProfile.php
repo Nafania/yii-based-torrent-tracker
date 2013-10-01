@@ -38,7 +38,7 @@ class UserProfile extends EActiveRecord
 		return CMap::mergeArray(parent::rules(), array(
 			array('uid', 'required'),
 			array('uid', 'numerical', 'integerOnly'=>true),
-			array('picture', 'length', 'max'=>255),
+			array('picture', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
 			array('uid, picture', 'safe', 'on'=>'search'),

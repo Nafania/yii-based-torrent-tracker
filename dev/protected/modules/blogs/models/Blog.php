@@ -73,7 +73,7 @@ class Blog extends EActiveRecord {
 		// class name for the relations automatically generated below.
 		return CMap::mergeArray(parent::relations(),
 			array(
-			     'user' => array(
+			     'user'  => array(
 				     self::BELONGS_TO,
 				     'User',
 				     'ownerId'
@@ -98,6 +98,7 @@ class Blog extends EActiveRecord {
 			     ),
 			));
 	}
+
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
@@ -127,8 +128,39 @@ class Blog extends EActiveRecord {
 		$criteria->compare('ctime', $this->ctime);
 		$criteria->compare('description', $this->description, true);
 
+		$sort = Yii::app()->getRequest()->getParam('sort');
+		/**
+		 * TODO: убрать все это в поведения
+		 */
+		/**
+		 * подключаем таблицу счетчиков только если запрошена сортировка по счетчикам
+		 */
+		if ( strpos($sort, 'commentsCount') !== false ) {
+			$criteria->select = 't.*, cc.count AS commentsCount';
+			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'' . get_class($this) . '\' AND cc.modelId = t.id)';
+			//$criteria->group = 't.id';
+		}
+		/**
+		 * подключаем таблицу рейтингов
+		 */
+		//if ( strpos($sort, 'rating') !== false ) {
+		$criteria->select .= ', r.rating';
+		$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
+		//}
+
+		$sort = new CSort($this);
+		$sort->defaultOrder = 'rating DESC';
+		$sort->attributes = array(
+			'*',
+			'rating'        => array(
+				'asc'  => 'rating ASC',
+				'desc' => 'rating DESC',
+			),
+		);
+
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
+		                                           'sort'     => $sort,
 		                                      ));
 	}
 
@@ -169,7 +201,7 @@ class Blog extends EActiveRecord {
 	public function getUrl () {
 		return array(
 			'/blogs/default/view',
-			'id' => $this->getId(),
+			'id'    => $this->getId(),
 			'title' => $this->getSlugTitle(),
 		);
 	}

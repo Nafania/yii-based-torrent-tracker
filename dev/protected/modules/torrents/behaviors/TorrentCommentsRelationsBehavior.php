@@ -4,16 +4,8 @@ class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 
 	//TODO: rewrite to active record
 
-	public function attach( $owner ) {
+	public function attach ( $owner ) {
 		parent::attach($owner);
-		//parent::beforeFind($e);
-
-		//anger loading disabled due some errors with cache validation
-		//$criteria = new CDbCriteria();
-		//$criteria->select = 'commentId, torrentId';
-		//$criteria->with = array('torrentComments', 'torrent');
-
-		//$owner->getDbCriteria()->mergeWith($criteria);
 	}
 
 	public function getTorrentId () {
@@ -44,7 +36,7 @@ class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 		return $Torrent->torrentGroup;
 	}
 
-	public function beforeSave($event) {
+	public function beforeSave ( $event ) {
 		parent::beforeSave($event);
 
 		if ( $parentId = $this->getOwner()->parentId ) {
@@ -68,7 +60,7 @@ class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 		$command->execute();
 	}
 
-	public function afterDelete($event) {
+	public function afterDelete ( $event ) {
 		parent::afterDelete($event);
 
 		$connection = Yii::app()->getDb();

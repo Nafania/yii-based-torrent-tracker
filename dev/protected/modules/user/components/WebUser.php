@@ -25,6 +25,24 @@ class WebUser extends AuthWebUser {
 		}
 		if ( $this->model === null ) {
 			$this->model = User::model()->findByPk($this->id);
+
+			if ( !$this->getIsGuest() ) {
+
+				if ( !$this->model->emailConfirmed ) {
+					$this->setFlash(User::FLASH_WARNING,
+						Yii::t('userModule.common',
+							'Ваш email не подтвержден. Пожалуйста, подтвердите его на странице <a href="{url}">настроек</a> вашего аккаунта, иначе вы не сможете пользоваться всеми функциями сайта.',
+							array('{url}' => Yii::app()->createUrl('/user/default/settings'))));
+				}
+
+				if ( strpos($this->model->password, 'md5:') !== false ) {
+					$this->setFlash(User::FLASH_WARNING,
+						Yii::t('userModule.common',
+							'Вам необходимо сменить пароль для обеспечения безопасности своего аккаунта. Пожалуйста, смените его на странице <a href="{url}">настроек</a> вашего аккаунта и это сообщение исчезнет.',
+							array('{url}' => Yii::app()->createUrl('/user/default/settings'))));
+				}
+			}
+
 		}
 
 		return $this->model;

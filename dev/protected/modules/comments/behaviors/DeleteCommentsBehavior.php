@@ -5,14 +5,28 @@ class DeleteCommentsBehavior extends CActiveRecordBehavior {
 		parent::afterDelete($e);
 
 		$owner = $this->getOwner();
+		$comments = Comment::model()->findByAttributes(array(
+		                                                    'modelName' => get_class($owner),
+		                                                    'modelId'   => $owner->primaryKey
+		                                               ));
 
-		$db = Yii::app()->getDb();
-		$sql = 'DELETE FROM {{comments}} WHERE modelName = :modelName AND modelId = :modelId';
-		$command = $db->createCommand($sql);
-		$command->bindValue(':modelName', get_class($owner));
-		$command->bindValue(':modelId', $owner->getPrimaryKey());
+		foreach ( $comments AS $comment ) {
+			$comment->delete();
+		}
 
-		$command->execute();
+		if ( $count = sizeof($comments) ) {
+			$commentCount = CommentCount::model()->findByPk(array(
+			                                                     'modelName' => get_class($owner),
+			                                                     'modelId'   => $owner->primaryKey
+			                                                ));
+			if ( !$commentCount ) {
+				$commentCount = new CommentCount();
+				$commentCount->modelName = $this->modelName;
+				$commentCount->modelId = $this->modelId;
+			}
+			$commentCount->count -= $count;
+			$commentCount->save();
+		}
 
 		return true;
 	}

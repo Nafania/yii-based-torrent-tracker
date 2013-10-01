@@ -3,8 +3,8 @@
  * @var $model StaticPage
  */
 ?>
-<h1><?php echo Yii::t('staticpagesModule.common', 'Управление статичными страницами'); ?></h1>
-<ul class="tools">
+	<h1><?php echo Yii::t('staticpagesModule.common', 'Управление статичными страницами'); ?></h1>
+	<ul class="tools">
     <li> 
        <?php echo CHtml::link(Yii::t('staticpagesModule.common', 'Создать страницу'),
 		    $this->createUrl('/staticpages/staticpagesBackend/create'),
@@ -25,7 +25,16 @@ $this->widget('zii.widgets.grid.CGridView',
 		     'title',
 		     'pageTitle',
 		     'url',
-		     'published',
+		     array(
+			     'class'        => 'DToggleColumn',
+			     'name'         => 'published',
+			     'confirmation' => Yii::t('staticpagesModule.common', 'Изменить статус публикации?'),
+			     'linkUrl' => Yii::app()->createUrl('staticpages/staticpagesBackend/toggle'),
+			     'filter'       => array(
+				     StaticPage::PUBLISHED     => Yii::t('staticpagesModule.common', 'Published'),
+				     StaticPage::NOT_PUBLISHED => Yii::t('staticpagesModule.common', 'Not published')
+			     ),
+		     ),
 		     array(
 			     'class'                => 'YiiAdminButtonColumn',
 			     'updateButtonImageUrl' => Yii::app()->getModule('yiiadmin')->getAssetsUrl() . '/img/admin/icon_changelink.gif',

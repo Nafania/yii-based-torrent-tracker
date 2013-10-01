@@ -10,6 +10,8 @@ class PluginsDispatcher extends CApplicationComponent {
 	 */
 	static $_modules = array();
 
+	const CACHE_KEY = 'PluginsDispatcher';
+
 	/**
 	 * init method
 	 */
@@ -23,19 +25,29 @@ class PluginsDispatcher extends CApplicationComponent {
 	 * Collect all modules
 	 */
 	private static function _getModulesList () {
-		$modulesDir = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR;
-		$handle = opendir($modulesDir);
+		if ( $modules = Yii::app()->cache->get(self::CACHE_KEY . 'ModulesList') ) {
+			self::$_modules = $modules;
+		}
+		else {
+			$modulesDir = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR;
+			$handle = opendir($modulesDir);
 
-		while ( false !== ($file = readdir($handle)) ) {
-			if ( $file != "." && $file != ".." && is_dir($modulesDir . $file) ) {
-				$configPath = $modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
-				if ( file_exists($configPath) ) {
-					$config = new CConfiguration($modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
-					self::$_modules[$file] = $config->toArray();
+			while ( false !== ($file = readdir($handle)) ) {
+				if ( $file != "." && $file != ".." && is_dir($modulesDir . $file) ) {
+					$configPath = $modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+					if ( file_exists($configPath) ) {
+						$config = new CConfiguration($modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+						self::$_modules[$file] = $config->toArray();
+					}
 				}
 			}
+			closedir($handle);
+
+			Yii::app()->cache->set(self::CACHE_KEY . 'ModulesList',
+				self::$_modules,
+				0,
+				new CDirectoryCacheDependency(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR));
 		}
-		closedir($handle);
 	}
 
 	/**
@@ -248,7 +260,6 @@ class PluginsDispatcher extends CApplicationComponent {
 	 * Adds model rules
 	 *
 	 * @param string $modelName
-	 * @param array  $rules
 	 */
 	public function addModelRules ( $modelName ) {
 		$rules = func_get_args();
@@ -279,7 +290,7 @@ class PluginsDispatcher extends CApplicationComponent {
 			return $modelRules;
 		}
 
-		foreach ( $this->plugins['modelRules'][$modelName] AS $key => $rule ) {
+		foreach ( $this->plugins['modelRules'][$modelName] AS $rule ) {
 			$modelRules[] = $rule;
 		}
 
@@ -287,9 +298,7 @@ class PluginsDispatcher extends CApplicationComponent {
 	}
 
 	/**
-	 * Register application components
-	 *
-	 * @param array $components
+	 * Add to import path
 	 */
 	public function setImport ( array $import ) {
 		Yii::app()->setImport($import);

@@ -29,7 +29,7 @@
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => 'Update',
+			     'label'      => ( $torrentGroup->getIsNewRecord() ? Yii::t('torrentsModule.common', 'Upload') : Yii::t('torrentsModule.common', 'Save') ),
 			)); ?>
 	</div>
 

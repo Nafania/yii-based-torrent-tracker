@@ -48,6 +48,12 @@ $(document).on('mouseleave', '.commentText', function (e) {
     $(this).stop();
     $(this).fadeTo('slow', $(this).data('opacity'));
 });
+$(document).on('mouseenter', '.comment', function (e) {
+    $(this).find('.commentOptions:first a').fadeIn('fast');
+});
+$(document).on('mouseleave', '.comment', function (e) {
+    $(this).find('.commentOptions:first a').fadeOut('fast');
+});
 jQuery(function ($) {
     $(".fancybox.youtube").click(function (e) {
 

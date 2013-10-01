@@ -22,12 +22,15 @@ class UserModule extends CWebModule {
 	private static function _registerComponent () {
 		Yii::app()->pd->registerApplicationComponents(array(
 		                                                   'user'  => array(
-			                                                   'class'                     => 'application.modules.user.components.WebUser',
-			                                                   'allowAutoLogin'            => true,
-			                                                   'loginUrl'                  => '/user/login',
+			                                                   'class'           => 'application.modules.user.components.WebUser',
+			                                                   'allowAutoLogin'  => true,
+			                                                   'loginUrl'        => '/user/login',
 			                                                   //'loginRequiredAjaxResponse' => 'logged-out',
-			                                                   'autoUpdateFlash'           => false,
+			                                                   'autoUpdateFlash' => false,
 			                                                   // add this line to disable the flash counter
+			                                                   'admins' => array('admin'),
+			                                                   // users with full access
+
 		                                                   ),
 		                                                   'loid'  => array(
 			                                                   'class' => 'application.modules.user.extensions.lightopenid.loid',

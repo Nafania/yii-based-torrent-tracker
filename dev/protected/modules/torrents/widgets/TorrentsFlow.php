@@ -39,10 +39,15 @@ class TorrentsFlow extends CWidget {
 
 	private function _renderTab ( $catId ) {
 		$criteria = new CDbCriteria();
-		$criteria->order = 'mtime DESC';
-		$criteria->limit = 20;
-		$criteria->with = 'category';
-		$criteria->condition = 'category.id = ' . $catId;
+		$criteria->select = 't.*, r.rating';
+		$criteria->order = 'r.rating DESC';
+		$criteria->condition = 't.cId = :cId AND mtime > ( UNIX_TIMESTAMP(NOW()) - 14 * 24 * 60 * 60 )';
+		$criteria->join = 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'TorrentGroup\' AND r.modelId = t.id)';
+		//$criteria->group = 't.id';
+		$criteria->limit = 15;
+		$criteria->params = array(
+			':cId' => $catId,
+		);
 
 		$torrentsGroup = TorrentGroup::model()->findAll($criteria);
 

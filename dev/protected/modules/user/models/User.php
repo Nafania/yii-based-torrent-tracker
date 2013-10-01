@@ -251,6 +251,15 @@ class User extends EActiveRecord {
 				break;
 
 			case 'update':
+				$old = User::model()->findByPk($this->getId());
+
+				/**
+				 * пароль не изменяется, удаляем его
+				 */
+				if ( $old->password === $this->password ) {
+					unset($this->password);
+				}
+
 				if ( $this->password ) {
 					$this->originalPassword = $this->password;
 					$this->password = $this->hashPassword($this->password);
@@ -259,8 +268,9 @@ class User extends EActiveRecord {
 					unset($this->password);
 				}
 
-				$old = User::model()->findByPk($this->getId());
-
+				/**
+				 * если меняется Email, то меняем статус на неподтвержденный
+				 */
 				if ( $old->getEmail() <> $this->getEmail() ) {
 					$this->emailConfirmed = 0;
 				}
@@ -302,9 +312,8 @@ class User extends EActiveRecord {
 			$this->_identity->authenticate();
 		}
 		if ( $this->_identity->errorCode === UserIdentity::ERROR_NONE ) {
-			$duration = $this->rememberMe ? 3600 * 24 * 30 : 0; // 30 days
-			Yii::app()->user->login($this->_identity, $duration);
-			return true;
+			$duration = ( $this->rememberMe ? 30 * 24 * 60 * 60 : 0 ); // 30 days
+			return Yii::app()->user->login($this->_identity, $duration);
 		}
 		else {
 			return false;
@@ -416,6 +425,14 @@ class User extends EActiveRecord {
 	public function validatePassword ( $password ) {
 		if ( !$this->password ) {
 			return false;
+		}
+		//if ($row['pass'] != md5($row['secret'] . $password . $row['secret'])) {
+		if ( strpos($this->password, 'md5:') !== false ) {
+			$linePos = strpos($this->password, '|');
+			$pass = mb_substr($this->password, 4, $linePos - 4);
+			$secret = mb_substr($this->password, $linePos + 1);
+			//var_dump($pass, $secret);
+			return $pass == md5($secret . $password . $secret);
 		}
 		return CPasswordHelper::verifyPassword($password, $this->password);
 	}

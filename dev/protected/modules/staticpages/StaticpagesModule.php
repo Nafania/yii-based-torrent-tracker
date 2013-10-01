@@ -32,7 +32,8 @@ class StaticpagesModule extends CWebModule {
 		foreach ( $models AS $model ) {
 			$items[] = array(
 				'label' => $model->getTitle(),
-				'url' => $model->getUrl(),
+				'url' => $model->getFullUrl(),
+				'visible' => Yii::app()->user->checkAccess('staticpages.default.index'),
 			);
 		}
 

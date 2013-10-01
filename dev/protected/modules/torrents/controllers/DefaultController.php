@@ -495,20 +495,27 @@ class DefaultController extends Controller {
 		$Category = Category::model()->findByPk($category);
 
 		if ( !$Category ) {
-			throw new CHttpException(404);
+			Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Please select category first'));
 		}
 
-		$models = $TorrentGroup->withEavAttributes(array($term))->findAllByAttributes(array('cId' => $category));
+		$criteria = new CDbCriteria();
+		$criteria->condition = 'cId = :cId';
+		$criteria->params = array(
+			'cId' => $category,
+		);
+		$criteria->addSearchCondition('title', $term, true);
+		//$criteria->addSearchCondition('description', $term, true, 'OR');
+		$models = $TorrentGroup->findAll($criteria);
 
 		$return = array();
 
 		foreach ( $models AS $model ) {
 			$return[] = array(
-				'id'    => $model->getId(),
-				'title' => $model->getTitle(),
+				'id'   => $model->getId(),
+				'text' => $model->getTitle(),
 			);
 		}
-		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', $return);
+		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', array('titles' => $return));
 	}
 
 	public function actionFileList ( $id ) {

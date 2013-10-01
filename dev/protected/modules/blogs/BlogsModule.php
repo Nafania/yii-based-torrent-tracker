@@ -19,8 +19,21 @@ class BlogsModule extends CWebModule {
 	public static function register () {
 		self::_addUrlRules();
 		self::_setImport();
+		self::_addModelsRelations();
 
 		Yii::app()->pd->addAdminModule('blogs', 'Models management');
+	}
+
+	private static function _addModelsRelations () {
+
+		Yii::app()->pd->addRelations('User',
+			'blogPostsCount',
+			array(
+			     CActiveRecord::STAT,
+			     'BlogPost',
+			     'ownerId',
+			),
+			'application.modules.blogs.models.*');
 	}
 
 	private static function _addUrlRules () {

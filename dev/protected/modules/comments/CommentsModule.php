@@ -25,6 +25,7 @@ class CommentsModule extends CWebModule {
 		self::_addUrlRules();
 		self::_addModelsRelations();
 		self::_addBehaviors();
+		self::_setImport();
 	}
 
 	private static function _addUrlRules () {
@@ -47,16 +48,39 @@ class CommentsModule extends CWebModule {
 			),
 			'application.modules.comments.models.*');
 
-		Yii::app()->pd->addRelations('TorrentGroup',
+		Yii::app()->pd->addRelations('User',
 			'commentsCount',
 			array(
 			     CActiveRecord::STAT,
 			     'Comment',
+			     'ownerId',
+			),
+			'application.modules.comments.models.*');
+
+		Yii::app()->pd->addRelations('TorrentGroup',
+			'commentsCount',
+			array(
+			     CActiveRecord::HAS_ONE,
+			     'CommentCount',
 			     'modelId',
 			     'condition' => 'modelName = :modelName',
 			     'params'    => array(
 				     'modelName' => 'TorrentGroup'
+			     )
+			),
+			'application.modules.comments.models.*');
 
+
+
+		Yii::app()->pd->addRelations('BlogPost',
+			'commentsCount',
+			array(
+			     CActiveRecord::HAS_ONE,
+			     'CommentCount',
+			     'modelId',
+			     'condition' => 'modelName = :modelName',
+			     'params'    => array(
+				     'modelName' => 'BlogPost'
 			     )
 			),
 			'application.modules.comments.models.*');
@@ -69,5 +93,17 @@ class CommentsModule extends CWebModule {
 				     'class' => 'application.modules.comments.behaviors.DeleteCommentsBehavior'
 			     )
 			));
+		Yii::app()->pd->registerBehavior('BlogPost',
+			array(
+			     'deleteComments' => array(
+				     'class' => 'application.modules.comments.behaviors.DeleteCommentsBehavior'
+			     )
+			));
+	}
+
+	private static function _setImport() {
+		Yii::app()->pd->setImport(
+			array('application.modules.comments.models.*')
+		);
 	}
 }

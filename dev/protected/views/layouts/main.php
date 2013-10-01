@@ -48,5 +48,6 @@ $this->widget('bootstrap.widgets.TbAlert',
 	</div>
 </section>
 <?php $this->widget('application.modules.user.widgets.UserMenu'); ?>
+<?php// $this->widget('application.modules.chat.widgets.MjmChat', array( 'title'=>'Chat room', 'rooms'=>array('php'=>'PHP Room', 'html'=>'HTML Room'), 'host'=>'http://localhost', 'port'=>'3000', ) ); ?>
 </body>
 </html>

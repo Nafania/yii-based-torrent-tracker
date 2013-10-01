@@ -5,23 +5,33 @@ class DefaultController extends Controller {
 		return CMap::mergeArray(parent::filters(), array('ajaxOnly + create'));
 	}
 
-	public function actionCreate ( $modelName, $modelId ) {
-		Yii::import('application.modules.' . strtolower($modelName) . 's.models.*');
-		$model = $modelName::model()->findByPk($modelId);
+	public function actionCreate () {
+		$modelName = Yii::app()->getRequest()->getParam('modelName', '');
+		$modelId = Yii::app()->getRequest()->getParam('modelId', 0);
 
 		$this->pageTitle = Yii::t('reportsModule.common', 'Создание жалобы');
 		$this->breadcrumbs[] = Yii::t('reportsModule.common', 'Создание жалобы');
 
-		$Report = new Report();
-		$Report->modelId = $modelId;
-		$Report->modelName = $modelName;
+		if ( !class_exists($modelName) ) {
+			throw new CHttpException(404, Yii::t('reportsModule.common', 'Данные не существуют'));
+		}
+		$model = $modelName::model()->findByPk($modelId);
 
-		$this->performAjaxValidation($Report);
+		if ( !$model ) {
+			throw new CHttpException(404, Yii::t('reportsModule.common', 'Указанные данные не найдены'));
+		}
 
-		if ( isset($_POST['Report']) ) {
-			$Report->attributes = $_POST['Report'];
+		$reportContent = new ReportContent();
 
-			if ( $Report->save() ) {
+		$reportContent->modelId = $modelId;
+		$reportContent->modelName = $modelName;
+
+		$this->performAjaxValidation($reportContent);
+
+		if ( isset($_POST['ReportContent']) ) {
+			$reportContent->attributes = $_POST['ReportContent'];
+
+			if ( $reportContent->save() ) {
 				Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('reportsModule.common', 'Report sent successfully'));
 			}
 			else {
@@ -32,7 +42,7 @@ class DefaultController extends Controller {
 		Yii::app()->getClientScript()->scriptMap['jquery.js'] = false;
 		$view = $this->renderPartial('create',
 			array(
-			     'report' => $Report,
+			     'report' => $reportContent,
 			     'model'  => $model
 			),
 			true,

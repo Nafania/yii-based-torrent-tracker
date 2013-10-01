@@ -7,7 +7,7 @@
  * @property string  $modelName
  * @property integer $modelId
  * @property integer $rating
- * @property integer $uid
+ * @property integer $uId
  * @property integer $ctime
  * @property integer state
  */
@@ -72,7 +72,7 @@ class RatingRelations extends EActiveRecord {
 						     ':uId'     => $this->uId,
 					     ),
 				     ),
-				     'message' => Yii::t('ratingsModule.common', 'Вы уже добавляли рейтинг за это действие')
+				     'message' => Yii::t('ratingsModule.common', 'You have already added rating for this action')
 			     ),
 			     // The following rule is used by search().
 			     // Please remove those attributes that should not be searched.
@@ -113,7 +113,7 @@ class RatingRelations extends EActiveRecord {
 			if ( method_exists($modelName, 'getOwner') ) {
 				$owner = $modelName::model()->findByPk($this->modelId)->getOwner();
 				if ( $owner && $owner->getId() == $this->uId ) {
-					$this->addError('uid', Yii::t('commentsModule.common', 'Cant create own rating'));
+					$this->addError('uid', Yii::t('commentsModule.common', 'You can not add yourself ratings'));
 					return false;
 				}
 			}
@@ -130,44 +130,6 @@ class RatingRelations extends EActiveRecord {
 			}
 
 			return true;
-		}
-	}
-
-	protected function afterSave () {
-		parent::afterSave();
-
-		$Rating = Rating::model()->findByPk(array(
-		                                         'modelName' => $this->modelName,
-		                                         'modelId'   => $this->modelId
-		                                    ));
-
-		$this->_addRating($Rating);
-
-		$modelName = $this->modelName;
-		if ( method_exists($modelName, 'getOwner') ) {
-			$owner = $modelName::model()->findByPk($this->modelId)->getOwner();
-
-			if ( $owner ) {
-				$Rating = Rating::model()->findByPk(array(
-				                                         'modelName' => get_class($owner),
-				                                         'modelId'   => $owner->getId(),
-				                                    ));
-
-				$this->_addRating($Rating, get_class($owner), $owner->getId());
-			}
-		}
-	}
-
-	private function _addRating ( $model, $modelName = false, $modelId = 0 ) {
-		if ( $model ) {
-			$model->saveCounters(array('rating' => ($this->state == self::RATING_STATE_PLUS ? 1 : -1)));
-		}
-		else {
-			$Rating = new Rating();
-			$Rating->modelName = ($modelName ? $modelName : $this->modelName);
-			$Rating->modelId = ($modelId ? $modelId : $this->modelId);
-			$Rating->rating = ($this->state == self::RATING_STATE_PLUS ? 1 : -1);
-			$Rating->save();
 		}
 	}
 

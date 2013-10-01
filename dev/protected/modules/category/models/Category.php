@@ -43,28 +43,29 @@ class Category extends EActiveRecord {
 	public function rules () {
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
-		return CMap::mergeArray(parent::rules(), array(
+		return CMap::mergeArray(parent::rules(),
 			array(
-				'name',
-				'safe'
-			),
-			array(
-				'name',
-				'length',
-				'max' => 255
-			),
-			array(
-				'description',
-				'safe',
-			),
-			// The following rule is used by search().
-			// Please remove those attributes that should not be searched.
-			array(
-				'id, name, description',
-				'safe',
-				'on' => 'search'
-			),
-		));
+			     array(
+				     'name',
+				     'safe'
+			     ),
+			     array(
+				     'name',
+				     'length',
+				     'max' => 255
+			     ),
+			     array(
+				     'description',
+				     'safe',
+			     ),
+			     // The following rule is used by search().
+			     // Please remove those attributes that should not be searched.
+			     array(
+				     'id, name, description',
+				     'safe',
+				     'on' => 'search'
+			     ),
+			));
 	}
 
 	/**
@@ -72,15 +73,15 @@ class Category extends EActiveRecord {
 	 */
 	public function attributeLabels () {
 		return array(
-			'id'    => 'ID',
+			'id'    => Yii::t('categoryModule.common', 'Категория'),
 			'lft'   => 'Lft',
 			'rgt'   => 'Rgt',
 			'level' => 'Level',
-			'name'  => 'Name',
+			'name'  => Yii::t('categoryModule.common', 'Название'),
 		);
 	}
 
-	public function defaultScope() {
+	public function defaultScope () {
 		return array(
 			'order' => 'lft ASC'
 		);
@@ -102,7 +103,7 @@ class Category extends EActiveRecord {
 
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
-		                                           'sort' => array(
+		                                           'sort'     => array(
 			                                           'defaultOrder' => 't.lft ASC'
 		                                           )
 		                                      ));
@@ -116,9 +117,10 @@ class Category extends EActiveRecord {
 		return $this->name;
 	}
 
-	public function getUrl() {
+	public function getUrl () {
 		return array(
-			'/category/default/view', 'id' => $this->getId(),
+			'/category/default/view',
+			'id' => $this->getId(),
 		);
 	}
 

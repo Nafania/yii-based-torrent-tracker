@@ -14,15 +14,15 @@ class TextHelper {
 		return $text;
 	}
 
-	static function imagesToFancybox ($text) {
+	static function imagesToFancybox ($text, $group) {
 		//<img alt="cb3779f3ff72.jpg" src="http://s017.radikal.ru/i413/1208/cb/cb3779f3ff72.jpg">
 		//<a href="http://s017.radikal.ru/i413/1208/cb/cb3779f3ff72.jpg" class="fancybox"><img src="http://s017.radikal.ru/i413/1208/cb/cb3779f3ff72.jpg" class="img-polaroid"/></a>
-		$text = preg_replace('/<img(.*?)src="(.*?)"(.*?)>/i', '<a href="$2" class="fancybox"><img src="$2" class="img-polaroid" /></a>', $text);
+		$text = preg_replace('/<img(.*?)src="(.*?)"(.*?)>/i', '<a href="$2" class="fancybox"' . ( $group ? ' rel="' . $group . '"' : '') . '><img src="$2" class="img-polaroid" /></a>', $text);
 		return $text;
 	}
 
-	static function parseText ( $text ) {
-		$text = self::imagesToFancybox($text);
+	static function parseText ( $text, $group = '' ) {
+		$text = self::imagesToFancybox($text, $group);
 		$text = self::youtubeToPicture($text);
 		$text = self::makeClickable($text);
 		//                <a href="http://www.youtube.com/watch?v=d4okxow8bNo&feature=player_embedded" class="fancybox youtube"><img src="http://img.youtube.com/vi/d4okxow8bNo/1.jpg"/></a>

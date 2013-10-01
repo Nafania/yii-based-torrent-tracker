@@ -49,7 +49,7 @@ class EActiveRecord extends CActiveRecord {
 		return parent::afterDelete();
 	}
 
-	private function getCacheKey () {
+	public function getCacheKey () {
 		return 'EActiveRecordModelCache'  . get_class($this);
 	}
 }

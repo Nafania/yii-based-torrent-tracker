@@ -166,6 +166,8 @@ class DefaultController extends Controller {
 		$component = Yii::app()->eauth;
 		$services = $component->getServices();
 
+		$this->performAjaxValidation(array($User, $Profile));
+
 		if ( isset($_POST['User']) ) {
 			$User->attributes = $_POST['User'];
 			$Profile->attributes = $_POST['Profile'];

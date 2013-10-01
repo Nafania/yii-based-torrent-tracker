@@ -7,7 +7,7 @@ return array(
 	'preload'    => array(
 		'log',
 		'config',
-		//'bootstrap',
+		'debug',
 	),
 
 	// autoloading model and component classes
@@ -42,11 +42,7 @@ return array(
 		'authManager'  => array(
 			'behaviors'       => array(
 				'auth' => array(
-					'class'  => 'application.modules.auth.components.AuthBehavior',
-					'admins' => array(
-						'admin',
-					),
-					// users with full access
+					'class' => 'application.modules.auth.components.AuthBehavior',
 				),
 			),
 			'class'           => 'application.modules.auth.components.CachedDbAuthManager',
@@ -57,8 +53,8 @@ return array(
 		'bootstrap'    => array(
 			'class'         => 'ext.bootstrap.components.Bootstrap',
 			'responsiveCss' => true,
-			'ajaxJsLoad' => false,
-			'ajaxCssLoad' => false,
+			'ajaxJsLoad'    => false,
+			'ajaxCssLoad'   => false,
 			//'republishAssetsOnRequest' => false,
 		),
 
@@ -85,6 +81,10 @@ return array(
 			'tablePrefix'           => '',
 		),
 
+		'debug'        => array(
+			'class' => 'ext.yii2-debug.Yii2Debug',
+		),
+
 		'errorHandler' => array(
 			'errorAction' => 'site/error',
 			'adminInfo'   => 'admin@yii-torrent'
@@ -96,16 +96,6 @@ return array(
 				array(
 					'class'  => 'CFileLogRoute',
 					'levels' => 'error, warning',
-				),
-				// uncomment the following to show log messages on web pages
-				/*array( // configuration for the toolbar
-					'class'     => 'ext.yii-debug-toolbar.YiiDebugToolbarRoute',
-					'ipFilters' => array(
-						'127.0.0.1',
-						'::1',
-						'192.168.1.2',
-						'192\.168\.1\.[0-9]{3}'
-					),
 				),
 				/*array(
 					'class' => 'CWebLogRoute',
@@ -120,7 +110,7 @@ return array(
 		),
 
 		'cache'        => array(
-			'class' => 'system.caching.CApcCache',
+			'class'     => 'system.caching.CDummyCache',
 			'keyPrefix' => 'tor_',
 		),
 
@@ -136,32 +126,13 @@ return array(
 			'csrfTokenName'        => 'csrf'
 		),
 		'clientScript' => array(
-			'class'             => 'ext.nsclientscript.NLSClientScript',
-			//'excludePattern' => '/\.tpl/i', //js regexp, files with matching paths won't be filtered is set to other than 'null'
-			//'includePattern' => '/\.php/', //js regexp, only files with matching paths will be filtered if set to other than 'null'
+			'class'       => 'ext.ExtendedClientScript.ExtendedClientScript',
+			'compressJs'  => true,
+			'compressCss' => true,
+			'combineJs'   => false,
+			'combineCss'  => false,
 
-			'mergeJs'           => false,
-			//def:true
-			'compressMergedJs'  => false,
-			//def:false
-
-			'mergeCss'          => false,
-			//def:true
-			'compressMergedCss' => false,
-			//def:false
-
-			//'serverBaseUrl'         => 'http://localhost',
-			//can be optionally set here
-			//'mergeAbove'            => 1,
-			//def:1, only "more than this value" files will be merged,
-			//'curlTimeOut'           => 5,
-			//def:5, see curl_setopt() doc
-			//'curlConnectionTimeOut' => 10,
-			//def:10, see curl_setopt() doc
-
-			//'appVersion'            => 1.0
-			//if set, it will be appended to the urls of the merged scripts/css*/
-			'packages'          => array(
+			'packages'    => array(
 				'common' => array(
 					'baseUrl' => '/js/',
 					'js'      => array('common.js'),

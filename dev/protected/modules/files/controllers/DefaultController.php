@@ -1,6 +1,9 @@
 <?php
 
 class DefaultController extends Controller {
+	public function filters () {
+		return CMap::mergeArray(parent::filters(), array('postOnly + upload'));
+	}
 
 	public function actionUpload () {
 		$modelName = Yii::app()->getRequest()->getParam('modelName');

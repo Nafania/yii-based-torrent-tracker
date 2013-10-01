@@ -1,13 +1,6 @@
 <?php
 
 class DefaultController extends Controller {
-	public function filters () {
-		//return CMap::mergeArray(parent::filters(),
-		return array(
-			array('application.modules.auth.filters.AuthFilter - index'),
-		);
-		//);
-	}
 
 	public function actionIndex ( $view ) {
 		$StaticPage = StaticPage::model()->published()->findByUrl($view);

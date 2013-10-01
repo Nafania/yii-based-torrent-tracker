@@ -8,6 +8,10 @@
 	     'id'              => 'blogsListView',
 	     'dataProvider'    => $dataProvider,
 	     'itemView'        => '_view',
-	     'template'        => '{items} {pager}',
+	     'template'        => "{sorter}\n{items} {pager}",
+	     'sortableAttributes' => array(
+		     'ctime',
+		     'rating',
+	     ),
 	));
 ?>

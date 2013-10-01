@@ -3,19 +3,19 @@
  * @var $data Blog
  */
 ?>
-<div class="media">
+<div class="media blogsList">
 	<?php
-	$img = CHtml::image($data->user->profile->getImageUrl(100, 100),
+	$img = CHtml::image($data->user->profile->getImageUrl(80, 80),
 		$data->user->getName(),
 		array(
 		     'class' => 'media-object img-polaroid',
-		     'style' => 'width:100px'
+		     'style' => 'width:80px'
 		));
 	echo CHtml::link($img, $data->user->getUrl(), array('class' => 'pull-left'));
 	?>
 
 	<div class="media-body">
-        <h2 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h2>
+        <h3 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h3>
 
         <p><?php echo StringHelper::cutStr($data->getDescription()); ?></p>
 

@@ -224,7 +224,20 @@ class AdjacencyListBehavior extends CActiveRecordBehavior {
 	 * @return boolean whether the deletion is successful
 	 */
 	public function delete () {
-		// cascad ?
+		$owner = $this->getOwner();
+
+		if ( $owner->getChildren() ) {
+			$owner->status = $owner::DELETED;
+			return $owner->saveNode(false);
+
+		}
+		else {
+			$this->_ignoreEvent = true;
+			if ( !$owner->getIsNewRecord() ) {
+				return $owner->delete();
+			}
+			throw new CDbException(Yii::t('yii','The active record cannot be deleted because it is new.'));
+		}
 	}
 
 	public function deleteNode () {

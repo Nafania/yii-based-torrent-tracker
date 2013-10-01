@@ -10,43 +10,25 @@ class TopMenu extends CWidget {
 	}
 
 	private function _getItems () {
-		//TODO move events generate to events module
-		$events = Event::model()->unreaded()->forCurrentUser()->findAll();
-
-		$eventItems = array();
-
-		foreach ( $events AS $event ) {
-			$icon = $event->getIcon();
-			$eventItems[] = array(
-				'label'       => '<i class="icon-' . $icon . '"></i> ' . CHtml::encode($event->getText()),
-				'url'         => $event->getUrl(),
-				'linkOptions' => array(
-					'data-action'   => 'event',
-					'data-id'       => $event->getId(),
-					'data-eventurl' => Yii::app()->createUrl('/subscriptions/event/read')
-				)
-			);
-		}
-		$sizeOfEvents = sizeof($events);
-
+		//$eventItems = Yii::app()->getModule('subscriptions')->getEventsMenu();
 		$items = array(
 			'class'       => 'bootstrap.widgets.TbMenu',
 			'encodeLabel' => false,
 			'items'       => array(
 				array(
-					'label' => 'Home',
+					'label' => Yii::t('common', 'Home'),
 					'url'   => array('/site/index'),
 				),
 				array(
-					'label' => 'Torrents',
+					'label' => Yii::t('torrentsModule.common', 'Torrents'),
 					'url'   => array('/torrents/default/index'),
 				),
 				array(
-					'label' => 'Upload',
+					'label' => Yii::t('torrentsModule.common', 'Upload'),
 					'url'   => array('/torrents/default/create'),
 				),
 				array(
-					'label' => 'Blogs',
+					'label' => Yii::t('blogsModule.common', 'Blogs'),
 					'url'   => array('/blogs/default/index'),
 				),
 			),
@@ -78,13 +60,7 @@ class TopMenu extends CWidget {
 			));
 
 		if ( !Yii::app()->getUser()->getIsGuest() ) {
-			$rating = Yii::app()->getUser()->getModel()->rating;
-			if ( $rating ) {
-				$rating = $rating->getRating();
-			}
-			else {
-				$rating = 0;
-			}
+			$rating = (int) Yii::app()->getUser()->getModel()->getRating();
 
 			if ( $rating > 0 ) {
 				$class = 'badge-success';
@@ -139,11 +115,21 @@ class TopMenu extends CWidget {
 				                                        ),
 			                                        ),
 			                                        array(
-				                                        'label'   => 'Лента' . ( $sizeOfEvents ? ' <span class="badge badge-success">' . $sizeOfEvents . '</span> ' : '' ),
-				                                        'url'     => ( $sizeOfEvents ? '#' : '' ),
-				                                        'visible' => !Yii::app()->getUser()->getIsGuest(),
-				                                        'items'   => $eventItems
+				                                        'label'       => 'Лента ' . $this->widget('application.modules.subscriptions.widgets.EventsWidget',
+					                                        array(),
+					                                        true),
+				                                        'url'         => array('/subscriptions/event/getList'),
+				                                        'visible'     => !Yii::app()->getUser()->getIsGuest(),
+				                                        'linkOptions' => array(
+					                                        'id' => 'eventsMenu',
+					                                        'class' => 'dropdown-toggle',
+					                                        'data-toggle' => 'dropdown'
+				                                        ),
+				                                        'itemOptions' => array(
+					                                        'class' => 'dropdown'
+				                                        )
 
+				                                        //'items'   => $eventItems
 			                                        ),
 			                                        '---'
 			                                   ),

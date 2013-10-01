@@ -43,5 +43,10 @@
 	     'dataProvider'    => $postsProvider,
 	     'itemView'        => 'application.modules.blogs.views.post._view',
 	     'template'        => '{sorter} {items} {pager}',
+	     'sortableAttributes' => array(
+		     'ctime',
+		     'commentsCount',
+		     'rating',
+	     ),
 	));
 ?>

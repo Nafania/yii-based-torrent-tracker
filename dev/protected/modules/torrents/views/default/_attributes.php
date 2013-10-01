@@ -15,19 +15,30 @@ foreach ( $attributes AS $attribute ) {
 		$value = $model->getEavAttribute($attribute->id);
 	}
 	$required = ($attribute->required ? ' <span class="required">*</span>' : '');
-	$description = ( $attribute->description ? ' <span class="attributeDescription"  data-toggle="tooltip" data-placement="top" data-original-title="' . $attribute->description . '">?</span>' : '' );
-	//}
 
 	$hasErrors = $attribute->hasErrors();
 
+	$htmlOptions = array(
+		'class' => ($attribute->required ? 'required' : '') . ($hasErrors ? ' error' : '') . ( $attribute->description ? ' attributeDescription' : '' )
+	);
+
+	if ( $description = $attribute->description ) {
+		$htmlOptions = CMap::mergeArray($htmlOptions,
+			array(
+			     'data-toggle'         => 'tooltip',
+			     'data-placement'      => 'right',
+			     'data-original-title' => $description,
+			));
+	}
+
+
 	echo CHtml::openTag('div', array('class' => 'attribute'));
-	echo CHtml::label($attribute->title . $description . $required,
+	echo CHtml::label($attribute->title . $required,
 		'Attribute_' . $attribute->id,
-		array(
-		     'class' => ($attribute->required ? 'required' : '') . ($hasErrors ? ' error' : '')
-		));
+		$htmlOptions);
 	echo '<div class="rowInput' . ($attribute->separate ? ' separate' : '') . '">' . $attribute->getInputField($value,
-		$hasErrors, array('class' => 'span5')) . '</div>';
+			$hasErrors,
+			array('class' => 'span5')) . '</div>';
 	if ( $hasErrors ) {
 		echo '<span class="help-block error">';
 		foreach ( $attribute->getErrors() AS $key => $val ) {

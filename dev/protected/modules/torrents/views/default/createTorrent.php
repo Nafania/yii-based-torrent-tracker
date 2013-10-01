@@ -83,7 +83,7 @@ $this->widget('bootstrap.widgets.TbSelect2',
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => 'Upload',
+			     'label'      => ( $torrent->getIsNewRecord() ? Yii::t('torrentsModule.common', 'Upload') : Yii::t('torrentsModule.common', 'Save') ),
 			)); ?>
 	</div>
 

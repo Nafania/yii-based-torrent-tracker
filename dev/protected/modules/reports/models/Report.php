@@ -5,10 +5,8 @@
  *
  * The followings are the available columns in table 'reports':
  * @property integer $id
- * @property integer $uId
  * @property string  $modelName
  * @property integer $modelId
- * @property string  $text
  * @property integer $state
  */
 class Report extends EActiveRecord {
@@ -42,11 +40,11 @@ class Report extends EActiveRecord {
 		return CMap::mergeArray(parent::rules(),
 			array(
 			     array(
-				     'modelName, modelId, text',
+				     'modelName, modelId',
 				     'required'
 			     ),
 			     array(
-				     'uId, modelId, state',
+				     'modelId, state',
 				     'numerical',
 				     'integerOnly' => true
 			     ),
@@ -58,7 +56,7 @@ class Report extends EActiveRecord {
 			     // The following rule is used by search().
 			     // Please remove those attributes that should not be searched.
 			     array(
-				     'id, uId, modelName, modelId, text, state',
+				     'id, modelName, modelId,  state',
 				     'safe',
 				     'on' => 'search'
 			     ),
@@ -71,7 +69,13 @@ class Report extends EActiveRecord {
 	public function relations () {
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
-		return CMap::mergeArray(parent::relations(), array());
+		return CMap::mergeArray(parent::relations(), array(
+		                                                  'contents' => array(
+			                                                  self::HAS_MANY,
+			                                                  'ReportContent',
+			                                                  'rId'
+		                                                  )
+		                                             ));
 	}
 
 	/**
@@ -80,34 +84,21 @@ class Report extends EActiveRecord {
 	public function attributeLabels () {
 		return array(
 			'id'        => 'ID',
-			'uId'       => 'U',
 			'modelName' => 'Model Name',
 			'modelId'   => 'Model',
-			'text'      => 'Text',
 			'state'     => 'State',
 		);
 	}
-
-	protected function beforeValidate () {
-		if ( parent::beforeValidate() ) {
-			$model = self::model()->findByAttributes(array('uId'      => Yii::app()->getUser()->getId(),
-			                                              'modelName' => $this->modelName,
-			                                              'modelId'   => $this->modelId
-			                                         ));
-			if ( $model ) {
-				$this->addError('text', Yii::t('reportsModule', 'Вы уже подавали жалобу'));
-				return false;
-			}
-
-			return true;
-		}
+	public function stateLabels () {
+		return array(
+			self::REPORT_STATE_NEW     => Yii::t('reportsModule.common', 'Новая'),
+		);
 	}
+
 
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
 			if ( $this->getIsNewRecord() ) {
-				$this->uId = Yii::app()->getUser()->getId();
-				$this->ctime = time();
 				$this->state = self::REPORT_STATE_NEW;
 			}
 
@@ -126,14 +117,34 @@ class Report extends EActiveRecord {
 		$criteria = new CDbCriteria;
 
 		$criteria->compare('id', $this->id);
-		$criteria->compare('uId', $this->uId);
 		$criteria->compare('modelName', $this->modelName, true);
 		$criteria->compare('modelId', $this->modelId);
-		$criteria->compare('text', $this->text, true);
 		$criteria->compare('state', $this->state);
 
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
 		                                      ));
+	}
+
+	public function getId () {
+		return $this->id;
+	}
+
+	public function getStateLabel () {
+		$labels = $this->stateLabels();
+		return ( isset($labels[$this->state]) ? $labels[$this->state] : null );
+	}
+
+	public function getUrl () {
+		if ( $this->getIsNewRecord() ) {
+			return null;
+		}
+		$modelName = $this->modelName;
+		$model = $modelName::model()->findByPk($this->modelId);
+
+		if ( $model ) {
+			return $model->getUrl();
+		}
+		return null;
 	}
 }

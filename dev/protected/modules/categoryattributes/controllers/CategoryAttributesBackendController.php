@@ -12,7 +12,8 @@ class CategoryAttributesBackendController extends YAdminController {
 	public function init () {
 		parent::init();
 
-		$this->breadcrumbs[] = CHtml::link(Yii::t('CategoryAttributesModule', 'Управление атрибутами'), Yii::app()->createUrl('categoryattributes/categoryAttributesBackend/'));
+		$this->breadcrumbs[] = CHtml::link(Yii::t('CategoryAttributesModule', 'Управление атрибутами'),
+			Yii::app()->createUrl('categoryattributes/categoryAttributesBackend/'));
 	}
 
 	public function actionIndex () {
@@ -29,7 +30,7 @@ class CategoryAttributesBackendController extends YAdminController {
 
 		Ajax::renderAjax('index',
 			array(
-			     'model'     => $model,
+			     'model' => $model,
 			));
 	}
 
@@ -42,6 +43,7 @@ class CategoryAttributesBackendController extends YAdminController {
 		$model = new Attribute('adminCreate');
 		$chars = array(new CategoryAttrChars('adminCreate'));
 		$counter = 0;
+		$validators = CValidator::$builtInValidators;
 
 		$this->performAjaxValidation(CMap::mergeArray(array($model), $chars));
 
@@ -92,9 +94,10 @@ class CategoryAttributesBackendController extends YAdminController {
 
 		Ajax::renderAjax('create',
 			array(
-			     'model'   => $model,
-			     'chars'   => $chars,
-			     'counter' => $counter
+			     'validators' => $validators,
+			     'model'      => $model,
+			     'chars'      => $chars,
+			     'counter'    => $counter
 			));
 	}
 
@@ -110,7 +113,7 @@ class CategoryAttributesBackendController extends YAdminController {
 			throw new CHttpException(404);
 		}
 		$model->setScenario('adminUpdate');
-		$chars = ( $model->chars ? $model->chars : array(new CategoryAttrChars('adminCreate')) );
+		$chars = ($model->chars ? $model->chars : array(new CategoryAttrChars('adminCreate')));
 		$counter = sizeof($chars) - 1;
 		$validators = CValidator::$builtInValidators;
 
@@ -165,11 +168,11 @@ class CategoryAttributesBackendController extends YAdminController {
 
 		Ajax::renderAjax('update',
 			array(
-			     'model'   => $model,
-			     'chars'   => $chars,
-			     'counter' => $counter,
+			     'model'      => $model,
+			     'chars'      => $chars,
+			     'counter'    => $counter,
 			     'validators' => $validators,
-			     'action'  => Yii::app()->createUrl('categoryattributes/categoryAttributesBackend/update',
+			     'action'     => Yii::app()->createUrl('categoryattributes/categoryAttributesBackend/update',
 				     array('id' => $id))
 			));
 	}

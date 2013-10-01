@@ -13,7 +13,7 @@
  * @property integer $mtime
  * @property Blog    blog
  */
-class BlogPost extends EActiveRecord {
+class BlogPost extends EActiveRecord implements ChangesInterface {
 
 	public $cacheTime = 3600;
 
@@ -132,20 +132,49 @@ class BlogPost extends EActiveRecord {
 		$criteria->compare('ownerId', $this->ownerId);
 		$criteria->compare('ctime', $this->ctime);
 
+		$sort = Yii::app()->getRequest()->getParam('sort');
+		/**
+		 * TODO: убрать все это в поведения
+		 */
+		/**
+		 * подключаем таблицу счетчиков только если запрошена сортировка по счетчикам
+		 */
+		if ( strpos($sort, 'commentsCount') !== false ) {
+			$criteria->select = 't.*, cc.count AS commentsCount';
+			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'' . get_class($this) . '\' AND cc.modelId = t.id)';
+			//$criteria->group = 't.id';
+		}
+		/**
+		 * подключаем таблицу рейтингов
+		 */
+		if ( strpos($sort, 'rating') !== false ) {
+			$criteria->select .= ', r.rating';
+			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
+		}
+
+		$sort = new CSort($this);
+		$sort->defaultOrder = 'ctime DESC';
+		$sort->attributes = array(
+			'*',
+			'commentsCount' => array(
+				'asc'  => 'commentsCount ASC',
+				'desc' => 'commentsCount DESC',
+			),
+			'rating' => array(
+				'asc'  => 'rating ASC',
+				'desc' => 'rating DESC',
+			),
+		);
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
-		                                           'sort'     => array(
-			                                           'defaultOrder' => 'ctime DESC'
-		                                           )
+		                                           'sort'     => $sort
 		                                      ));
 	}
 
 	public function forBlog ( $blogId ) {
 		$criteria = new CDbCriteria();
-		$criteria->condition = 'blogId = :blogId';
-		$criteria->params = array(
-			':blogId' => (int) $blogId
-		);
+		$criteria->addCondition('blogId = :blogId');
+		$criteria->params[':blogId'] = $blogId;
 
 		$this->getDbCriteria()->mergeWith($criteria);
 		return $this;
@@ -181,7 +210,7 @@ class BlogPost extends EActiveRecord {
 	public function getUrl () {
 		return array(
 			'/blogs/post/view',
-			'id' => $this->getId(),
+			'id'    => $this->getId(),
 			'title' => $this->getSlugTitle(),
 		);
 	}
@@ -191,6 +220,27 @@ class BlogPost extends EActiveRecord {
 			return date($format, $this->ctime);
 		}
 		return $this->ctime;
+	}
+
+
+	public function getChangesText () {
+		return Yii::t('commentsModule.common',
+			'Добавлен новый комментарий к вашей записи "{title}"',
+			array(
+			     '{title}' => $this->getTitle()
+			));
+	}
+
+	public function getChangesTitle () {
+		return Yii::t('commentsModule.common', 'Новый комменатрий к вашей записи');
+	}
+
+	public function getMtime () {
+		return $this->mtime;
+	}
+
+	public function getChangesIcon () {
+		return 'comment';
 	}
 
 	//search functions

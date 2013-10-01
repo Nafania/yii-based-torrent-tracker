@@ -5,7 +5,7 @@ $this->widget('bootstrap.widgets.TbMenu',
 	     'type'        => 'pills',
 	     'encodeLabel' => false,
 	     'htmlOptions' => array(
-		     'class' => 'torrentGroupOperations'
+		     'class' => 'torrentGroupOperations nav-justified'
 	     ),
 	     'items'       => $items
 	));
