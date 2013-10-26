@@ -26,6 +26,6 @@ $(document).on('click', 'a[data-action=fileList]', function (e) {
 });
 jQuery(function ($) {
     $(".fancybox").fancybox();
-    location.hash && $(location.hash + ".collapse").collapse("show");
+    location.hash && $(location.hash).next(".collapse").collapse("show");
 });
 

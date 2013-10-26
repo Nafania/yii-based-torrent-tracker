@@ -23,7 +23,7 @@ class TorrentGroupRating extends CWidget {
 				$positiveRating += $rating->rating;
 			}
 			else {
-				$negativeRating += $rating->rating;
+				$negativeRating += abs($rating->rating);
 			}
 		}
 

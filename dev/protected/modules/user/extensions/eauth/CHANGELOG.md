@@ -1,8 +1,27 @@
 Yii EAuth Change Log
 ====================
 
-### In progress...
+### 08.08.2013
+* Added proper error handling.
+* Added Ukrainian translation.
 
+### 08.07.2013
+* Added default scope to Linkedin provider.
+
+### 15.06.2013
+* Update Twitter API to 1.1 (fixed #61)
+* Add User-Agent header in GitHubOAuthService.php (fixed #60)
+* Reformat source code
+* Added ability to change OpenID realm
+* Added OpenID optional attributes
+
+### Changes before 15.06.2013
+* Added Microsoft Live OAuth provider.
+* Added Yandex OAuth provider.
+* Added CustomFacebookService example class.
+* Added 'cache' and 'cacheExpire' options to control cache.
+* Added list of services to display in the EAuthWidget.
+* Changed VK.com API urls.
 
 ### Version 1.1.8 (10.06.2012)
 * Added optional headers in EOAuthServiceBase::initRequest().

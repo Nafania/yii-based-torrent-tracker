@@ -69,7 +69,7 @@ class UserProfile extends EActiveRecord
 	{
 		return array(
 			'uid' => 'Uid',
-			'picture' => Yii::t('userModule.common', 'Avatar'),
+			'picture' => Yii::t('userModule.common', 'Аватар'),
 		);
 	}
 

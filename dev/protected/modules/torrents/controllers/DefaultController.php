@@ -9,7 +9,7 @@ class DefaultController extends Controller {
 		return CMap::mergeArray(parent::filters(),
 			array(
 			     'postOnly + delete, deleteTorrent',
-			     'ajaxOnly + fileList, tagsSuggest',
+			     'ajaxOnly + fileList, tagsSuggest, suggest',
 			));
 	}
 
@@ -27,6 +27,8 @@ class DefaultController extends Controller {
 			$title
 		);
 		$this->pageTitle = $title;
+		$this->pageDescription = $model->getDescription();
+		$this->pageOgImage = $model->getImageUrl();
 
 		$this->render('view',
 			array(
@@ -57,9 +59,9 @@ class DefaultController extends Controller {
 
 		if ( isset($_POST['Torrent']) ) {
 			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
-			$Torrent->setTags($_POST['tags']);
+			$Torrent->setTags($_POST['torrentTags']);
 
-			$TorrentGroup->addTags($_POST['tags']);
+			$TorrentGroup->addTags($_POST['torrentTags']);
 
 			$valid = $Torrent->validate();
 			$valid = $this->validateAttributes($Attributes) && $valid;
@@ -83,7 +85,7 @@ class DefaultController extends Controller {
 					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'collapse' . $Torrent->getId())));
+						array('#' => 'torrent' . $Torrent->getId())));
 				} catch ( Exception $e ) {
 
 					$transaction->rollBack();
@@ -136,9 +138,9 @@ class DefaultController extends Controller {
 		if ( isset($_POST['TorrentGroup']) ) {
 			$TorrentGroup->attributes = $_POST['TorrentGroup'];
 			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
-			$Torrent->setTags($_POST['tags']);
+			$Torrent->setTags($_POST['torrentTags']);
 
-			$TorrentGroup->setTags($_POST['tags']);
+			$TorrentGroup->setTags($_POST['torrentTags']);
 
 			$valid = $TorrentGroup->validate();
 			$valid = $Torrent->validate() && $valid;
@@ -173,7 +175,7 @@ class DefaultController extends Controller {
 					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'collapse' . $Torrent->getId())));
+						array('#' => 'torrent' . $Torrent->getId())));
 				} catch ( Exception $e ) {
 
 					$transaction->rollBack();
@@ -350,9 +352,9 @@ class DefaultController extends Controller {
 
 			$TorrentGroup->removeTags($Torrent->getTags());
 
-			$Torrent->setTags($_POST['tags']);
+			$Torrent->setTags($_POST['torrentTags']);
 
-			$TorrentGroup->addTags($_POST['tags']);
+			$TorrentGroup->addTags($_POST['torrentTags']);
 
 			$valid = $Torrent->validate();
 			$valid = $this->validateAttributes($Attributes) && $valid;
@@ -379,7 +381,7 @@ class DefaultController extends Controller {
 					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно изменен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'collapse' . $Torrent->getId())));
+						array('#' => 'torrent' . $Torrent->getId())));
 				} catch ( Exception $e ) {
 
 					$transaction->rollBack();
@@ -465,17 +467,12 @@ class DefaultController extends Controller {
 
 		$model->unsetAttributes(); // clear any default values
 		$model->setScenario('search');
+		$model->setSearchSettings();
 
 		$attributes = Yii::app()->getRequest()->getQuery('TorrentGroup', '');
-		$search = Yii::app()->getRequest()->getParam('search', '');
-		$tags = Yii::app()->getRequest()->getParam('tags', '');
-		$category = Yii::app()->getRequest()->getParam('category', '');
 
 		//$model->title = $search;
 		$model->attributes = $attributes;
-		$model->searchWithText($search);
-		$model->searchWithTags($tags);
-		$model->searchWithCategory($category);
 
 		$dataProvider = $model->search();
 
@@ -495,7 +492,10 @@ class DefaultController extends Controller {
 		$Category = Category::model()->findByPk($category);
 
 		if ( !$Category ) {
-			Ajax::send(Ajax::AJAX_ERROR, Yii::t('torrentsModule.common', 'Please select category first'));
+			Ajax::send(Ajax::AJAX_ERROR,
+				Yii::t('torrentsModule.common',
+					'Сначала выберете категорию, а после этого заполните поле "{fieldName}"',
+					array('{fieldName}' => $TorrentGroup->getAttributeLabel('title'))));
 		}
 
 		$criteria = new CDbCriteria();
@@ -504,6 +504,8 @@ class DefaultController extends Controller {
 			'cId' => $category,
 		);
 		$criteria->addSearchCondition('title', $term, true);
+		$criteria->limit = 50;
+		$criteria->order = 'mtime DESC';
 		//$criteria->addSearchCondition('description', $term, true, 'OR');
 		$models = $TorrentGroup->findAll($criteria);
 
@@ -558,6 +560,8 @@ class DefaultController extends Controller {
 		$criteria = new CDbCriteria();
 		$criteria->addSearchCondition('t.name', $q, true);
 		$criteria->group = 't.name';
+		$criteria->limit = 50;
+		$criteria->order = 'count DESC';
 		$tags = Torrent::model()->getAllTags($criteria);
 
 		$result = array();

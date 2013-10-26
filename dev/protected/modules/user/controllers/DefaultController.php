@@ -4,6 +4,7 @@ class DefaultController extends Controller {
 
 	public function filters () {
 		return array(
+			'ajaxOnly + suggest',
 			array('application.modules.auth.filters.AuthFilter -logout,socialLogin,login'),
 		);
 	}
@@ -163,14 +164,13 @@ class DefaultController extends Controller {
 		}
 		$Profile = $User->profile;
 
-		$component = Yii::app()->eauth;
-		$services = $component->getServices();
+		$services = Yii::app()->eauth->getServices();
 
 		$this->performAjaxValidation(array($User, $Profile));
 
 		if ( isset($_POST['User']) ) {
 			$User->attributes = $_POST['User'];
-			$Profile->attributes = $_POST['Profile'];
+			$Profile->attributes = $_POST['UserProfile'];
 
 			$valid = $User->validate();
 			$valid = $Profile->validate() && $valid;
@@ -214,7 +214,7 @@ class DefaultController extends Controller {
 
 		try {
 			if ( $authIdentity->authenticate() ) {
-				$identity = new EAuthUserIdentity($authIdentity);
+				$identity = new AuthUserIdentity($authIdentity);
 
 				if ( $identity->authenticate() ) {
 					$UserSocialAccount = new UserSocialAccount();
@@ -222,6 +222,7 @@ class DefaultController extends Controller {
 					$UserSocialAccount->id = $identity->id;
 					$UserSocialAccount->uId = Yii::app()->getUser()->getId();
 					$UserSocialAccount->name = $authIdentity->name;
+					$UserSocialAccount->url = $authIdentity->url;
 
 					if ( $UserSocialAccount->save() ) {
 						Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
@@ -239,7 +240,7 @@ class DefaultController extends Controller {
 					}
 				}
 			}
-		} catch ( CException $e ) {
+		} catch ( EAuthException $e ) {
 			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
 		}
 		Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
@@ -265,7 +266,7 @@ class DefaultController extends Controller {
 			$transaction = Yii::app()->db->beginTransaction();
 
 			if ( $authIdentity->authenticate() ) {
-				$identity = new EAuthUserIdentity($authIdentity);
+				$identity = new AuthUserIdentity($authIdentity);
 
 				if ( $identity->authenticate() ) {
 
@@ -335,7 +336,7 @@ class DefaultController extends Controller {
 			else {
 				$this->redirect(array('/user/default/login'));
 			}
-		} catch ( CException $e ) {
+		} catch ( EAuthException $e ) {
 			$transaction->rollBack();
 
 			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
@@ -347,6 +348,29 @@ class DefaultController extends Controller {
 			$authIdentity->redirect($authIdentity->getCancelUrl());
 		}
 	}
+
+
+	public function actionSuggest ( $term ) {
+		$criteria = new CDbCriteria();
+		$criteria->addSearchCondition('name', $term);
+		$criteria->order = 'name ASC';
+		$criteria->limit = 50;
+
+		$users = User::model()->findAll($criteria);
+		$return = array();
+
+		foreach ( $users AS $user ) {
+			$return[] = array(
+				'id' => $user->getId(),
+				'text' => $user->getName(),
+			);
+		}
+
+		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', array(
+		                                          'users' => $return
+		                                     ));
+	}
+
 
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.

@@ -17,13 +17,13 @@ $(document).on('click', 'a[data-action=subscription]', function (e) {
         dataType: 'json',
         type: 'POST',
         success: function (data) {
-            if (elem.children('i').hasClass('icon-plus-sign')) {
+            if (elem.children('i').hasClass('icon-eye-open')) {
                 elem.attr('href', url.replace('create', 'delete'));
-                elem.children('i').attr('class', 'icon-minus-sign');
+                elem.children('i').attr('class', 'icon-eye-close');
             }
             else {
                 elem.attr('href', url.replace('delete', 'create'));
-                elem.children('i').attr('class', 'icon-plus-sign');
+                elem.children('i').attr('class', 'icon-eye-open');
             }
             $('.top-right').notify({
                 message: { html: data.message },

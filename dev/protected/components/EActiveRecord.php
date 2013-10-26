@@ -37,7 +37,7 @@ class EActiveRecord extends CActiveRecord {
 			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds at ' . date('d.m.Y H:i:s') . ' last change at ' . date('d.m.Y H:i:s', $dependency->generateDependentData()));
 		}
 
-		return parent::beforeFind();
+		parent::beforeFind();
 	}
 
 	protected function afterDelete () {

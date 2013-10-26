@@ -23,7 +23,7 @@ $cs->registerCssFile('/css/style.css');
             'links'=>$this->breadcrumbs,
     ));
 		?><!-- breadcrumbs -->
-<?php endif?>
+<?php endif ?>
 
 <?php
 $this->widget('bootstrap.widgets.TbAlert',
@@ -42,12 +42,41 @@ $this->widget('bootstrap.widgets.TbAlert',
 	));
 
 ?>
+<div class="banBlock1 text-center"><img src="http://placehold.it/728x90" /></div>
+
 <section class="container-fluid">
 	<div class="row-fluid">
 		<?php echo $content; ?>
 	</div>
+
+
+	<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+		array('systemName' => 'footer'))
+	?>
+
+	<div class="row-fluid footer">
+
+     <div class="span4">
+         <h4>Стримзон - пришел, увидел и скачал!</h4>
+         Что может быть проще, чем качать торренты с нашего трекера? Все торренты бесплатно, без регистрации и смс. Просто найдите нужную вам раздачу через поиск торрентов, кликните на Скачать торрент, запустится ваш любимый торрент-клиент и торрент начнет качаться.
+     </div>
+
+     <div class="span4">
+         <h4>StreamZone - лучший торрент-трекер рунета</h4>
+         Добро пожаловать на торрент-трекер StreamZone (стримзон). Наш торрент-трекер является лучшим торрент-трекером 2011 года по версии сайта uptracker. Это подверждается большим количеством качественных торрентов на нашем сайте. Все торренты проверяются на качество и соотвествие описанию торрента. Для того, чтобы скачать торрент бесплатно не нужны никакие смс. Все торренты бесплатно и без регистрации.
+     </div>
+
+     <div class="span4">
+         <h4>Streamzone - большой выбор и скорость!</h4>
+         На нашем трекере представлено множество качественных торрентов на любой вкус и цвет. Вы также можете сами загружать торренты на наш сайт. Однако администрация этого сайта не несет никакой ответственности за действия пользователей. На сервере хранятся только торрент файлы. Это значит, что мы не храним никаких нелегальных материалов.
+     </div>
+
+ </div>
 </section>
 <?php $this->widget('application.modules.user.widgets.UserMenu'); ?>
-<?php// $this->widget('application.modules.chat.widgets.MjmChat', array( 'title'=>'Chat room', 'rooms'=>array('php'=>'PHP Room', 'html'=>'HTML Room'), 'host'=>'http://localhost', 'port'=>'3000', ) ); ?>
+<?php $this->widget('application.modules.chat.widgets.MjmChat'); ?>
+<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+	array('systemName' => 'footerCode'))
+?>
 </body>
 </html>

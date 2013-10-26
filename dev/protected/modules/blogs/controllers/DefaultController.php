@@ -35,6 +35,14 @@ class DefaultController extends Controller {
 		);
 		$blogPost = new BlogPost('search');
 		$blogPost->forBlog($id);
+
+		/**
+		 * Если текущий юзер не владелец блога, то показываем только не скрытые посты
+		 */
+		if ( Yii::app()->getUser()->getId() != $model->ownerId ) {
+			$blogPost->onlyVisible();
+		}
+
 		$blogPost->unsetAttributes(); // clear any default values
 		//$blogPost->setScenario('search');
 
@@ -155,7 +163,7 @@ class DefaultController extends Controller {
 		$this->pageTitle = Yii::t('blogsModule.common', 'Блоги');
 		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Блоги');
 
-		$model = Blog::model();
+		$model = Blog::model()->onlyUsers();
 		$model->unsetAttributes(); // clear any default values
 		$model->setScenario('search');
 

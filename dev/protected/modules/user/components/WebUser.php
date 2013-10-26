@@ -95,6 +95,7 @@ class WebUser extends AuthWebUser {
 			Yii::app()->end();
 		}
 		else {
+			Yii::app()->user->setFlash(User::FLASH_ERROR, Yii::t('userModule.common', 'Для выполнения данного действия вам необходимо войти на сайт.'));
 			parent::loginRequired();
 		}
 	}

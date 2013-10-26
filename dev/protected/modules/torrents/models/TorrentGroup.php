@@ -133,11 +133,13 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 	 */
 	public function attributeLabels () {
 		return array(
-			'id'      => Yii::t('torrentsModule.common', 'Id'),
-			'title'   => Yii::t('torrentsModule.common', 'Title'),
-			'ctime'   => Yii::t('torrentsModule.common', 'Create time'),
-			'picture' => Yii::t('torrentsModule.common', 'Picture'),
-			'mtime'   => Yii::t('torrentsModule.common', 'Modify time'),
+			'id'            => Yii::t('torrentsModule.common', 'Id'),
+			'title'         => Yii::t('torrentsModule.common', 'Название'),
+			'ctime'         => Yii::t('torrentsModule.common', 'Create time'),
+			'picture'       => Yii::t('torrentsModule.common', 'Изображение'),
+			'mtime'         => Yii::t('torrentsModule.common', 'Время'),
+			'rating'        => Yii::t('torrentsModule.common', 'Рейтинг'),
+			'commentsCount' => Yii::t('torrentsModule.common', 'Кол-во комментариев'),
 		);
 	}
 
@@ -158,43 +160,24 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		$criteria->compare('t.mtime', $this->mtime);
 		//$criteria->order = 'mtime DESC';
 
-		$sort = Yii::app()->getRequest()->getParam('sort');
-		/**
-		 * TODO: убрать все это в поведения
-		 */
-		/**
-		 * подключаем таблицу счетчиков только если запрошена сортировка по счетчикам
-		 */
-		if ( strpos($sort, 'commentsCount') !== false ) {
-			$criteria->select = 't.*, cc.count AS commentsCount';
-			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'TorrentGroup\' AND cc.modelId = t.id)';
-			//$criteria->group = 't.id';
-		}
-		/**
-		 * подключаем таблицу рейтингов
-		 */
-		if ( strpos($sort, 'rating') !== false ) {
-			$criteria->select .= ', r.rating';
-			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
-		}
-
-		$sort = new CSort($this);
-		$sort->defaultOrder = 'mtime DESC';
+		/*$sort = new CSort($this);
+		$sort->defaultOrder = 't.mtime DESC';
 		$sort->attributes = array(
 			'*',
 			'commentsCount' => array(
-				'asc'  => 'commentsCount ASC',
-				'desc' => 'commentsCount DESC',
+				'asc'     => 'commentsCount ASC',
+				'desc'    => 'commentsCount DESC',
+				'default' => 'desc',
 			),
-			'rating' => array(
-				'asc'  => 'rating ASC',
-				'desc' => 'rating DESC',
+			'rating'        => array(
+				'asc'     => 'rating ASC',
+				'desc'    => 'rating DESC',
+				'default' => 'desc',
 			),
-		);
-
+		);*/
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
-		                                           'sort'     => $sort
+		                                           //'sort'     => $sort
 		                                      ));
 	}
 
@@ -209,6 +192,14 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 
 			return true;
 		}
+	}
+
+	public static function getSortColums () {
+		return array(
+			'mtime.desc'         => Yii::t('torrentsModule.common', 'Время'),
+			'rating.desc'        => Yii::t('torrentsModule.common', 'Рейтинг'),
+			'commentsCount.desc' => Yii::t('torrentsModule.common', 'Кол-во комментариев'),
+		);
 	}
 
 	public function getUrl () {
@@ -290,11 +281,11 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 
 	public function searchWithText ( $search = '' ) {
 		if ( $search ) {
+			$alias = $this->getTableAlias();
 			$criteria = new CDbCriteria();
-			$criteria->with = 'torrents';
+			$criteria->condition = $alias . '.title LIKE :search';
+			$criteria->params[':search'] = '%' . $search . '%';
 			$this->getDbCriteria()->mergeWith($criteria);
-
-			$this->withEavAttributes(array($search));
 		}
 	}
 
@@ -304,11 +295,22 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		}
 	}
 
+	public function searchWithNotTags ( $tags = '' ) {
+		if ( $tags ) {
+			$this->notTaggedWith($tags);
+		}
+	}
+
 	public function searchWithCategory ( $category = '' ) {
 		if ( $category ) {
 			$criteria = new CDbCriteria();
 			$criteria->with = 'category';
-			$criteria->compare('category.name', $category);
+			if ( is_numeric($category) ) {
+				$criteria->compare('category.id', $category);
+			}
+			else {
+				$criteria->compare('category.name', $category);
+			}
 			$this->getDbCriteria()->mergeWith($criteria);
 		}
 	}
@@ -338,5 +340,37 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		}
 
 		return $count;
+	}
+
+
+	public static function getPeriodCriteria ( $period ) {
+		$criteria = new CDbCriteria();
+		switch ( $period ) {
+			case 'day':
+				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->params[':start'] = time() - 24 * 60 * 60;
+				$criteria->params[':end'] = time();
+				break;
+			case 'week':
+				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->params[':start'] = time() - 7 * 24 * 60 * 60;
+				$criteria->params[':end'] = time();
+				break;
+			case 'month':
+				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->params[':start'] = time() - 30 * 24 * 60 * 60;
+				$criteria->params[':end'] = time();
+				break;
+			case 'year':
+				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->params[':start'] = time() - 365 * 24 * 60 * 60;
+				$criteria->params[':end'] = time();
+				break;
+			default:
+			case 'allTime':
+				break;
+		}
+
+		return $criteria;
 	}
 }

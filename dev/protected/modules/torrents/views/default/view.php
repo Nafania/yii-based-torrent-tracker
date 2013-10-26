@@ -1,5 +1,6 @@
 <?php
 /**
+ * @var $this DefaultController
  * @var $model   TorrentGroup
  * @var $torrent Torrent
  */
@@ -10,9 +11,8 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/js
 $cs->registerCssFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fancyapps-fancyBox/source/jquery.fancybox.css');
 $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fancyapps-fancyBox/source/jquery.fancybox.js');
 ?>
-	<h1>
-	<?php echo $model->getTitle() ?>
-</h1>
+
+<h1><?php echo $model->getTitle() ?></h1>
 
 	<div class="row-fluid">
 	<div class="span3">
@@ -35,7 +35,15 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 	</div>
 
 	<div class="span9">
-	<dl class="dl-horizontal">
+
+		<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+			array('systemName' => 'rightTorrentView'))
+		?>
+		<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+			array('systemName' => 'topTorrentView', 'model' => $model))
+		?>
+
+	<dl class="dl-horizontal torrentView">
 			<?php
 			foreach ( $model->getEavAttributesWithKeys() AS $name => $value ) {
 				echo '<dt>' . $name . '</dt>';
@@ -47,7 +55,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 		<?php
 		if ($model->getTags()) {
 		?>
-		<dt><?php echo Yii::t('tagsModule.common', 'Tags'); ?></dt>
+		<dt><?php echo Yii::t('tagsModule.common', 'Теги'); ?></dt>
 						<dd>
 				<?php
 				$tags = '';
@@ -63,7 +71,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 				?>
 
 
-		<dt><?php echo Yii::t('ratingsModule.common', 'Rating'); ?></dt>
+		<dt><?php echo Yii::t('ratingsModule.common', 'Рейтинг'); ?></dt>
 		<dd>
 			<?php $this->widget('application.modules.ratings.widgets.TorrentGroupRating',
 				array(
@@ -72,12 +80,12 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 		</dd>
 		</dl>
 
-	<div class="accordion">
+	<div class="accordion torrentsList">
 
 <?php foreach ( $model->torrents(array('order' => 'ctime DESC')) AS $key => $torrent ) { ?>
 
 	<div class="accordion-group">
-	<div class="accordion-heading">
+	<div class="accordion-heading" id="torrent<?php echo $torrent->getId() ?>">
 	<?php echo CHtml::link('<i class="icon-download"></i>',
 		array(
 		     '/torrents/default/download',

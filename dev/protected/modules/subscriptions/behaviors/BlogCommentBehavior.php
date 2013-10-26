@@ -4,7 +4,6 @@ class BlogCommentBehavior extends CActiveRecordBehavior {
 		parent::afterSave($e);
 
 		$owner = $this->getOwner();
-		$className = get_class($owner);
 
 		if ( !$owner->modelName == 'BlogPost' ) {
 			return false;
@@ -15,12 +14,16 @@ class BlogCommentBehavior extends CActiveRecordBehavior {
 			return false;
 		}
 
-		$url = $blogPost->getUrl();
-		$icon = $blogPost->getChangesIcon();
+		$url = $owner->getUrl();
+		$icon = 'comment';
 
 		$event = new Event();
-		$event->text = $blogPost->getChangesText();
-		$event->title = $blogPost->getChangesTitle();
+		$event->text = Yii::t('subscriptionsModule.common',
+			'Добавлен новый комментарий к вашей записи "{title}"',
+			array(
+			     '{title}' => $blogPost->getTitle()
+			));
+		$event->title = Yii::t('subscriptionsModule.common', 'Новый комменатрий к вашей записи');
 		$event->url = $url;
 		$event->icon = $icon;
 		$event->uId = $blogPost->ownerId;

@@ -72,8 +72,12 @@ $(function () {
         }
     });
 
-    $(document).on('mouseup', '.yiiPager > li > a', function (e) {
+    $(document).on('mouseup', '.yiiPager > li:not(.disabled, .active) > a', function (e) {
         $('html, body').animate({ scrollTop: 0 }, 150);
+    });
+
+    $(document).on('click', 'input[data-loading-text],button[data-loading-text],a[data-loading-text]', function (e) {
+        $(this).button('loading');
     });
 
     (function ($) {

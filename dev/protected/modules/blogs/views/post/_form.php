@@ -2,12 +2,14 @@
 /* @var $this PostController */
 /* @var $blogPost BlogPost */
 /* @var $form TbActiveForm */
+/* @var $blog Blog */
 ?>
 
 <?php $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	array(
-	     'id'                   => 'blogPost-form',
-	     'enableAjaxValidation' => true,
+	     'id'                     => 'blogPost-form',
+	     'enableAjaxValidation'   => true,
+	     'enableClientValidation' => true,
 	)); ?>
 
 <?php echo $form->textFieldRow($blogPost, 'title', array('class' => 'span5')); ?>
@@ -22,10 +24,10 @@
 	     //TODO load actual language
 	     'htmlOptions' => array(),
 	     'options'     => array(
-		     'lang'          => 'ru',
-		     'minHeight'     => 200,
-		     'imageUpload'   => Yii::app()->createUrl('files/default/upload'),
-		     'uploadFields'  => array(
+		     'lang'         => 'ru',
+		     'minHeight'    => 200,
+		     'imageUpload'  => Yii::app()->createUrl('files/default/upload'),
+		     'uploadFields' => array(
 			     Yii::app()->getRequest()->csrfTokenName => Yii::app()->getRequest()->getCsrfToken(),
 			     'modelName'                             => get_class($blogPost)
 		     )
@@ -35,11 +37,11 @@
 
 <?php
 
-echo CHtml::label('Tags', 'tags');
+echo CHtml::label(Yii::t('tagsModule.common', 'Теги'), 'blogTags');
 $this->widget('bootstrap.widgets.TbSelect2',
 	array(
 	     'asDropDownList' => false,
-	     'name'           => 'tags',
+	     'name'           => 'blogTags',
 	     'value'          => $blogPost->tags->toString(true),
 	     'options'        => array(
 		     //'containerCssClass' => 'span5',
@@ -49,7 +51,6 @@ $this->widget('bootstrap.widgets.TbSelect2',
 		     'multiple'           => false,
 		     'tokenSeparators'    => array(
 			     ',',
-			     ' '
 		     ),
 		     'createSearchChoice' => 'js:function(term, data) {
 			       if ($(data).filter(function() {
@@ -88,13 +89,28 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	));
 ?>
 
+	<div>
+		<?php echo $form->checkBox($blogPost, 'hidden'); ?>
+		<?php
+		echo $form->labelEx($blogPost,
+			'hidden',
+			array(
+			     'data-toggle'         => 'tooltip',
+			     'data-placement'      => 'right',
+			     'data-original-title' => Yii::t('blogsModule.common',
+				     'Этот пост будет виден только вам, если вы публикуете его в личном блоге. Если это блог группы, то он будет виден только участникам группы.'),
+			     'class'               => 'attributeDescription checkbox',
+			));
+		?>
+	</div>
 	<div class="form-actions">
 	<?php $this->widget('bootstrap.widgets.TbButton',
-			array(
-			     'buttonType' => 'submit',
-			     'type'       => 'primary',
-			     'label'      => ($blogPost->isNewRecord ? 'Create' : 'Save'),
-			)); ?>
+		array(
+		     'buttonType' => 'submit',
+		     'type'       => 'primary',
+		     'label'      => ($blogPost->isNewRecord ? Yii::t('blogsModule.common',
+			     'Создать') : Yii::t('blogsModule.common', 'Сохранить')),
+		)); ?>
 	</div>
 
 <?php $this->endWidget(); ?>

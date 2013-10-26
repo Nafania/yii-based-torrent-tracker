@@ -52,10 +52,9 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	     ),
 	     'options'        => array(
 		     //'containerCssClass' => 'span5',
-
 		     'minimumInputLength' => 2,
 		     'multiple'           => false,
-		     'tags' => true,
+		     //'tags'               => false,
 		     'ajax'               => 'js:{
 				url: ' . CJavaScript::encode(Yii::app()->createUrl('/torrents/default/suggest')) . ',
                 dataType: "json",
@@ -70,11 +69,18 @@ $this->widget('bootstrap.widgets.TbSelect2',
 					return {
 						results: data.data.titles};
                 }}',
+		     'createSearchChoice' => 'js:function(term, data) {
+		              if ( $(data).filter( function() {
+		                return this.text.localeCompare(term)===0;
+		              }).length===0) {
+		                return {id:0, text:term};
+		              }}',
 	     ),
 	     'events'         => array(
 		     'change' => 'js:function(e){$("#gId").val(e.val);}'
 	     )
 	));
+echo $form->error($model, 'title');
 echo CHtml::hiddenField('gId', Yii::app()->getRequest()->getParam('gId', 0));
 ?>
 
@@ -83,7 +89,7 @@ echo CHtml::hiddenField('gId', Yii::app()->getRequest()->getParam('gId', 0));
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => Yii::t('torrentsModule.common', 'Next'),
+			     'label'      => Yii::t('torrentsModule.common', 'Дальше'),
 			)); ?>
 	</div>
 

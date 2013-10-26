@@ -28,7 +28,7 @@
 	        <strong><?php echo CHtml::link($data->category->getTitle(),
 			        array(
 			             '/torrents/default/index',
-			             'category' => $data->category->getTitle()
+			             'category[]' => $data->category->getTitle()
 			        )) ?></strong><?php
 	        if ( $tags = $data->getTags() ) {
 		        foreach ( $tags AS $tag ) {
@@ -41,7 +41,7 @@
 	        }
 	        foreach ( $data->getSeparateAttributes() AS $id => $attr ) {
 		        echo ', ' . CHtml::link($attr,
-			        CMap::mergeArray($data->getUrl(), array('#' => 'collapse' . $id)));
+			        CMap::mergeArray($data->getUrl(), array('#' => 'torrent' . $id)));
 	        }
 	        ?>
         </p>

@@ -2,7 +2,12 @@
 class CustomFacebookService extends FacebookOAuthService {
 	protected $scope = 'email';
 
-	protected function fetchAttributes () {
+	/**
+	 * http://developers.facebook.com/docs/reference/api/user/
+	 *
+	 * @see FacebookOAuthService::fetchAttributes()
+	 */
+	protected function fetchAttributes() {
 		$info = (object) $this->makeSignedRequest('https://graph.facebook.com/me',
 			array(
 			     'query' => array(

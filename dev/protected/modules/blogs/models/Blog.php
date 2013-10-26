@@ -9,6 +9,7 @@
  * @property integer $ownerId
  * @property integer $ctime
  * @property string  $description
+ * @property integer $groupId
  */
 class Blog extends EActiveRecord {
 	public $cacheTime = 3600;
@@ -83,6 +84,11 @@ class Blog extends EActiveRecord {
 				     'BlogPost',
 				     'blogId'
 			     ),
+			     'group' => array(
+				     self::BELONGS_TO,
+				     'Group',
+				     'groupId'
+			     ),
 			));
 	}
 
@@ -104,11 +110,14 @@ class Blog extends EActiveRecord {
 	 */
 	public function attributeLabels () {
 		return array(
-			'id'          => 'ID',
-			'title'       => 'Title',
-			'ownerId'     => 'Owner',
-			'ctime'       => 'Ctime',
-			'description' => 'Description',
+			'id'            => 'ID',
+			'title'         => Yii::t('blogsModule.common', 'Название'),
+			'ownerId'       => 'Owner',
+			'ctime'         => Yii::t('blogsModule.common', 'Время создания'),
+			'description'   => Yii::t('blogsModule.common', 'Описание'),
+			'mtime'         => Yii::t('blogsModule.common', 'Время'),
+			'rating'        => Yii::t('blogsModule.common', 'Рейтинг'),
+			'commentsCount' => Yii::t('blogsModule.common', 'Кол-во комментариев'),
 		);
 	}
 
@@ -144,7 +153,7 @@ class Blog extends EActiveRecord {
 		 * подключаем таблицу рейтингов
 		 */
 		//if ( strpos($sort, 'rating') !== false ) {
-		$criteria->select .= ', r.rating';
+		$criteria->select .= ', r.rating AS rating';
 		$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
 		//}
 
@@ -152,7 +161,7 @@ class Blog extends EActiveRecord {
 		$sort->defaultOrder = 'rating DESC';
 		$sort->attributes = array(
 			'*',
-			'rating'        => array(
+			'rating' => array(
 				'asc'  => 'rating ASC',
 				'desc' => 'rating DESC',
 			),
@@ -166,13 +175,41 @@ class Blog extends EActiveRecord {
 
 	public function scopes () {
 		return array(
-			'forCurrentUser' => array(
+			/*'forCurrentUser' => array(
 				'condition' => 'ownerId = :ownerId',
 				'params'    => array(
 					':ownerId' => Yii::app()->getUser()->getId(),
 				)
-			)
+			),*/
+			'onlyUsers' => array(
+				'condition' => 'groupId IS NULL',
+			),
 		);
+	}
+
+	/**
+	 * scope для поиска блогов пользователя
+	 * выбираются как созданные им блоги, так и блоги групп, в которых он состоит
+	 */
+	public function forCurrentUser () {
+		$criteria = new CDbCriteria();
+		$criteria->with = array(
+			'group',
+			'group.groupUsers'
+		);
+		$criteria->together = true;
+		$criteria->addCondition('t.ownerId = :ownerId', 'OR');
+		$criteria->addCondition('groupUsers.idUser = :idUser', 'OR');
+		$criteria->addCondition('groupUsers.status = :status', 'AND');
+		$criteria->params = array(
+			':ownerId' => Yii::app()->getUser()->getId(),
+			':idUser'  => Yii::app()->getUser()->getId(),
+			':status'  => GroupUser::STATUS_APPROVED,
+		);
+
+		$this->getDbCriteria()->mergeWith($criteria);
+
+		return $this;
 	}
 
 	protected function beforeSave () {

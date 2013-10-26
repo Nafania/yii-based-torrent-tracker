@@ -12,6 +12,7 @@
  * @method WebUser getUser()
  * @method CMessageSource getMessages()
  * @method EConfig getConfig()
+ * @method CAssetManager getAssetManager()
  *
  */
 class CApplication {

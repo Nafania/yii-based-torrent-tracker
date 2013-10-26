@@ -6,6 +6,9 @@
  * @var Attribute[]  $attributes
  */
 ?>
+<h1><?php echo Yii::t('torrentsModule.common',
+			'Загрузка торрента "{title}"',
+			array('{title}' => $torrentGroup->getTitle())); ?></h1>
 <?php
 
 $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
@@ -26,11 +29,11 @@ $this->renderPartial('_attributes',
 	     'attributes' => $attributes
 	));
 
-echo CHtml::label('Tags', 'tags');
+echo CHtml::label(Yii::t('tagsModule.common', 'Теги'), 'torrentTags');
 $this->widget('bootstrap.widgets.TbSelect2',
 	array(
 	     'asDropDownList' => false,
-	     'name'           => 'tags',
+	     'name'           => 'torrentTags',
 	     'value'          => $torrent->tags->toString(true),
 	     'options'        => array(
 		     //'containerCssClass' => 'span5',
@@ -40,7 +43,6 @@ $this->widget('bootstrap.widgets.TbSelect2',
 		     'multiple'           => true,
 		     'tokenSeparators'    => array(
 			     ',',
-			     ' '
 		     ),
 		     'createSearchChoice' => 'js:function(term, data) {
 		       if ($(data).filter(function() {
@@ -83,7 +85,7 @@ $this->widget('bootstrap.widgets.TbSelect2',
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => ( $torrent->getIsNewRecord() ? Yii::t('torrentsModule.common', 'Upload') : Yii::t('torrentsModule.common', 'Save') ),
+			     'label'      => ( $torrent->getIsNewRecord() ? Yii::t('torrentsModule.common', 'Загрузить') : Yii::t('torrentsModule.common', 'Сохранить') ),
 			)); ?>
 	</div>
 

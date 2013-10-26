@@ -24,14 +24,18 @@ class TorrentsFlow extends CWidget {
 
 		$categories = Category::model()->findAll();
 
-		foreach ( $categories AS $key => $category ) {
+		$i = 0;
+		foreach ( $categories AS $category ) {
 			if ( !$tabContent = $this->_renderTab($category->getId()) ) {
 				continue;
 			}
-			$tabs[$category->getId()] = array(
-				'title'   => $category->getTitle(),
+			$tabs[] = array(
+				'label'   => $category->getTitle(),
 				'content' => $tabContent,
+				'active' => $i === 0,
 			);
+
+			++$i;
 		}
 
 		return $tabs;

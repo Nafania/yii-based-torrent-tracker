@@ -183,6 +183,7 @@ class User extends EActiveRecord {
 			'email'            => Yii::t('userModule.common', 'Email адрес'),
 			'password'         => Yii::t('userModule.common', 'Пароль'),
 			'originalPassword' => Yii::t('userModule.common', 'Пароль'),
+			'rememberMe'       => Yii::t('userModule.common', 'Запомнить меня'),
 		);
 	}
 
@@ -312,7 +313,7 @@ class User extends EActiveRecord {
 			$this->_identity->authenticate();
 		}
 		if ( $this->_identity->errorCode === UserIdentity::ERROR_NONE ) {
-			$duration = ( $this->rememberMe ? 30 * 24 * 60 * 60 : 0 ); // 30 days
+			$duration = ($this->rememberMe ? 30 * 24 * 60 * 60 : 0); // 30 days
 			return Yii::app()->user->login($this->_identity, $duration);
 		}
 		else {

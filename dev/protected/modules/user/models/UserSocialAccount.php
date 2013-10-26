@@ -8,6 +8,7 @@
  * @property string  $id
  * @property string  $service
  * @property string  $name
+ * @property string  $url
  */
 class UserSocialAccount extends EActiveRecord {
 	/**

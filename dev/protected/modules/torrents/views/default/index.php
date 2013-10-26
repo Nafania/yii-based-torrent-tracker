@@ -3,7 +3,7 @@
 	array(
 	     'dataProvider'       => $dataProvider,
 	     'itemView'           => '_view',
-	     'template'           => "{sorter}\n{items}\n{pager}",
+	     'template'           => "{items}\n{pager}",
 	     'enableHistory'      => true,
 	     'sortableAttributes' => array(
 		     'mtime',

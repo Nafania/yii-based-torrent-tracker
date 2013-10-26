@@ -52,7 +52,6 @@ body {
     margin-left: 5px;
 }
 
-
 .fancybox.youtube:after {
     content: url("/images/media_playback_start.png");
     position: relative;
@@ -202,60 +201,138 @@ body {
 .list-view {
     padding-top: 0;
 }
+
 .commentOptions a {
     display: none;
 }
 
 .nav-justified {
-  width: 100%;
-  border-bottom: 0;
+    width: 100%;
+    border-bottom: 0;
 }
 
 .nav-justified > li {
-  float: none;
+    float: none;
 }
 
 .nav-justified > li > a {
-  margin-bottom: 5px;
-  text-align: center;
+    margin-bottom: 5px;
+    text-align: center;
 }
 
-
-  .nav-justified > li {
+.nav-justified > li {
     display: table-cell;
     width: 1%;
-  }
-  .nav-justified > li > a {
-    margin-bottom: 0;
-  }
+}
 
+.nav-justified > li > a {
+    margin-bottom: 0;
+}
 
 .nav-justified > .active > a,
 .nav-justified > .active > a:hover,
 .nav-justified > .active > a:focus {
-  border: 1px solid #dddddd;
+    border: 1px solid #dddddd;
 }
 
 .dropdown-menu li .tooltip {
-    min-width:300px;
+    min-width: 300px;
 }
 
 .torrentImage {
     display: block;
 }
+
 .torrentImage > img {
-    width:100%;
+    width: 100%;
 }
 
-.attribute label, label.attributeDescription  {
+.attribute label, label.attributeDescription {
     display: inline-block;
 }
 
 .select2-container.span4 {
-    float:none;
+    float: none;
     margin-left: 0;
 }
 
 .blogsList h3.media-heading {
     line-height: 25px;
+}
+
+#groupsListView h3.media-heading {
+    margin-bottom: 5px;
+    line-height: 20px;
+}
+
+.groupOperations {
+    display: none;
+}
+
+#groupsListView .pull-right {
+    margin-top: 50px;
+}
+
+.groupView .pull-right {
+    margin-top: 80px;
+}
+
+.attributeDescription.checkbox {
+    margin-top: 10px;
+    position: relative;
+    top: 4px;
+    padding-left: 0;
+}
+
+.categoriesList .span1 {
+    padding-left: 0;
+    margin-left: 20px;
+    width: 110px;
+}
+
+.add-on.active {
+    background-image: linear-gradient(to bottom, #0088CC, #0044CC);
+    background-repeat: repeat-x;
+    color:#fff;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+
+.searchSettings .span3, .searchSettings .span2 {
+    padding-left: 0;
+    margin-left: 0;
+}
+#searchSettings {
+    /* new custom width */
+    width: 680px;
+    /* must be half of the width, minus scrollbar on the left (30px) */
+    margin-left: -310px;
+}
+
+.list-view-loading {
+    background-position: top right;
+}
+
+.torrentsList {
+    max-height: 216px;
+    overflow-y: auto;
+}
+
+.footer {
+    margin-top:10px;
+    border-top: 1px solid #EEEEEE;
+    border-image: none;
+}
+
+.torrentView:after {
+    clear: none;
+}
+
+.banBlock2 {
+    padding-left: 5px;
+}
+.banBlock1 {
+    margin: -15px 0 10px 0;
+}
+.banBlock3 {
+    margin-top: 10px;
 }

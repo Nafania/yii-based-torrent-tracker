@@ -9,18 +9,19 @@
 ?>
 <div class="answerBlock">
 <?php
-	$form = $this->beginWidget('ext.bootstrap.widgets.TbActiveForm',
-		array(
-		     'id'                     => 'comment-form' . uniqid(),
-		     'enableAjaxValidation'   => true,
-		     'enableClientValidation' => true,
-		     'action'                 => Yii::app()->createUrl('/comments/default/create'),
-		     'htmlOptions'            => array(
-			     'class' => 'answerForm'
-		     ),
-		     'clientOptions'          => array(
-			     'validateOnSubmit' => true,
-			     'afterValidate'    => 'js:function(form,data,hasError){
+$form = $this->beginWidget('ext.bootstrap.widgets.TbActiveForm',
+	array(
+	     'id'                     => 'comment-form' . uniqid(),
+	     'enableAjaxValidation'   => true,
+	     'enableClientValidation' => true,
+	     'action'                 => Yii::app()->createUrl('/comments/default/create'),
+	     'htmlOptions'            => array(
+		     'class' => 'answerForm'
+	     ),
+	     'clientOptions'          => array(
+		     'validateOnSubmit' => true,
+		     'afterValidate'    => 'js:function(form,data,hasError){
+		        var button = form.find("input[type=submit]");
                        if(!hasError){
                                $.ajax({
                                        type:"POST",
@@ -44,14 +45,20 @@
                                             }
                                             $("html, body").animate({scrollTop: $("#comment-" + data.data.id).position().top }, 100);
                                        },
-
+                                       complete: function() {
+                                        button.button("reset");
+                                       }
                                        });
                                }
-                       }'
-		     ),
+                               else {
+                                button.button("reset");
+                               }
 
-		));
-	?>
+                       }'
+	     ),
+
+	));
+?>
 	<?php //echo $form->labelEx($comment, 'torrentId'); ?>
 	<?php if ( !$parentId && $torrents ) {
 		echo $form->dropDownListRow($comment,
@@ -117,10 +124,12 @@
 
 	<div class="form-actions">
 <?php
-		echo CHtml::submitButton($comment->isNewRecord ? Yii::t('commentsModule.common',
-				'Send comment') : Yii::t('commentsModule.common', 'Update comment'),
-			array('class' => 'btn btn-primary'));
-		?>
+echo CHtml::submitButton($comment->isNewRecord ? Yii::t('commentsModule.common',
+		'Отправить комментарий') : Yii::t('commentsModule.common', 'Обновить комментарий'),
+	array('class'            => 'btn btn-primary',
+	     'data-loading-text' => Yii::t('commentsModule.common', 'Идет отправка...'),
+	));
+?>
 </div>
 	<?php
 	$this->endWidget();

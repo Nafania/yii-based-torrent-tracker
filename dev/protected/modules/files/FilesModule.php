@@ -49,9 +49,28 @@ class FilesModule extends CWebModule {
 					     'jpeg'
 				     ),
 				     'attribute' => 'picture',
+				     'maxSize'   => 1 * 1024 * 1024,
 				     # Default image to return if no image path is found in the DB
 				     'fallback_image' => '/images/NoImageAvailable.jpg',
-				     'path'      => "uploads/images/:model/:id/:fileNameMd5.:ext",
+				     'path'      => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
+			     ),
+			));
+
+		Yii::app()->pd->registerBehavior('Group',
+			array(
+			     'image' => array(
+				     'class'     => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
+				     'types'     => array(
+					     'gif',
+					     'jpg',
+					     'png',
+					     'jpeg'
+				     ),
+				     'attribute'      => 'picture',
+				     'maxSize'        => 1 * 1024 * 1024,
+				     # Default image to return if no image path is found in the DB
+				     'fallback_image' => '/images/NoImageAvailable.jpg',
+				     'path'      => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
 			     ),
 			));
 
@@ -65,10 +84,11 @@ class FilesModule extends CWebModule {
 					     'png',
 					     'jpeg'
 				     ),
-				     'attribute' => 'picture',
+				     'maxSize'        => 1 * 1024 * 1024,
+				     'attribute'      => 'picture',
 				     # Default image to return if no image path is found in the DB
 				     'fallback_image' => '/images/no_photo.png',
-				     'path'      => "uploads/images/:model/:id/:fileNameMd5.:ext",
+				     'path'      => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
 			     ),
 			));
 

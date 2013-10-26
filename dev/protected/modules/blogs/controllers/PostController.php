@@ -20,28 +20,48 @@ class PostController extends Controller {
 		}
 
 		if ( !Yii::app()->user->checkAccess('createPostInOwnBlog',
-			array('ownerId' => $blog->ownerId)) && !Yii::app()->user->checkAccess('createPostInBlog')
+				array('ownerId' => $blog->ownerId)) && !Yii::app()->user->checkAccess('createPostInBlog') && !Yii::app()->user->checkAccess('createPostInGroupMemberBlog',
+				array('isMember' => Group::checkJoin($blog->group))) && !Yii::app()->user->checkAccess('createPostInGroup')
 		) {
 			throw new CHttpException(403);
 		}
 
-
-		$this->pageTitle = Yii::t('blogsModule.common',
-			'Создание записи в блоге "{blogTitle}"',
-			array(
-			     '{blogTitle}' => $blog->getTitle(),
-			));
-		$this->breadcrumbs = array(
-			Yii::t('blogsModule.common', 'Блоги')             => array('/blogs/default/index'),
-			Yii::t('blogsModule.common',
-				'Просмотр блога "{blogPostName}"',
-				array('{blogPostName}' => $blog->getTitle())) => $blog->getUrl(),
-			Yii::t('blogsModule.common',
+		if ( $blog->groupId ) {
+			$this->pageTitle = Yii::t('blogsModule.common',
+				'Создание записи в группе "{groupTitle}"',
+				array(
+				     '{groupTitle}' => $blog->group->getTitle(),
+				));
+			$this->breadcrumbs = array(
+				Yii::t('groupsModule.common', 'Просмотр групп')                => array('/groups/default/index'),
+				Yii::t('groupsModule.common',
+					'Просмотр группы "{groupTitle}"',
+					array('{groupTitle}' => $blog->group->getTitle())) => $blog->group->getUrl(),
+				Yii::t('groupsModule.common',
+					'Создание записи в группе "{groupTitle}"',
+					array(
+					     '{groupTitle}' => $blog->group->getTitle(),
+					))
+			);
+		}
+		else {
+			$this->pageTitle = Yii::t('blogsModule.common',
 				'Создание записи в блоге "{blogTitle}"',
 				array(
 				     '{blogTitle}' => $blog->getTitle(),
-				))
-		);
+				));
+			$this->breadcrumbs = array(
+				Yii::t('blogsModule.common', 'Блоги')             => array('/blogs/default/index'),
+				Yii::t('blogsModule.common',
+					'Просмотр блога "{blogPostName}"',
+					array('{blogPostName}' => $blog->getTitle())) => $blog->getUrl(),
+				Yii::t('blogsModule.common',
+					'Создание записи в блоге "{blogTitle}"',
+					array(
+					     '{blogTitle}' => $blog->getTitle(),
+					))
+			);
+		}
 
 		$blogPost = new BlogPost();
 
@@ -51,7 +71,7 @@ class PostController extends Controller {
 		if ( isset($_POST['BlogPost']) ) {
 			$blogPost->attributes = $_POST['BlogPost'];
 			$blogPost->blogId = $blogId;
-			$blogPost->setTags($_POST['tags']);
+			$blogPost->setTags($_POST['blogTags']);
 
 			if ( $blogPost->save() ) {
 
@@ -74,33 +94,55 @@ class PostController extends Controller {
 		$blog = $blogPost->blog;
 
 		if ( !Yii::app()->user->checkAccess('updatePostInOwnBlog',
-			array('ownerId' => $blog->ownerId)) && !Yii::app()->user->checkAccess('updatePostInBlog')
+				array('ownerId' => $blog->ownerId)) && !Yii::app()->user->checkAccess('updatePostInBlog')
 		) {
 			throw new CHttpException(403);
 		}
 
 
-		$this->pageTitle = Yii::t('blogsModule.common',
-			'Создание записи в блоге "{blogTitle}"',
-			array(
-			     '{blogTitle}' => $blog->getTitle(),
-			));
-		$this->breadcrumbs[Yii::t('blogsModule.common', 'Блоги')] = array('/blogs/default/index');
-		$this->breadcrumbs[Yii::t('blogsModule.common',
-			'Просмотр блога "{blogPostName}"',
-			array('{blogPostName}' => $blog->getTitle()))] = $blog->getUrl();
-		$this->breadcrumbs[] = Yii::t('blogsModule.common',
-			'Редактирование записи в блоге "{blogTitle}"',
-			array(
-			     '{blogTitle}' => $blog->getTitle(),
-			));
+		if ( $blog->groupId ) {
+			$this->pageTitle = Yii::t('blogsModule.common',
+				'Редактирование записи в группе "{groupTitle}"',
+				array(
+				     '{groupTitle}' => $blog->group->getTitle(),
+				));
+			$this->breadcrumbs = array(
+				Yii::t('groupsModule.common', 'Просмотр групп')                => array('/groups/default/index'),
+				Yii::t('groupsModule.common',
+					'Просмотр группы "{groupTitle}"',
+					array('{groupTitle}' => $blog->group->getTitle())) => $blog->group->getUrl(),
+				Yii::t('groupsModule.common',
+					'Редактирование записи в группе "{groupTitle}"',
+					array(
+					     '{groupTitle}' => $blog->group->getTitle(),
+					))
+			);
+		}
+		else {
+			$this->pageTitle = Yii::t('blogsModule.common',
+				'Редактирование записи в блоге "{blogTitle}"',
+				array(
+				     '{blogTitle}' => $blog->getTitle(),
+				));
+			$this->breadcrumbs = array(
+				Yii::t('blogsModule.common', 'Блоги')             => array('/blogs/default/index'),
+				Yii::t('blogsModule.common',
+					'Просмотр блога "{blogPostName}"',
+					array('{blogPostName}' => $blog->getTitle())) => $blog->getUrl(),
+				Yii::t('blogsModule.common',
+					'Редактирование записи в блоге "{blogTitle}"',
+					array(
+					     '{blogTitle}' => $blog->getTitle(),
+					))
+			);
+		}
 
 		// Uncomment the following line if AJAX validation is needed
 		$this->performAjaxValidation($blog);
 
 		if ( isset($_POST['BlogPost']) ) {
 			$blogPost->attributes = $_POST['BlogPost'];
-			$blogPost->setTags($_POST['tags']);
+			$blogPost->setTags($_POST['blogTags']);
 
 			if ( $blogPost->save() ) {
 
@@ -122,20 +164,25 @@ class PostController extends Controller {
 		$blogPost = $this->loadModel($id);
 		$blog = $blogPost->blog;
 
-		$this->pageTitle = Yii::t('blogsModule.common',
+		if ( $blog->groupId ) {
+			$this->breadcrumbs[Yii::t('groupsModule.common', 'Просмотр групп')] = array('/groups/default/index');
+			$this->breadcrumbs[Yii::t('groupsModule.common',
+				'Просмотр группы "{groupName}"',
+				array('{groupName}' => $blog->group->getTitle()))] = $blog->group->getUrl();
+		}
+		else {
+			$this->breadcrumbs[Yii::t('blogsModule.common', 'Блоги')] = array('/blogs/default/index');
+			$this->breadcrumbs[Yii::t('blogsModule.common',
+				'Просмотр блога "{blogPostName}"',
+				array('{blogPostName}' => $blog->getTitle()))] = $blog->getUrl();
+		}
+
+		$this->breadcrumbs[] = $this->pageTitle = Yii::t('blogsModule.common',
 			'Просмотр записи "{blogTitle}"',
 			array(
 			     '{blogTitle}' => $blogPost->getTitle(),
 			));
-		$this->breadcrumbs[Yii::t('blogsModule.common', 'Блоги')] = array('/blogs/default/index');
-		$this->breadcrumbs[Yii::t('blogsModule.common',
-			'Просмотр блога "{blogPostName}"',
-			array('{blogPostName}' => $blog->getTitle()))] = $blog->getUrl();
-		$this->breadcrumbs[] = Yii::t('blogsModule.common',
-			'Просмотр записи "{blogTitle}"',
-			array(
-			     '{blogTitle}' => $blogPost->getTitle(),
-			));
+
 		$this->render('view',
 			array(
 			     'blogPost' => $blogPost

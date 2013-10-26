@@ -54,6 +54,11 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 	 * @var boolean which create tags automatically or throw exception if tag does not exist.
 	 */
 	public $createTagsAutomatically = true;
+
+	/**
+	 * @var bool auto lower case tags or not
+	 */
+	public $lowerTagNames = true;
 	/**
 	 * @var string|boolean caching component Id. If false don't use cache.
 	 * Defaults to false.
@@ -361,6 +366,9 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 	 */
 	private function trim ( &$item, $key ) {
 		$item = trim($item);
+		if ( $this->lowerTagNames ) {
+			$item = mb_strtolower($item);
+		}
 	}
 
 	/**
@@ -424,7 +432,6 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 
 				}
 			}
-
 			if ( !$this->getOwner()->getIsNewRecord() ) {
 				// delete all present tag bindings if record is existing one
 				$this->deleteTags();
@@ -473,8 +480,8 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 						     $this->getModelTableFkName()    => $this->getOwner()->primaryKey,
 						     $this->tagBindingTableTagId     => $tagId,
 						     $this->tagBindingTableModelName => $this->modelTableName,
-						     'userId'                        => Yii::app()->getUser()->getId(),
-						))->execute();;
+						     'uId'                           => Yii::app()->getUser()->getId(),
+						))->execute();
 				}
 				$this->updateCount(+1);
 			}
@@ -589,15 +596,54 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 		$criteria = new CDbCriteria();
 
 		$pk = $this->getOwner()->tableSchema->primaryKey;
+		$alias = $this->getOwner()->getTableAlias();
 
 		if ( !empty($tags) ) {
 			$conn = $this->getConnection();
-			$criteria->select = 't.*';
+			$criteria->select = $alias . '.*';
 			for ( $i = 0, $count = count($tags); $i < $count; $i++ ) {
 				$tag = $conn->quoteValue($tags[$i]);
-				$criteria->join .= " JOIN {$this->getTagBindingTableName()} bt$i ON t.{$pk} = bt$i.{$this->getModelTableFkName()} AND bt$i.modelName = " . $conn->quoteValue($this->modelTableName) . "
+				$criteria->join .= " JOIN {$this->getTagBindingTableName()} bt$i ON {$alias}.{$pk} = bt$i.{$this->getModelTableFkName()} AND bt$i.modelName = " . $conn->quoteValue($this->modelTableName) . "
 					JOIN {$this->tagTable} tag$i ON tag$i.{$this->tagTablePk} = bt$i.{$this->tagBindingTableTagId} AND tag$i.`{$this->tagTableName}` = $tag";
 			}
+		}
+		if ( $this->getScopeCriteria() ) {
+			$criteria->mergeWith($this->getScopeCriteria());
+		}
+
+		return $criteria;
+	}
+
+	/**
+	 * Get criteria to limit query by NOT tags.
+	 * @access private
+	 *
+	 * @param array $tags
+	 *
+	 * @return CDbCriteria
+	 */
+	protected function getNotFindByTagsCriteria ( $tags ) {
+		$criteria = new CDbCriteria();
+
+		if ( !empty($tags) ) {
+			$conn = $this->getConnection();
+
+			$sql = "SELECT modelId FROM {$this->getTagBindingTableName()} bt, {$this->tagTable} tag WHERE tag.{$this->tagTablePk} = bt.{$this->tagBindingTableTagId} AND tag.`{$this->tagTableName}` IN(" . implode(',',
+					array_fill(0, sizeof($tags), '?')) . ") GROUP BY modelId";
+			$comm = $conn->createCommand($sql);
+			foreach ( $tags AS $k => $id ) {
+				$comm->bindValue(($k + 1), $id);
+			}
+			$dataReader = $comm->query();
+
+			$ids = array();
+			foreach ( $dataReader AS $row ) {
+				$ids[] = $row['modelId'];
+			}
+
+			$pk = $this->getOwner()->tableSchema->primaryKey;
+			$alias = $this->getOwner()->getTableAlias();
+			$criteria->addNotInCondition($alias . '.' . $pk, $ids);
 		}
 
 		if ( $this->getScopeCriteria() ) {
@@ -662,6 +708,7 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 				                                     'join'      => "INNER JOIN {$this->getTagBindingTableName()} et on t.{$this->tagTablePk} = et.{$this->tagBindingTableTagId} ",
 				                                     //'condition' => "et.{$this->getModelTableFkName()} = :ownerid AND modelName = :modelName ",
 				                                     'condition' => "modelName = :modelName ",
+				                                     'group'     => 't.' . $this->tagTablePk,
 				                                     'params'    => array(
 					                                     //	':ownerid' => $this->getOwner()->primaryKey,
 					                                     ':modelName' => $this->modelTableName,
@@ -748,6 +795,24 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 	}
 
 	/**
+	 * Limit current AR query to NOT have all tags specified.
+	 *
+	 * @param string|array $tags
+	 *
+	 * @return CActiveRecord
+	 */
+	public function notTaggedWith ( $tags ) {
+		$tags = $this->toTagsArray($tags);
+
+		if ( !empty($tags) ) {
+			$criteria = $this->getNotFindByTagsCriteria($tags, true);
+			$this->getOwner()->getDbCriteria()->mergeWith($criteria);
+		}
+
+		return $this->getOwner();
+	}
+
+	/**
 	 * Alias of {@link taggedWith()}.
 	 *
 	 * @param string|array $tags
@@ -764,14 +829,16 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 	 */
 	protected function deleteTags () {
 		$this->updateCount(-1);
-
 		$conn = $this->getConnection();
+
 		$conn->createCommand(sprintf("DELETE
                  FROM `%s`
-                 WHERE %s = %d",
-			$this->getTagBindingTableName(),
-			$this->getModelTableFkName(),
-			$this->getOwner()->primaryKey))->execute();
+                 WHERE %s = %d AND %s = '%s'",
+			$this->getTagBindingTableName(), //�������� �������
+			$this->getModelTableFkName(), //�������� �������, ��� �������� PK
+			$this->getOwner()->primaryKey, //PK
+			$this->tagBindingTableModelName, //�������� �������, ��� �������� �������� ������
+			$this->modelTableName))->execute(); //�������� ������
 	}
 
 	/**
@@ -807,7 +874,7 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 			$conn = $this->getConnection();
 			$conn->createCommand(sprintf("UPDATE %s
 					SET %s = %s + %s
-					WHERE %s in (SELECT %s FROM %s WHERE %s = %d)",
+					WHERE %s IN (SELECT %s FROM %s WHERE %s = %d)",
 				$this->tagTable,
 				$this->tagTableCount,
 				$this->tagTableCount,

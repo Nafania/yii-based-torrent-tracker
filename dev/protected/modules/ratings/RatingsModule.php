@@ -41,7 +41,7 @@ class RatingsModule extends CWebModule {
 		$ratings = Yii::app()->config->get('ratingsModule.ratings');
 		if ( !$ratings = @unserialize($ratings) ) {
 			$ratings = array();
-			for ( $i = 0; $i < 13; ++$i ) {
+			for ( $i = 0; $i < 17; ++$i ) {
 				$ratings[] = 0;
 			}
 		}
@@ -116,6 +116,13 @@ class RatingsModule extends CWebModule {
 			array(
 			     'torrentRatingBehavior' => array(
 				     'class' => 'application.modules.ratings.behaviors.TorrentRatingBehavior'
+			     )
+			));
+
+		Yii::app()->pd->registerBehavior('Group',
+			array(
+			     'groupRatingBehavior' => array(
+				     'class' => 'application.modules.ratings.behaviors.GroupRatingBehavior'
 			     )
 			));
 	}

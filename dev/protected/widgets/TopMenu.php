@@ -1,11 +1,27 @@
 <?php
 class TopMenu extends CWidget {
 	public function run () {
-		Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('subscriptions')->getAssetsUrl() . '/js/events.js');
+		$categories = Category::model()->findAll();
+		$searchData = Yii::app()->getUser()->getSavedSearchData('TorrentGroup');
+
+		$selectedCategories = Yii::app()->getRequest()->getParam('category', $searchData['category']);
+		$selectedTags = Yii::app()->getRequest()->getParam('tags', $searchData['tags']);
+		$notTags = Yii::app()->getRequest()->getParam('notTags', $searchData['notTags']);
+		$searchVal = Yii::app()->getRequest()->getParam('search', $searchData['search']);
+		$sortVal = Yii::app()->getRequest()->getParam('sort', $searchData['sort']);
+		$periodVal = Yii::app()->getRequest()->getParam('period', $searchData['period']);
 
 		$this->render('topMenu',
 			array(
-			     'items' => $this->_getItems()
+			     'items'              => $this->_getItems(),
+			     'categories'         => $categories,
+			     'selectedCategories' => $selectedCategories,
+			     'selectedTags'       => $selectedTags,
+			     'notTags'            => $notTags,
+			     'searchVal'          => $searchVal,
+			     'sortVal'            => $sortVal,
+			     'periodVal'         => $periodVal,
+			     'settingActive'      => $selectedCategories || $selectedTags || $notTags || $searchVal || $sortVal || $periodVal,
 			));
 	}
 
@@ -16,20 +32,24 @@ class TopMenu extends CWidget {
 			'encodeLabel' => false,
 			'items'       => array(
 				array(
-					'label' => Yii::t('common', 'Home'),
+					'label' => Yii::t('common', 'Главная'),
 					'url'   => array('/site/index'),
 				),
 				array(
-					'label' => Yii::t('torrentsModule.common', 'Torrents'),
+					'label' => Yii::t('torrentsModule.common', 'Торренты'),
 					'url'   => array('/torrents/default/index'),
 				),
 				array(
-					'label' => Yii::t('torrentsModule.common', 'Upload'),
+					'label' => Yii::t('torrentsModule.common', 'Загрузить'),
 					'url'   => array('/torrents/default/create'),
 				),
 				array(
-					'label' => Yii::t('blogsModule.common', 'Blogs'),
+					'label' => Yii::t('blogsModule.common', 'Блоги'),
 					'url'   => array('/blogs/default/index'),
+				),
+				array(
+					'label' => Yii::t('groupsModule.common', 'Группы'),
+					'url'   => array('/groups/default/index'),
 				),
 			),
 		);
@@ -40,7 +60,7 @@ class TopMenu extends CWidget {
 		$items['items'] = CMap::mergeArray($items['items'],
 			array(
 			     array(
-				     'label'       => Yii::t('userModule.common', 'Login'),
+				     'label'       => Yii::t('userModule.common', 'Вход'),
 				     'url'         => array('/user/default/login'),
 				     'linkOptions' => array(
 					     'data-toggle' => 'modal',
@@ -49,7 +69,7 @@ class TopMenu extends CWidget {
 				     'visible'     => Yii::app()->getUser()->getIsGuest(),
 			     ),
 			     array(
-				     'label'       => Yii::t('userModule.common', 'Register'),
+				     'label'       => Yii::t('userModule.common', 'Регистрация'),
 				     'url'         => array('/user/default/register'),
 				     'linkOptions' => array(
 					     'data-toggle' => 'modal',
@@ -89,26 +109,26 @@ class TopMenu extends CWidget {
 						                                        'url'   => '#',
 					                                        ),
 					                                        array(
-						                                        'label' => 'Профиль',
+						                                        'label' => Yii::t('userModule.common', 'Профиль'),
 						                                        'url'   => array(
 							                                        '/user/default/view',
 							                                        'id' => Yii::app()->getUser()->getId()
 						                                        ),
 					                                        ),
 					                                        array(
-						                                        'label' => 'Мои блоги',
+						                                        'label' => Yii::t('blogsModule.common', 'Мои блоги'),
 						                                        'url'   => array('/blogs/default/my'),
 					                                        ),
 					                                        array(
-						                                        'label' => 'Настройки',
+						                                        'label' => Yii::t('groupsModule.common', 'Мои группы'),
+						                                        'url'   => array('/groups/default/my'),
+					                                        ),
+					                                        array(
+						                                        'label' => Yii::t('userModule.common', 'Настройки'),
 						                                        'url'   => array('/user/default/settings'),
 					                                        ),
 					                                        array(
-						                                        'label' => 'Закладки',
-						                                        'url'   => '#'
-					                                        ),
-					                                        array(
-						                                        'label' => 'Выход',
+						                                        'label' => Yii::t('userModule.common', 'Выход'),
 						                                        'url'   => array('/user/default/logout'),
 					                                        ),
 
@@ -121,8 +141,8 @@ class TopMenu extends CWidget {
 				                                        'url'         => array('/subscriptions/event/getList'),
 				                                        'visible'     => !Yii::app()->getUser()->getIsGuest(),
 				                                        'linkOptions' => array(
-					                                        'id' => 'eventsMenu',
-					                                        'class' => 'dropdown-toggle',
+					                                        'id'          => 'eventsMenu',
+					                                        'class'       => 'dropdown-toggle',
 					                                        'data-toggle' => 'dropdown'
 				                                        ),
 				                                        'itemOptions' => array(

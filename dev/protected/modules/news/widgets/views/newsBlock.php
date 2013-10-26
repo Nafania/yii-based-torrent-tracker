@@ -7,7 +7,7 @@
 <section class="module">
 
 
-    <h3 class="moduleHeader"><?php echo Yii::t('newsModule.common', 'News') ?></h3>
+    <h3 class="moduleHeader"><?php echo Yii::t('newsModule.common', 'Новости') ?></h3>
 
 	<div class="accordion" id="newsAccordion">
 

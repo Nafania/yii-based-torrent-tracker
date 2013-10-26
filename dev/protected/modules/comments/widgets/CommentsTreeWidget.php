@@ -12,6 +12,7 @@ class CommentsTreeWidget extends CWidget {
 		$cs->registerScript('commentModule',
 			'var commentsUrl = ' . CJavaScript::encode(Yii::app()->createUrl('/comments/default/loadAnswerBlock')) . ';',
 			CClientScript::POS_HEAD);
+		Yii::app()->getComponent('bootstrap')->registerPackage('loading');
 	}
 
 	public function run () {

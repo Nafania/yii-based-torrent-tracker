@@ -21,72 +21,84 @@
 
 		<div class="pull-right">
 			<?php
-			if ( Yii::app()->user->checkAccess('createPostInOwnBlog',
-				array('ownerId' => $data->ownerId)) || Yii::app()->user->checkAccess('createPostInBlog')
+			if ( Yii::app()->user->checkAccess('createPostInGroupMemberBlog',
+					array('isMember' => Group::checkJoin($data->group))) || Yii::app()->user->checkAccess('createPostInOwnBlog',
+					array('ownerId' => $data->ownerId)) || Yii::app()->user->checkAccess('createPostInBlog')
 			) {
-			?>
+				?>
 				<?php $this->widget('bootstrap.widgets.TbButton',
 					array(
 					     'buttonType'  => 'link',
-					     'type'        => 'primary',
-					     'label'       => 'Create post',
+					     'icon'        => 'pencil',
 					     'url'         => array(
-						     '/blogs/post/create', 'blogId' => $data->getId()
+						     '/blogs/post/create',
+						     'blogId' => $data->getId()
 					     ),
+					     'htmlOptions' => array(
+						     'data-toggle'         => 'tooltip',
+						     'data-placement'      => 'top',
+						     'data-original-title' => Yii::t('blogsModule.common', 'Написать пост'),
+					     )
 					));
 				?>
 				&nbsp;
 			<?php } ?>
 			<?php
 			if ( Yii::app()->user->checkAccess('editOwnBlog',
-				array('ownerId' => $data->ownerId)) || Yii::app()->user->checkAccess('editBlog')
+					array('ownerId' => $data->ownerId)) || Yii::app()->user->checkAccess('editBlog')
 			) {
-			?>
-		<?php $this->widget('bootstrap.widgets.TbButton',
-				array(
-				     'buttonType'  => 'submitLink',
-				     'type'        => 'primary',
-				     'label'       => 'Edit',
-				     'url'         => array(
-					     '/blogs/default/update',
-					     'id' => $data->getId()
-				     ),
-				     'htmlOptions' => array(
-					     'csrf' => true,
-					     'href' => array(
+				?>
+				<?php $this->widget('bootstrap.widgets.TbButton',
+					array(
+					     'buttonType'  => 'submitLink',
+					     'type'        => 'success',
+					     'icon'        => 'edit',
+					     'url'         => array(
 						     '/blogs/default/update',
 						     'id' => $data->getId()
 					     ),
-				     )
-				));
-			?>
+					     'htmlOptions' => array(
+						     'csrf'                => true,
+						     'href'                => array(
+							     '/blogs/default/update',
+							     'id' => $data->getId()
+						     ),
+						     'data-toggle'         => 'tooltip',
+						     'data-placement'      => 'top',
+						     'data-original-title' => Yii::t('blogsModule.common', 'Редактировать блог'),
+					     )
+					));
+				?>
 				&nbsp;
 			<?php } ?>
 
 			<?php
 			if ( Yii::app()->user->checkAccess('deleteOwnBlog',
-				array('ownerId' => $data->ownerId)) || Yii::app()->user->checkAccess('deleteBlog')
+					array('ownerId' => $data->ownerId)) || Yii::app()->user->checkAccess('deleteBlog')
 			) {
-			?>
-			<?php
-			$this->widget('bootstrap.widgets.TbButton',
-				array(
-				     'buttonType' => 'link',
-				     'type'       => 'danger',
-				     'label'      => 'Delete',
-				     'url'         => array(
-					     '/blogs/default/delete',
-					     'id' => $data->getId()
-				     ),
-				     'htmlOptions' => array(
-					     'csrf' => true,
-					     'href' => array(
+				?>
+				<?php
+				$this->widget('bootstrap.widgets.TbButton',
+					array(
+					     'buttonType'  => 'link',
+					     'type'        => 'danger',
+					     'icon'        => 'trash',
+					     'url'         => array(
 						     '/blogs/default/delete',
 						     'id' => $data->getId()
 					     ),
-				     )
-				));
-			?>
+					     'htmlOptions' => array(
+						     'csrf'                => true,
+						     'href'                => array(
+							     '/blogs/default/delete',
+							     'id' => $data->getId()
+						     ),
+						     'data-toggle'         => 'tooltip',
+						     'data-placement'      => 'top',
+						     'data-original-title' => Yii::t('blogsModule.common', 'Удалить блог'),
+					     )
+					));
+				?>
 				&nbsp;
 			<?php } ?>
 		</div>

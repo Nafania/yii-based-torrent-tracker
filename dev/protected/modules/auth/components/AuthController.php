@@ -20,7 +20,7 @@ abstract class AuthController extends YAdminController
     /**
      * @var array the breadcrumbs of the current page.
      */
-    public $breadcrumbs = array();
+    //public $breadcrumbs = array();
 
     /**
      * Initializes the controller.
@@ -29,6 +29,7 @@ abstract class AuthController extends YAdminController
     {
         parent::init();
         $this->layout = $this->module->defaultLayout;
+	    $this->breadcrumbs[] = Yii::t('AuthModule.main', 'Auth module');
         $this->menu = $this->getSubMenu();
     }
 

@@ -21,6 +21,7 @@ class CategoryModule extends CWebModule {
 		self::_addUrlRules();
 		self::_addBehaviors();
 		self::_addRelations();
+		self::_setImport();
 	}
 
 	private static function _addUrlRules () {
@@ -65,5 +66,9 @@ class CategoryModule extends CWebModule {
 			     'cId'
 			),
 			'application.modules.category.models.*');
+	}
+
+	private static function _setImport () {
+		Yii::app()->pd->setImport(array('application.modules.category.models.*'));
 	}
 }

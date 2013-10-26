@@ -2,7 +2,7 @@ $(function () {
     var eventsMenu = $('#eventsMenu');
     eventsMenu.click(function (e) {
         e.preventDefault();
-        if (eventsMenu.parents('li').hasClass('open') ) {
+        if (eventsMenu.parents('li').hasClass('open')) {
             $('#eventsList').remove();
             return;
         }
@@ -17,23 +17,25 @@ $(function () {
     });
 
     // connect to socket
-    var socketUrl = eventsConfig.host + ':' + eventsConfig.port;
-    var socket = io.connect(socketUrl);
+    if (typeof io !== 'undefined' && typeof eventsConfig != 'undefined') {
+        var socketUrl = eventsConfig.host + ':' + eventsConfig.port;
+        var socket = io.connect(socketUrl);
 
-    socket.on('connect', function () {
-        socket.emit('join', eventsConfig.hash);
-    });
+        socket.on('connect', function () {
+            socket.emit('join', eventsConfig.hash);
+        });
 
-    socket.on('newEvent', function (msg) {
-        var span = eventsMenu.find('.badge'), num;
-        if (span.length) {
-            num = parseInt(span.html());
-            num += 1;
-            span.html(num);
-        }
-        else {
-            //eventsMenu.parents('li').addClass('dropdown');
-            eventsMenu.append('<span class="badge badge-success">1</span><span class="caret"></span>');
-        }
-    })
+        socket.on('newEvent', function (msg) {
+            var span = eventsMenu.find('.badge'), num;
+            if (span.length) {
+                num = parseInt(span.html());
+                num += 1;
+                span.html(num);
+            }
+            else {
+                //eventsMenu.parents('li').addClass('dropdown');
+                eventsMenu.append('<span class="badge badge-success">1</span><span class="caret"></span>');
+            }
+        })
+    }
 });

@@ -6,5 +6,4 @@ $this->render('_commentsTree',
 	)
 );
 ?>
-
 </div>

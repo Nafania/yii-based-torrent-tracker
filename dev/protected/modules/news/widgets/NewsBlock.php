@@ -8,6 +8,10 @@ class NewsBlock extends CWidget {
 
 		$news = News::model()->findAll($criteria);
 
+		if ( !$news ) {
+			return;
+		}
+
 		$this->render('newsBlock', array(
 		                                'news' => $news
 		                           ));

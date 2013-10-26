@@ -71,7 +71,7 @@ class Event extends EActiveRecord {
 
 	public function scopes () {
 		return array(
-			'unreaded' => array(
+			'unreaded'       => array(
 				'condition' => 'unread = :unread',
 				'params'    => array(
 					'unread' => self::EVENT_UNREAD
@@ -92,18 +92,26 @@ class Event extends EActiveRecord {
 		Yii::setPathOfAlias('ElephantIO',
 			Yii::getPathOfAlias('application.modules.subscriptions.extensions.elephantIO.lib.ElephantIO'));
 
-		$url = Yii::app()->config->get('subscriptionsModule.socketIOHost') . ':' . Yii::app()->config->get('subscriptionsModule.socketIOPort');
+		try {
 
-		$elephant = new ElephantIO\Client($url, 'socket.io', 1, false, true, true);
-		$elephant->init();
-		$elephant->send(ElephantIO\Client::TYPE_EVENT,
-			null,
-			null,
-			json_encode(array(
-			                 'name' => 'newEvent',
-			                 'args' => array('room' => md5($this->uId)),
-			            )));
-		$elephant->close();
+			$host = Yii::app()->config->get('subscriptionsModule.socketIOHost');
+			$host = ($host ? $host : Yii::app()->getRequest()->getBaseUrl(true));
+
+			$url = $host . ':' . Yii::app()->config->get('subscriptionsModule.socketIOPort');
+
+			$elephant = new ElephantIO\Client($url, 'socket.io', 1, false, true, true);
+			$elephant->init();
+			$elephant->send(ElephantIO\Client::TYPE_EVENT,
+				null,
+				null,
+				json_encode(array(
+				                 'name' => 'newEvent',
+				                 'args' => array('room' => md5($this->uId)),
+				            )));
+			$elephant->close();
+		} catch ( Exception $e ) {
+			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+		}
 	}
 
 	protected function beforeValidate () {

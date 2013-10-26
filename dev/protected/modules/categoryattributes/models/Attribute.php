@@ -10,9 +10,10 @@
  * @property integer $required
  * @property string  $title
  * @property string  $description
- * @property integer cId
- * @property integer append
- * @property integer prepend
+ * @property integer $cId
+ * @property integer $append
+ * @property integer $prepend
+ * @property integer $separate
  */
 class Attribute extends EActiveRecord {
 
@@ -35,7 +36,7 @@ class Attribute extends EActiveRecord {
 		return parent::__get($name);
 	}
 
-	public function __set($name, $value) {
+	public function __set ( $name, $value ) {
 		if ( is_numeric($name) ) {
 			$model = self::model()->findByPk($name);
 			if ( $model ) {
@@ -131,6 +132,10 @@ class Attribute extends EActiveRecord {
 			'description' => Yii::t('CategoryAttributesModule', 'Описание'),
 			'common'      => Yii::t('CategoryAttributesModule', 'Общий'),
 			'cId'         => Yii::t('CategoryAttributesModule', 'Категория'),
+			/**
+			 * нужно для того, чтобы при валидации прикрепленными валидаторами происходило корректное отображение названия поля
+			 */
+			$this->id     => $this->getTitle(),
 		);
 	}
 

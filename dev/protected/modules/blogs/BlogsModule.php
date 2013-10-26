@@ -20,6 +20,7 @@ class BlogsModule extends CWebModule {
 		self::_addUrlRules();
 		self::_setImport();
 		self::_addModelsRelations();
+		self::_registerBehaviors();
 
 		Yii::app()->pd->addAdminModule('blogs', 'Models management');
 	}
@@ -32,6 +33,15 @@ class BlogsModule extends CWebModule {
 			     CActiveRecord::STAT,
 			     'BlogPost',
 			     'ownerId',
+			),
+			'application.modules.blogs.models.*');
+
+		Yii::app()->pd->addRelations('Group',
+			'blog',
+			array(
+			     CActiveRecord::HAS_ONE,
+			     'Blog',
+			     'groupId',
 			),
 			'application.modules.blogs.models.*');
 	}
@@ -50,5 +60,14 @@ class BlogsModule extends CWebModule {
 
 	private static function _setImport () {
 		Yii::app()->pd->setImport(array('application.modules.blogs.models.*'));
+	}
+
+	private static function _registerBehaviors() {
+		Yii::app()->pd->registerBehavior('Group',
+			array(
+			     'autoCreateBlog' => array(
+				     'class'          => 'application.modules.blogs.behaviors.AutoCreateBlogForGroup',
+			     ),
+			));
 	}
 }

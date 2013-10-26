@@ -252,7 +252,7 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		$file = CUploadedFile::getInstance($this->getOwner(), $this->attribute);
 
 		if ( !empty($file->name) ) {
-			$this->file_extension = $file->getExtensionName();
+			$this->file_extension = mb_strtolower($file->getExtensionName());
 			$this->filename = $file->getName();
 			$path = $this->getParsedPath();
 
@@ -266,9 +266,10 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				/**
 				 * зачем менять флаг isNewRecord читайте тут http://code.google.com/p/yii/issues/detail?id=1603
 				 */
+				$isNewRecord = $this->getOwner()->isNewRecord;
 				$this->getOwner()->isNewRecord = false;
 				$this->getOwner()->saveAttributes(array($this->attribute => $path));
-				$this->getOwner()->isNewRecord = true;
+				$this->getOwner()->isNewRecord = $isNewRecord;
 			}
 		}
 
@@ -301,7 +302,8 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 			':ext',
 			':filename',
 			':fileNameMd5',
-			':custom'
+			':custom',
+			':firstTwoCharsMd5'
 		);
 		$replacement = array(
 			$this->folder,
@@ -311,6 +313,7 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 			$this->filename,
 			md5($this->filename),
 			$custom,
+			substr(md5($this->filename), 0, 2),
 		);
 		if ( preg_match_all('/:\\{([^\\}]+)\\}/', $this->path, $matches, PREG_SET_ORDER) ) {
 			foreach ( $matches as $match ) {

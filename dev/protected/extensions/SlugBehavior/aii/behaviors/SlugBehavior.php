@@ -181,6 +181,9 @@ class SlugBehavior extends CActiveRecordBehavior {
 		$source = preg_replace(array_keys($this->cleanList), array_values($this->cleanList), $source);
 		$source = strtolower(trim($source, '-'));
 
+		$urlLength = strlen(Yii::app()->getRequest()->getHostInfo());
+		$source = substr($source, 0, 255 - $urlLength);
+
 		return $source;
 	}
 

@@ -150,8 +150,9 @@ class AuthModule extends CWebModule {
 	}
 
 	public static function register () {
-		Yii::app()->pd->addAdminModule('auth');
 		self::_addModuleRoute();
+		self::_setImport();
+		Yii::app()->pd->addAdminModule('auth');
 	}
 
 	private static function _addModuleRoute () {
@@ -159,5 +160,9 @@ class AuthModule extends CWebModule {
 		                                 'yiiadmin/auth' => 'auth',
 		                                 'yiiadmin/auth/<controller:\w+>/<action:\w+>' => '/auth/<controller>/<action>',
 		                            ));
+	}
+
+	private static function _setImport() {
+		Yii::app()->pd->setImport(array('application.modules.auth.components.*'));
 	}
 }

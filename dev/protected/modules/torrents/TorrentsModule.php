@@ -18,7 +18,10 @@ class TorrentsModule extends CWebModule {
 	 */
 	public function getAssetsUrl () {
 		if ( $this->_assetsUrl === null ) {
-			$this->_assetsUrl = Yii::app()->getAssetManager()->publish(Yii::getPathOfAlias('application.modules.torrents.assets'));
+			$this->_assetsUrl = Yii::app()->getAssetManager()->publish(Yii::getPathOfAlias('application.modules.torrents.assets'),
+				false,
+				-1,
+				defined('YII_DEBUG'));
 		}
 		return $this->_assetsUrl;
 	}
@@ -39,11 +42,13 @@ class TorrentsModule extends CWebModule {
 		                                 'yiiadmin/torrents/backend/<action:\w+>/*' => 'torrents/torrentsBackend/<action>',
 		                                 'yiiadmin/torrents/backend/*'              => 'torrents/torrentsBackend',
 
+		                                 'torrents/<title>-<id>'                    => 'torrents/default/view',
 		                                 'torrents/'                                => 'torrents/default/index',
 		                                 'torrents/<action:\w+>/*'                  => 'torrents/default/<action>',
 		                                 'torrents/<controller:\w+>/<action:\w+>/*' => 'torrents/<controller>/<action>',
 
-		                            ), false);
+		                            ),
+			false);
 	}
 
 
@@ -123,9 +128,7 @@ class TorrentsModule extends CWebModule {
 			));
 	}
 
-	private static function _setImport() {
-		Yii::app()->pd->setImport(
-			array('application.modules.torrents.models.*')
-		);
+	private static function _setImport () {
+		Yii::app()->pd->setImport(array('application.modules.torrents.models.*'));
 	}
 }

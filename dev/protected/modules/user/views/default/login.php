@@ -12,15 +12,18 @@
 	)); ?>
 
 <?php Yii::app()->getController()->renderPartial('application.modules.user.views.default._login',
-	array('model' => $model, 'form' => $form)); ?>
+	array(
+	     'model' => $model,
+	     'form'  => $form
+	)); ?>
 
 
-	<div class="form-actions">
+<div class="form-actions">
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(
-			     'buttonType' => 'submit',
-			     'type'       => 'primary',
-			     'label'      => Yii::t('userModule.common', 'Login'),
+			     'buttonType'  => 'submit',
+			     'type'        => 'primary',
+			     'label'       => Yii::t('userModule.common', 'Login'),
 			)); ?>
 
 		<?php $this->widget('bootstrap.widgets.TbButton',
@@ -28,7 +31,7 @@
 			     'buttonType' => 'link',
 			     'type'       => 'link',
 			     'label'      => Yii::t('userModule.common', 'Forgot password'),
-			     'url' => Yii::app()->createUrl('/user/default/restore'),
+			     'url'        => Yii::app()->createUrl('/user/default/restore'),
 			)); ?>
 	</div>
 

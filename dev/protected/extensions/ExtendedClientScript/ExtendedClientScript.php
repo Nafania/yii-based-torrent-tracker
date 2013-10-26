@@ -167,6 +167,37 @@ class ExtendedClientScript extends CClientScript {
 
 
 	/**
+	 * Registers a piece of javascript code.
+	 *
+	 * @param string  $id       ID that uniquely identifies this piece of JavaScript code
+	 * @param string  $script   the javascript code
+	 * @param integer $position the position of the JavaScript code. Valid values include the following:
+	 * <ul>
+	 * <li>CClientScript::POS_HEAD : the script is inserted in the head section right before the title element.</li>
+	 * <li>CClientScript::POS_BEGIN : the script is inserted at the beginning of the body section.</li>
+	 * <li>CClientScript::POS_END : the script is inserted at the end of the body section.</li>
+	 * <li>CClientScript::POS_LOAD : the script is inserted in the window.onload() function.</li>
+	 * <li>CClientScript::POS_READY : the script is inserted in the jQuery's ready function.</li>
+	 * </ul>
+	 *
+	 * @return CClientScript the CClientScript object itself (to support method chaining, available since version 1.1.5).
+	 */
+	public function registerScript ( $id, $script, $position = null, array $htmlOptions = array() ) {
+		if ( $position === null ) {
+			$position = $this->defaultScriptPosition;
+		}
+		$this->hasScripts = true;
+		$script = $this->minifyJs($script);
+		$this->scripts[$position][$id] = $script;
+		if ( $position === self::POS_READY || $position === self::POS_LOAD ) {
+			$this->registerCoreScript('jquery');
+		}
+		$params = func_get_args();
+		$this->recordCachingAction('clientScript', 'registerScript', $params);
+		return $this;
+	}
+
+	/**
 	 *
 	 *
 	 * @param <type> $output
@@ -290,7 +321,7 @@ class ExtendedClientScript extends CClientScript {
 	 */
 	private function minifyJs ( $js ) {
 		Yii::import($this->jsMinPath);
-		return JSMin::minify($js);
+		return trim(JSMin::minify($js));
 	}
 
 	/**

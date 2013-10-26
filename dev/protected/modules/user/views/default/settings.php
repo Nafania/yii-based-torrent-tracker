@@ -87,14 +87,14 @@
 				array(
 				     'buttonType' => 'submit',
 				     'type'       => 'primary',
-				     'label'      => Yii::t('userModule.common', 'Submit settings'),
+				     'label'      => Yii::t('userModule.common', 'Сохранить'),
 				));
 
 			if ( !$user->emailConfirmed ) {
 
 				$this->widget('bootstrap.widgets.TbButton',
 					array(
-					     'label' => Yii::t('userModule.common', 'Confirm email'),
+					     'label' => Yii::t('userModule.common', 'Подтвердить email'),
 					     'type'  => 'link',
 					     'url'   => array('/user/default/confirmEmail'),
 					));

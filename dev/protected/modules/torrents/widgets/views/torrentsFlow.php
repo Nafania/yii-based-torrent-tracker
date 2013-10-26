@@ -1,7 +1,7 @@
 <?php
 /**
  * @var $torrentsGroup TorrentGroup
- * @var $tabs array
+ * @var $tabs          array
  */
 ?>
 
@@ -9,16 +9,10 @@
 
 
 <section class="module newTorrents">
-    <h3 class="moduleHeader"><?php echo Yii::t('torrentsModule.common', 'New torrents') ?></h3>
-	<?php $this->widget('application.modules.torrents.widgets.EJuiTabs',
+    <h3 class="moduleHeader"><?php echo Yii::t('torrentsModule.common', 'Новые торренты') ?></h3>
+	<?php $this->widget('ext.bootstrap.widgets.TbTabs',
 		array(
-		     'tabs' => $tabs,
-		     'options'=>array(
-		         'collapsible'=>false,
-			     'cookie' => array(
-				     'expires' => 30
-			     )
-		     ),
+		     'tabs'        => $tabs,
 		));
 	?>
 </section>

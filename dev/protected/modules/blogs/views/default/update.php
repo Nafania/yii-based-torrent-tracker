@@ -1,9 +1,13 @@
 <?php
-/* @var $this ProblemsController */
-/* @var $problem Problem */
+/* @var $this DefaultController */
+/* @var $blog Blog */
 ?>
 
-	<h1>Update Blog <?php echo $blog->getTitle(); ?></h1>
+	<h1><?php echo Yii::t('blogsModule.common',
+			'Редактирование блога {blogTitle}',
+			array(
+			     '{blogTitle}' => $blog->getTitle()
+			)); ?></h1>
 
 <?php echo $this->renderPartial('_form',
 	array(

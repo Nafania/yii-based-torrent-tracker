@@ -11,9 +11,12 @@
  * @property integer $ownerId
  * @property integer $ctime
  * @property integer $mtime
+ * @property integer $hidden
  * @property Blog    blog
  */
 class BlogPost extends EActiveRecord implements ChangesInterface {
+	const HIDDEN = 1;
+	const NOT_HIDDEN = 0;
 
 	public $cacheTime = 3600;
 
@@ -58,6 +61,10 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 				'title',
 				'length',
 				'max' => 255
+			),
+			array(
+				'hidden',
+				'boolean',
 			),
 			array(
 				'id, title, text, blogId, ownerId, groupId, disableComments, private, hided, ctime',
@@ -109,11 +116,15 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 	public function attributeLabels () {
 		return array(
 			'id'      => 'ID',
-			'title'   => 'Title',
-			'text'    => 'Text',
+			'title'   => Yii::t('blogsModule.common', 'Название'),
+			'text'    => Yii::t('blogsModule.common', 'Текст'),
 			'blogId'  => 'Blog',
 			'ownerId' => 'Owner',
-			'ctime'   => 'Ctime',
+			'ctime'   => Yii::t('blogsModule.common', 'Дата создания'),
+			'mtime'   => Yii::t('blogsModule.common', 'Дата изменения'),
+			'hidden'  => Yii::t('blogsModule.common', 'Скрытая запись'),
+			'rating'      => Yii::t('blogsModule.common', 'Рейтинг'),
+			'commentsCount'      => Yii::t('blogsModule.common', 'Кол-во комментариев'),
 		);
 	}
 
@@ -125,12 +136,14 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 		// Warning: Please modify the following code to remove attributes that
 		// should not be searched.
 
+		$alias = $this->getTableAlias();
+
 		$criteria = new CDbCriteria;
 
-		$criteria->compare('t.id', $this->id);
-		$criteria->compare('blogId', $this->blogId);
-		$criteria->compare('ownerId', $this->ownerId);
-		$criteria->compare('ctime', $this->ctime);
+		$criteria->compare($alias . '.id', $this->id);
+		$criteria->compare($alias . '.blogId', $this->blogId);
+		$criteria->compare($alias . '.ownerId', $this->ownerId);
+		$criteria->compare($alias . '.ctime', $this->ctime);
 
 		$sort = Yii::app()->getRequest()->getParam('sort');
 		/**
@@ -148,21 +161,23 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 		 * подключаем таблицу рейтингов
 		 */
 		if ( strpos($sort, 'rating') !== false ) {
-			$criteria->select .= ', r.rating';
+			$criteria->select .= 't.*, r.rating AS rating';
 			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
 		}
 
 		$sort = new CSort($this);
-		$sort->defaultOrder = 'ctime DESC';
+		$sort->defaultOrder = $alias . '.ctime DESC';
 		$sort->attributes = array(
 			'*',
 			'commentsCount' => array(
 				'asc'  => 'commentsCount ASC',
 				'desc' => 'commentsCount DESC',
+				'default' => 'desc',
 			),
-			'rating' => array(
+			'rating'        => array(
 				'asc'  => 'rating ASC',
 				'desc' => 'rating DESC',
+				'default' => 'desc',
 			),
 		);
 		return new CActiveDataProvider($this, array(
@@ -171,10 +186,63 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 		                                      ));
 	}
 
+	public function afterFind () {
+		/**
+		 * если запись скрытая
+		 */
+		if ( $this->hidden == BlogPost::HIDDEN ) {
+			$group = $this->blog->group;
+
+			/**
+			 * если это запись группы
+			 */
+			if ( $group ) {
+				/**
+				 * а текущий юзер не член этой группы, то записи как бэ нет
+				 */
+				if ( !Group::checkJoin($group) ) {
+					throw new CHttpException(404);
+				}
+			}
+			/**
+			 * или если, запись не группы, то проверим права на чтение скрытых записей
+			 */
+			elseif ( !Yii::app()->user->checkAccess('canViewOwnHiddenPost',
+				array(
+				     'ownerId' => $this->ownerId
+				))
+			) {
+				throw new CHttpException(404);
+			}
+		}
+
+		return true;
+	}
+
+	public function onlyVisible () {
+		$criteria = new CDbCriteria();
+		$criteria->condition = 'hidden = :hidden';
+		$criteria->params = array(
+			'hidden' => self::NOT_HIDDEN
+		);
+		$this->getDbCriteria()->mergeWith($criteria);
+		return $this;
+	}
+
 	public function forBlog ( $blogId ) {
 		$criteria = new CDbCriteria();
 		$criteria->addCondition('blogId = :blogId');
 		$criteria->params[':blogId'] = $blogId;
+
+		$this->getDbCriteria()->mergeWith($criteria);
+		return $this;
+	}
+
+	public function forGroup ( $groupId ) {
+		$criteria = new CDbCriteria();
+		$criteria->with = 'blog';
+		$criteria->addCondition('blog.groupId = :groupId');
+		$criteria->params[':groupId'] = $groupId;
 
 		$this->getDbCriteria()->mergeWith($criteria);
 		return $this;

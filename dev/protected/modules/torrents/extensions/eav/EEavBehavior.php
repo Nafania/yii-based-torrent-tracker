@@ -109,8 +109,8 @@ class EEavBehavior extends CActiveRecordBehavior {
      * @access protected
      * @return string
      */
-    protected function getCacheKey() {
-        return __CLASS__ . $this->tableName . $this->attributesPrefix . $this->getOwner()->tableName() . $this->getModelId();
+    protected function getCacheKey( $cacheKey = '' ) {
+        return __CLASS__ . $this->tableName . $this->attributesPrefix . $this->getOwner()->tableName() . $this->getModelId() . $cacheKey;
     }
 
     /**
@@ -274,6 +274,8 @@ class EEavBehavior extends CActiveRecordBehavior {
      * @return CActiveRecord
      */
     public function saveEavAttributes($attributes) {
+	    $cacheKey = md5(serialize($attributes));
+
         // Delete old attributes values from DB.
         $this->getDeleteCommand($attributes)->execute();
         // Process each attributes.
@@ -294,11 +296,11 @@ class EEavBehavior extends CActiveRecordBehavior {
         }
         // Save attributes to cache.
         if ($this->attributes->count > 0) {
-            $this->cache->set($this->getCacheKey(), $this->attributes->toArray());
+            $this->cache->set($this->getCacheKey($cacheKey), $this->attributes->toArray());
         }
         // Or delete cache is attributes not exists.
         else {
-            $this->cache->delete($this->getCacheKey());
+            $this->cache->delete($this->getCacheKey($cacheKey));
         }
         // Return model.
         return $this->getOwner();
@@ -313,8 +315,11 @@ class EEavBehavior extends CActiveRecordBehavior {
 	    if ( $this->getOwner()->getIsNewRecord() ) {
 		    return $this->getOwner();
 	    }
+
+	    $cacheKey = md5(serialize($attributes));
+
         // If exists cache, return it.
-        $data = $this->cache->get($this->getCacheKey());
+        $data = $this->cache->get($this->getCacheKey($cacheKey));
         if ($data !== FALSE) {
             $this->attributes->mergeWith($data, FALSE);
             return $this->getOwner();
@@ -332,7 +337,7 @@ class EEavBehavior extends CActiveRecordBehavior {
             $this->attributes->add($attribute, $value);
         }
         // Save loaded attributes to cache.
-        $this->cache->set($this->getCacheKey(), $this->attributes->toArray());
+        $this->cache->set($this->getCacheKey($cacheKey), $this->attributes->toArray());
         // Return model.
         return $this->getOwner();
     }

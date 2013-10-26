@@ -58,7 +58,7 @@ class Yii2DbPanel extends Yii2DebugPanel
 			$items[] = array(
 				'time' => date('H:i:s.', $timing[3]) . sprintf('%03d', (int)(($timing[3] - (int)$timing[3]) * 1000)),
 				'duration' => sprintf('%.1f ms', $timing[4] * 1000),
-				'procedure' => $this->formatSql($timing[1]),
+				'procedure' => $this->formatSql($timing[1], $this->insertParamValues),
 			);
 		}
 		return $items;
@@ -154,7 +154,7 @@ class Yii2DbPanel extends Yii2DebugPanel
 		$resume = array();
 		foreach ($this->calculateTimings() as $timing) {
 			$duration = $timing[4];
-			$query = $this->formatSql($timing[1]);
+			$query = $this->formatSql($timing[1], $this->insertParamValues);
 			$key = md5($query);
 			if (!isset($resume[$key])) {
 				$resume[$key] = array($query, 1, $duration, $duration, $duration);
@@ -178,16 +178,17 @@ class Yii2DbPanel extends Yii2DebugPanel
 	/**
 	 * Выделение sql-запроса из лога и подстановка параметров
 	 * @param string $message
+	 * @param bool $insertParams
 	 * @return string
 	 */
-	protected function formatSql($message)
+	public function formatSql($message, $insertParams)
 	{
 		$sqlStart = strpos($message, '(') + 1;
 		$sqlEnd = strrpos($message , ')');
 		$sql = substr($message, $sqlStart, $sqlEnd - $sqlStart);
 		if (strpos($sql, '. Bound with ') !== false) {
 			list($query, $params) = explode('. Bound with ', $sql);
-			if (!$this->insertParamValues) return $query;
+			if (!$insertParams) return $query;
 			$sql = $this->insertParamsToSql($query, $this->parseParamsSql($params));
 		}
 		return $sql;
@@ -202,7 +203,7 @@ class Yii2DbPanel extends Yii2DebugPanel
 	{
 		$binds = array();
 		$pos = 0;
-		while (preg_match('/((?:\:[a-z0-9\.\_\-]+)|\d+)\s*\=\s*/', $params, $m, PREG_OFFSET_CAPTURE, $pos)) {
+		while (preg_match('/((?:\:[a-z0-9\.\_\-]+)|\d+)\s*\=\s*/i', $params, $m, PREG_OFFSET_CAPTURE, $pos)) {
 			$start = $m[0][1] + strlen($m[0][0]);
 			$key = $m[1][0];
 			if (($params{$start} == '"') || ($params{$start} == "'")) {
@@ -266,7 +267,7 @@ class Yii2DbPanel extends Yii2DebugPanel
 			$subsql = '';
 			$pind= 0;
 			$tpos = 0;
-			while (preg_match('/\:[a-z0-9\.\_\-]+|\?/', $token, $m, PREG_OFFSET_CAPTURE, $tpos)) {
+			while (preg_match('/\:[a-z0-9\.\_\-]+|\?/i', $token, $m, PREG_OFFSET_CAPTURE, $tpos)) {
 				$key = $m[0][0];
 				if ($key == '?') $key = $pind++;
 				if (isset($params[$key])) {
@@ -343,8 +344,9 @@ class Yii2DbPanel extends Yii2DebugPanel
 		if (preg_match('/^\s*SELECT/', $query)) {
 			switch ($driver) {
 				case 'mysql': return 'EXPLAIN ' . $query;
+				case 'pgsql': return 'EXPLAIN ' . $query;
 				case 'sqlite': return 'EXPLAIN QUERY PLAN ' . $query;
-				// TODO: other drivers
+				case 'oci': return 'EXPLAIN PLAN FOR ' . $query;
 			}
 		}
 		return null;
@@ -385,11 +387,11 @@ class Yii2DbPanel extends Yii2DebugPanel
 	 * @param int $number
 	 * @return string sql-query
 	 */
-	public function queryByNum($number)
+	public function messageByNum($number)
 	{
 		foreach ($this->calculateTimings() as $timing) {
 			if (!$number--) {
-				return $this->formatSql($timing[1]);
+				return $timing[1];
 			}
 		}
 		return null;

@@ -8,7 +8,7 @@ class RatingBehavior extends CActiveRecordBehavior {
 		$owner = $this->getOwner();
 		$rating = Rating::model()->findByPk(array(
 		                                         'modelName' => get_class($owner),
-		                                         'modelId'   => $owner->primaryKey
+		                                         'modelId'   => $owner->getPrimaryKey()
 		                                    ));
 
 		if ( $rating ) {

@@ -170,7 +170,7 @@ $.fn.jMyCarousel = function(o) {
 		    li.eq(li.size() - 1).css('margin-bottom', li.css('margin-top'));			// Last element has to be the right margin since no margin collapse there
 		}else{													// horizontal mode
 			div.css('height', liSizeV + 'px');
-			ul.css('height', liSizeV + 'px');	
+			ul.css('height', liSizeV + 'px');
 		}
 								
 		// Calculate the number of visible elements inside (in case of size in percent)							
@@ -417,11 +417,15 @@ function css(el, prop) {
 }
 
 function width(el) {
-    	return el[0].offsetWidth + css(el, 'marginLeft') + css(el, 'marginRight');
+    //console.log(el[0].offsetWidth + css(el, 'marginLeft') + css(el, 'marginRight'));
+    //return el[0].offsetWidth + css(el, 'marginLeft') + css(el, 'marginRight');
+    return 158;
 }
 
 function height(el) {
-    return el[0].offsetHeight + css(el, 'marginTop') + css(el, 'marginBottom');
+    //console.log(el[0].offsetHeight + css(el, 'marginTop') + css(el, 'marginBottom'));
+    //return el[0].offsetHeight + css(el, 'marginTop') + css(el, 'marginBottom');
+    return 218;
 }
 
 })(jQuery);

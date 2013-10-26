@@ -87,6 +87,27 @@ class SubscriptionsModule extends CWebModule {
 				     'class' => 'application.modules.subscriptions.behaviors.BlogCommentBehavior'
 			     )
 			));
+
+		Yii::app()->pd->registerBehavior('GroupUser',
+			array(
+			     'groupUserSubscription' => array(
+				     'class' => 'application.modules.subscriptions.behaviors.GroupUserSubscription'
+			     )
+			));
+
+		Yii::app()->pd->registerBehavior('GroupUser',
+			array(
+			     'groupUserInvited' => array(
+				     'class' => 'application.modules.subscriptions.behaviors.GroupUserInvited'
+			     )
+			));
+
+		Yii::app()->pd->registerBehavior('BlogPost',
+			array(
+			     'blogPostSubscription' => array(
+				     'class' => 'application.modules.subscriptions.behaviors.BlogPostSubscription'
+			     )
+			));
 	}
 
 	private static function _setImport () {

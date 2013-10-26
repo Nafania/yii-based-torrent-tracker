@@ -43,10 +43,7 @@ class PluginsDispatcher extends CApplicationComponent {
 			}
 			closedir($handle);
 
-			Yii::app()->cache->set(self::CACHE_KEY . 'ModulesList',
-				self::$_modules,
-				0,
-				new CDirectoryCacheDependency(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR));
+			Yii::app()->cache->set(self::CACHE_KEY . 'ModulesList', self::$_modules, 0);
 		}
 	}
 

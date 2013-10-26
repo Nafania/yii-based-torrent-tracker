@@ -111,6 +111,7 @@ class Comment extends EActiveRecord implements ChangesInterface {
 			'parentId'  => 'Parent',
 			'modelName' => 'Model Name',
 			'modelId'   => 'Model',
+			'torrentId'   => Yii::t('commentsModule.common', 'Для торрента'),
 		);
 	}
 

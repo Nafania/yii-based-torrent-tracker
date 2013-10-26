@@ -23,7 +23,7 @@ $tid = $comment->getTorrentId();
 	echo CHtml::link(CHtml::image($img,
 			$alt,
 			array(
-			     'class'  => 'media-object',
+			     'class'  => 'media-object img-polaroid',
 			     'width'  => '32',
 			     'height' => '32'
 			)),
@@ -62,7 +62,7 @@ $tid = $comment->getTorrentId();
 
              <div class="commentText <?php echo 'rating' . ($rating < -10 ? -10 : $rating); ?>"><?php echo TextHelper::parseText($comment->getText(), 'comment-' . $comment->getId()); ?></div>
 			<?php if ( Yii::app()->getUser()->checkAccess('comments.default.loadAnswerBlock') && $comment->status == $comment::APPROVED ) { ?>
-				<span><?php echo CHtml::link(Yii::t('commentsModule.common', 'Reply'),
+				<span><?php echo CHtml::link(Yii::t('commentsModule.common', 'Ответить'),
 						'#',
 						array('class' => 'commentReply')); ?></span>
 			<?php } ?>

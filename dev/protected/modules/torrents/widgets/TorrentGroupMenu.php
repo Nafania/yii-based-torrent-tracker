@@ -15,7 +15,7 @@ class TorrentGroupMenu extends CWidget {
 	private function _getItems () {
 		if ( Subscription::check($this->model) ) {
 			$subscribeItem = array(
-				'label'       => '<i class="icon-minus-sign"></i>',
+				'label'       => '<i class="icon-eye-close"></i>',
 				'url'         => array('/subscriptions/default/delete'),
 				'linkOptions' => array(
 					'class'               => 'btn',
@@ -32,7 +32,7 @@ class TorrentGroupMenu extends CWidget {
 		}
 		else {
 			$subscribeItem = array(
-				'label'       => '<i class="icon-plus-sign"></i>',
+				'label'       => '<i class="icon-eye-open"></i>',
 				'url'         => array('/subscriptions/default/create'),
 				'linkOptions' => array(
 					'class'               => 'btn',

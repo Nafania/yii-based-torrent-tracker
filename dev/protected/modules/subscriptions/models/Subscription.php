@@ -67,14 +67,6 @@ class Subscription extends EActiveRecord {
 			));
 	}
 
-
-	protected function beforeValidate () {
-		if ( parent::beforeValidate() ) {
-
-			return true;
-		}
-	}
-
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
@@ -107,6 +99,28 @@ class Subscription extends EActiveRecord {
 		                                      ));
 	}
 
+
+	protected function beforeValidate () {
+		if ( parent::beforeValidate() ) {
+			$validator = CValidator::createValidator('unique',
+				$this,
+				'modelId',
+				array(
+				     'criteria' => array(
+					     'condition' => 'modelName = :modelName AND uId = :uId',
+					     'params'    => array(
+						     ':modelName' => $this->modelName,
+						     ':uId'       => Yii::app()->getUser()->getId(),
+					     ),
+				     ),
+				     'message'  => Yii::t('subscriptionsModule.common', 'Такая подписка уже существует.')
+				));
+			$this->getValidatorList()->insertAt(0, $validator);
+
+			return true;
+		}
+	}
+
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
 
@@ -131,7 +145,8 @@ class Subscription extends EActiveRecord {
 		if ( Yii::app()->getUser()->getIsGuest() ) {
 			return false;
 		}
-		return self::model()->findByPk(array('modelId'  => $model->getPrimaryKey(),
+		return self::model()->findByPk(array(
+		                                    'modelId'   => $model->getPrimaryKey(),
 		                                    'modelName' => get_class($model),
 		                                    'uId'       => Yii::app()->getUser()->getId()
 		                               ));

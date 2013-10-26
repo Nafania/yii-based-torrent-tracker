@@ -35,11 +35,11 @@ return array(
 		/**
 		 * @var Yii::app()->pd PluginsDispatcher
 		 */
-		'pd'           => array(
+		'pd'             => array(
 			'class' => 'application.components.PluginsDispatcher',
 		),
 
-		'authManager'  => array(
+		'authManager'    => array(
 			'behaviors'       => array(
 				'auth' => array(
 					'class' => 'application.modules.auth.components.AuthBehavior',
@@ -50,15 +50,17 @@ return array(
 			'defaultRoles'    => array('guest'),
 		),
 
-		'bootstrap'    => array(
+		'bootstrap'      => array(
 			'class'         => 'ext.bootstrap.components.Bootstrap',
 			'responsiveCss' => true,
 			'ajaxJsLoad'    => false,
 			'ajaxCssLoad'   => false,
+			'jqueryCss'     => false,
+			'minifyCss'     => true,
 			//'republishAssetsOnRequest' => false,
 		),
 
-		'urlManager'   => array(
+		'urlManager'     => array(
 			'urlFormat'        => 'path',
 			'showScriptName'   => false,
 			'useStrictParsing' => true,
@@ -70,7 +72,7 @@ return array(
 			)
 		),
 
-		'db'           => array(
+		'db'             => array(
 			'connectionString'      => 'mysql:host=localhost;dbname=yii-torrent',
 			'schemaCachingDuration' => 3600,
 			'username'              => 'root',
@@ -81,16 +83,16 @@ return array(
 			'tablePrefix'           => '',
 		),
 
-		'debug'        => array(
+		'debug'          => array(
 			'class' => 'ext.yii2-debug.Yii2Debug',
 		),
 
-		'errorHandler' => array(
+		'errorHandler'   => array(
 			'errorAction' => 'site/error',
 			'adminInfo'   => 'admin@yii-torrent'
 		),
 
-		'log'          => array(
+		'log'            => array(
 			'class'  => 'CLogRouter',
 			'routes' => array(
 				array(
@@ -109,26 +111,26 @@ return array(
 			),
 		),
 
-		'cache'        => array(
-			'class'     => 'system.caching.CDummyCache',
+		'cache'          => array(
+			'class'     => 'system.caching.CApcCache',
 			'keyPrefix' => 'tor_',
 		),
 
-		'mail'         => array(
+		'mail'           => array(
 			'class'         => 'ext.mail.YiiMail',
 			'transportType' => 'php',
 			'viewPath'      => 'application.views.mail',
 			'logging'       => true,
 			'dryRun'        => false
 		),
-		'request'      => array(
+		'request'        => array(
 			'enableCsrfValidation' => true,
 			'csrfTokenName'        => 'csrf'
 		),
-		'clientScript' => array(
+		'clientScript'   => array(
 			'class'       => 'ext.ExtendedClientScript.ExtendedClientScript',
-			'compressJs'  => true,
-			'compressCss' => true,
+			'compressJs'  => false,
+			'compressCss' => false,
 			'combineJs'   => false,
 			'combineCss'  => false,
 
@@ -143,9 +145,14 @@ return array(
 				),
 			),
 		),
-		'config'       => array(
+		'config'         => array(
 			'class' => 'EConfig',
 			'cache' => 3600,
 		),
+		'widgetFactory' => array(
+			'widgets' => array(
+				'TbPager' => array('displayFirstAndLast' => true)
+			),
+		)
 	)
 );
