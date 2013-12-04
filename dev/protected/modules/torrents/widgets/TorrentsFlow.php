@@ -1,5 +1,7 @@
 <?php
 class TorrentsFlow extends CWidget {
+	public $minLimit = 5;
+
 	public function run () {
 		$cs = Yii::app()->getClientScript();
 		$cs->registerCssFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/jMyCarousel/css/style.css');
@@ -10,7 +12,7 @@ class TorrentsFlow extends CWidget {
 		$criteria->order = 'mtime DESC';
 		$criteria->limit = 20;
 
-		$torrentsGroup = TorrentGroup::model()->findAll($criteria);
+		$torrentsGroup = modules\torrents\models\TorrentGroup::model()->findAll($criteria);
 
 		$this->render('torrentsFlow',
 			array(
@@ -53,9 +55,9 @@ class TorrentsFlow extends CWidget {
 			':cId' => $catId,
 		);
 
-		$torrentsGroup = TorrentGroup::model()->findAll($criteria);
+		$torrentsGroup = modules\torrents\models\TorrentGroup::model()->findAll($criteria);
 
-		if ( $torrentsGroup ) {
+		if ( sizeof($torrentsGroup) > $this->minLimit ) {
 			return $this->render('_torrentsFlowTab',
 				array(
 				     'torrentsGroup' => $torrentsGroup,

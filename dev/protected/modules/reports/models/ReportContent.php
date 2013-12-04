@@ -77,7 +77,7 @@ class ReportContent extends EActiveRecord {
 		return array(
 			'rId'   => 'rid',
 			'uId'   => 'uid',
-			'text'  => 'text',
+			'text'  => Yii::t('reportsModule.common', 'Текст жалобы'),
 			'ctime' => 'ctime',
 		);
 	}
@@ -90,7 +90,7 @@ class ReportContent extends EActiveRecord {
 				'modelId',
 				array(
 				     'attributeName' => 'id',
-				     'className'     => $this->modelName,
+				     'className'     => self::classNameToNamespace($this->modelName),
 				     'allowEmpty'    => false,
 				));
 			$this->getValidatorList()->insertAt(0, $validator);

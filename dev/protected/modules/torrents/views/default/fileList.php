@@ -1,21 +1,25 @@
-<?php $this->widget('zii.widgets.grid.CGridView',
+<?php $this->widget('ext.bootstrap.widgets.TbGridView',
 	array(
-	     'id' => 'fileList-grid',
+	     'id'           => 'fileList-grid-' . $model->getId(),
 	     'dataProvider' => $dataProvider,
 	     'template'     => '{items}{pager}',
-	     'cssFile' => false,
+	     'type'         => 'stripped',
+	     'htmlOptions'  => array(
+		     'class' => 'grid-view fileList-view',
+	     ),
+	     'cssFile'      => false,
 	     'columns'      => array(
 		     array(
-			     'name' => 'filename',
-			     'header' => Yii::t('torrentsModule.common', 'Filename'),
-			     'type' => 'raw',
-			     'value' => 'CHtml::encode($data["filename"])'
+			     'name'   => 'filename',
+			     'header' => Yii::t('torrentsModule.common', 'Название файла'),
+			     'type'   => 'raw',
+			     'value'  => 'CHtml::encode($data["filename"])'
 		     ),
 		     array(
-			     'name'  => 'size',
-			     'header' => Yii::t('torrentsModule.common', 'Size'),
-			     'type'  => 'raw',
-			     'value' => 'SizeHelper::formatSize($data["size"])'
+			     'name'   => 'size',
+			     'header' => Yii::t('torrentsModule.common', 'Размер'),
+			     'type'   => 'raw',
+			     'value'  => 'SizeHelper::formatSize($data["size"])'
 		     ),
 	     ),
 	));

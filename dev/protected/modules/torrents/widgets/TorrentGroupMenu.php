@@ -21,10 +21,10 @@ class TorrentGroupMenu extends CWidget {
 					'class'               => 'btn',
 					'data-toggle'         => 'tooltip',
 					'data-placement'      => 'top',
-					'data-model'          => get_class($this->model),
+					'data-model'          => $this->model->resolveClassName(),
 					'data-id'             => $this->model->getId(),
 					'data-action'         => 'subscription',
-					'data-original-title' => Yii::t('torrentsModule.common',
+					'title' => Yii::t('torrentsModule.common',
 						'Перестать следить за этой группой торрентов')
 				),
 				'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.delete'),
@@ -38,10 +38,10 @@ class TorrentGroupMenu extends CWidget {
 					'class'               => 'btn',
 					'data-toggle'         => 'tooltip',
 					'data-placement'      => 'top',
-					'data-model'          => get_class($this->model),
+					'data-model'          => $this->model->resolveClassName(),
 					'data-id'             => $this->model->getId(),
 					'data-action'         => 'subscription',
-					'data-original-title' => Yii::t('torrentsModule.common',
+					'title' => Yii::t('torrentsModule.common',
 						'Следить за этой группой торрентов')
 				),
 				'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.create'),
@@ -59,7 +59,7 @@ class TorrentGroupMenu extends CWidget {
 					'class'               => 'btn',
 					'data-toggle'         => 'tooltip',
 					'data-placement'      => 'top',
-					'data-original-title' => Yii::t('torrentsModule.common',
+					'title' => Yii::t('torrentsModule.common',
 						'Добавить торрент в группу')
 				),
 				'visible'     => Yii::app()->getUser()->checkAccess('torrents.default.createTorrent'),
@@ -75,7 +75,7 @@ class TorrentGroupMenu extends CWidget {
 					'class'               => 'btn',
 					'data-toggle'         => 'tooltip',
 					'data-placement'      => 'top',
-					'data-original-title' => Yii::t('torrentsModule.common',
+					'title' => Yii::t('torrentsModule.common',
 						'Редактировать группу торрентов')
 				),
 				'visible'     => Yii::app()->getUser()->checkAccess('torrents.default.updateGroup'),
@@ -87,7 +87,7 @@ class TorrentGroupMenu extends CWidget {
 					'class'               => 'btn',
 					'data-toggle'         => 'tooltip',
 					'data-placement'      => 'top',
-					'data-original-title' => Yii::t('torrentsModule.common',
+					'title' => Yii::t('torrentsModule.common',
 						'Удалить группу торрентов'),
 					'submit'              => array(
 						'/torrents/default/delete',

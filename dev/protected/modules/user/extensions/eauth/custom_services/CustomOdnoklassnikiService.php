@@ -23,8 +23,10 @@ class CustomOdnoklassnikiService extends OdnoklassnikiOAuthService {
 		));
 
 		$this->attributes = json_decode(json_encode($info), true);
+		var_dump($this->attributes);exit();
 		$this->attributes['id'] = $info->uid;
 		$this->attributes['name'] = $info->first_name . ' ' . $info->last_name;
+		$this->attributes['url'] = 'http://www.odnoklassniki.ru/profile/' . $info->uid;
 
 		if ($this->scope == 'VALUABLE ACCESS') {
 			$this->getRealIdAndUrl();

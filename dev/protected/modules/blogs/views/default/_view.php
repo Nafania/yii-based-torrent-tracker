@@ -1,11 +1,11 @@
 <?php
 /**
- * @var $data Blog
+ * @var $data modules\blogs\models\Blog
  */
 ?>
 <div class="media blogsList">
 	<?php
-	$img = CHtml::image($data->user->profile->getImageUrl(80, 80),
+	$img = \CHtml::image($data->user->profile->getImageUrl(80, 80),
 		$data->user->getName(),
 		array(
 		     'class' => 'media-object img-polaroid',
@@ -17,12 +17,12 @@
 	<div class="media-body">
         <h3 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h3>
 
-        <p><?php echo StringHelper::cutStr($data->getDescription()); ?></p>
+        <p><?php echo \StringHelper::cutStr($data->getDescription()); ?></p>
 
 		<div class="pull-right">
 			<?php
 			if ( Yii::app()->user->checkAccess('createPostInGroupMemberBlog',
-					array('isMember' => Group::checkJoin($data->group))) || Yii::app()->user->checkAccess('createPostInOwnBlog',
+					array('isMember' => \Group::checkJoin($data->group))) || Yii::app()->user->checkAccess('createPostInOwnBlog',
 					array('ownerId' => $data->ownerId)) || Yii::app()->user->checkAccess('createPostInBlog')
 			) {
 				?>
@@ -37,7 +37,7 @@
 					     'htmlOptions' => array(
 						     'data-toggle'         => 'tooltip',
 						     'data-placement'      => 'top',
-						     'data-original-title' => Yii::t('blogsModule.common', 'Написать пост'),
+						     'title' => Yii::t('blogsModule.common', 'Написать пост'),
 					     )
 					));
 				?>
@@ -65,7 +65,7 @@
 						     ),
 						     'data-toggle'         => 'tooltip',
 						     'data-placement'      => 'top',
-						     'data-original-title' => Yii::t('blogsModule.common', 'Редактировать блог'),
+						     'title' => Yii::t('blogsModule.common', 'Редактировать блог'),
 					     )
 					));
 				?>
@@ -95,7 +95,7 @@
 						     ),
 						     'data-toggle'         => 'tooltip',
 						     'data-placement'      => 'top',
-						     'data-original-title' => Yii::t('blogsModule.common', 'Удалить блог'),
+						     'title' => Yii::t('blogsModule.common', 'Удалить блог'),
 					     )
 					));
 				?>
@@ -104,4 +104,3 @@
 		</div>
     </div>
 </div>
-<hr />

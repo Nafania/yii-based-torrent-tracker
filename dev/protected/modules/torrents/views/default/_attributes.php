@@ -27,7 +27,7 @@ foreach ( $attributes AS $attribute ) {
 			array(
 			     'data-toggle'         => 'tooltip',
 			     'data-placement'      => 'right',
-			     'data-original-title' => $description,
+			     'title' => $description,
 			));
 	}
 

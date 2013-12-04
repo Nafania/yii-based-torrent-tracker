@@ -33,7 +33,7 @@ class SavedsearchesModule extends CWebModule {
 				     'class' => 'application.modules.savedsearches.behaviors.UserSavedSearch'
 			     )
 			));
-		Yii::app()->pd->registerBehavior('TorrentGroup',
+		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup',
 			array(
 			     'torrentGroupSearch' => array(
 				     'class' => 'application.modules.savedsearches.behaviors.TorrentGroupSearch'

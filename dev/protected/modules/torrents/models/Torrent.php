@@ -1,22 +1,33 @@
 <?php
+namespace modules\torrents\models;
+use Yii;
+use CDbCriteria;
+use CActiveDataProvider;
+use CMap;
+use modules\torrents\components AS tComponents;
+use modules\torrents\models AS models;
 
 /**
  * This is the model class for table "torrents".
  *
  * The followings are the available columns in table 'torrents':
- * @property integer        $id
- * @property integer        $ctime
- * @property integer        $size
- * @property integer        $downloads
- * @property integer        $seeders
- * @property integer        $leechers
- * @property integer        $mtime
- * @property string         $info_hash
- * @property integer        $uid
- * @property string         title
- * @property TorrentGroup   torrentGroup
+ * @property integer                                 $id
+ * @property integer                                 $ctime
+ * @property integer                                 $size
+ * @property integer                                 $downloads
+ * @property integer                                 $seeders
+ * @property integer                                 $leechers
+ * @property integer                                 $mtime
+ * @property string                                  $info_hash
+ * @property integer                                 $uid
+ * @property string                                  $title
+ * @property integer                                 $hashChanged
+ * @property models\TorrentGroup                     torrentGroup
  */
-class Torrent extends EActiveRecord {
+class Torrent extends \EActiveRecord {
+
+	const HASH_CHANGED = 1;
+	const HASH_NOT_CHANGED = 0;
 
 	public $cacheTime = 3600;
 
@@ -103,7 +114,7 @@ class Torrent extends EActiveRecord {
 				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
 				     // Empty by default
 				     'attributesPrefix' => '',
-				     'preload'          => false,
+				     'preload'          => true,
 			     )
 			));
 	}
@@ -113,7 +124,7 @@ class Torrent extends EActiveRecord {
 			array(
 			     'torrentGroup' => array(
 				     self::BELONGS_TO,
-				     'TorrentGroup',
+				     'modules\torrents\models\TorrentGroup',
 				     'gId'
 			     ),
 			)
@@ -163,9 +174,9 @@ class Torrent extends EActiveRecord {
 
 	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
-			if ( $this->info_hash instanceof CUploadedFile && !empty($this->info_hash->name) ) {
+			if ( $this->info_hash instanceof \CUploadedFile && !empty($this->info_hash->name) ) {
 
-				$torrent = new TorrentComponent($this->info_hash->getTempName());
+				$torrent = new tComponents\TorrentComponent($this->info_hash->getTempName());
 				if ( !$torrent->is_torrent($this->info_hash->getTempName()) ) {
 					$this->addError('info_hash', Yii::t('torrentsModule.common', 'Not a valid torrent file'));
 					return false;
@@ -182,6 +193,8 @@ class Torrent extends EActiveRecord {
 
 			return true;
 		}
+
+		return false;
 	}
 
 	protected function beforeSave () {
@@ -194,8 +207,8 @@ class Torrent extends EActiveRecord {
 			}
 
 			/* @var $current Torrent */
-			if ( $this->info_hash instanceof CUploadedFile && !empty($this->info_hash->name) ) {
-				$torrent = new TorrentComponent($this->info_hash->getTempName());
+			if ( $this->info_hash instanceof \CUploadedFile && !empty($this->info_hash->name) ) {
+				$torrent = new tComponents\TorrentComponent($this->info_hash->getTempName());
 
 				if ( $torrent->is_private() ) {
 					$torrent->is_private(false);
@@ -206,6 +219,7 @@ class Torrent extends EActiveRecord {
 
 				$current = self::findByPk($this->getId());
 				if ( $current ) {
+					$this->deleteXbtHash();
 					@unlink($current->getTorrentFilePath() . $this->getId() . '.torrent');
 				}
 				$this->info_hash->saveAs($this->getTmpFile($torrent->hash_info()));
@@ -220,6 +234,17 @@ class Torrent extends EActiveRecord {
 
 			return true;
 		}
+
+		return false;
+	}
+
+	protected function deleteXbtHash () {
+		$this->hashChanged = self::HASH_CHANGED;
+
+		$comm = $this->getDbConnection()->createCommand('INSERT INTO {{xbt_deleted_hashes}} (fid, info_hash) VALUES(:fid, :info_hash)');
+		$comm->bindValue(':fid', $this->id);
+		$comm->bindValue(':info_hash', $this->info_hash);
+		$comm->execute();
 	}
 
 	protected function afterSave () {
@@ -228,6 +253,12 @@ class Torrent extends EActiveRecord {
 		}
 
 		parent::afterSave();
+	}
+
+	protected function afterDelete () {
+		parent::afterDelete();
+
+		$this->deleteXbtHash();
 	}
 
 	public function getTmpFile ( $hash = false ) {
@@ -253,7 +284,7 @@ class Torrent extends EActiveRecord {
 
 	public function getSize ( $nice = false ) {
 		if ( $nice ) {
-			return SizeHelper::formatSize($this->size);
+			return \SizeHelper::formatSize($this->size);
 		}
 		return number_format($this->size);
 	}
@@ -276,17 +307,15 @@ class Torrent extends EActiveRecord {
 
 		$attrs = $this->getEavAttributes($ids);
 
-		$i = 0;
 		$return = array();
-		foreach ( $attrs AS $val ) {
-			$attribute = $attributes[$i];
-			++$i;
+		foreach ( $attrs AS $id => $val ) {
+			$attribute = $attributes[$id];
 			if ( !$val || $attribute->separate ) {
 				continue;
 			}
 			$val = nl2br($val);
 			if ( $attribute->validator == 'url' ) {
-				$val = TextHelper::makeClickable($val);
+				$val = \TextHelper::makeClickable($val);
 			}
 
 			$return[$attribute->getTitle()] = $val;
@@ -339,5 +368,16 @@ class Torrent extends EActiveRecord {
 
 	public function getTitle () {
 		return $this->torrentGroup->getTitle() . ' ' . Yii::app()->config->get('torrentsModule.torrentsNameDelimiter') . ' ' . $this->getSeparateAttribute();
+	}
+
+	public function getAnnounce () {
+		if ( Yii::app()->getUser()->getIsGuest() ) {
+			$announce = Yii::app()->config->get('torrentsModule.xbt_listen_url') . ':' . Yii::app()->config->get('torrentsModule.listen_port') . '/announce/';
+		}
+		else {
+			$announce = Yii::app()->config->get('torrentsModule.xbt_listen_url') . ':' . Yii::app()->config->get('torrentsModule.listen_port') . '/' . Yii::app()->getUser()->profile->getTorrentPass() . '/announce/';
+		}
+
+		return $announce;
 	}
 }

@@ -20,7 +20,7 @@ class TagsModule extends CWebModule
 	}
 
 	protected static function _addBehaviors () {
-		Yii::app()->pd->registerBehavior('Torrent', array(
+		Yii::app()->pd->registerBehavior('modules\torrents\models\Torrent', array(
 		        'tags' => array(
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
 		            'modelTableName' => 'Torrent',
@@ -30,7 +30,7 @@ class TagsModule extends CWebModule
 		    )
 		);
 
-		Yii::app()->pd->registerBehavior('TorrentGroup', array(
+		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup', array(
 		        'tags' => array(
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
 		            'modelTableName' => 'TorrentGroup',
@@ -40,7 +40,7 @@ class TagsModule extends CWebModule
 		    )
 		);
 
-		Yii::app()->pd->registerBehavior('BlogPost', array(
+		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost', array(
 		        'tags' => array(
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
 		            'modelTableName' => 'BlogPost',

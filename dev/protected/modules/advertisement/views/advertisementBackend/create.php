@@ -51,6 +51,18 @@ $form = $this->beginWidget('CActiveForm',
              </div>
 
 
+	            <div class="row <?php if ( $model->getError('bizRule') ) {
+              echo 'errors';
+             } ?>">
+                 <div class="column span-4"><?php echo $form->labelEx($model, 'bizRule'); ?></div>
+                 <div class="column span-16 span-flexible">
+	                 <?php echo $form->textArea($model, 'bizRule'); ?>
+                  <ul class="errorlist">
+                         <li><?php echo $form->error($model, 'bizRule'); ?></li>
+                     </ul>
+                 </div>
+
+
             </fieldset>
 
         </div>

@@ -4,6 +4,8 @@ class RatingsModule extends CWebModule {
 	public $backendController = 'ratingsBackend';
 	public $defaultController = 'default';
 
+	public $useCronReCalc = false;
+
 	private $_assetsUrl;
 
 	public function init () {
@@ -33,6 +35,7 @@ class RatingsModule extends CWebModule {
 		self::_addRelations();
 		self::_addBehaviors();
 		self::_setImport();
+		self::_addCommandsPath();
 
 		Yii::app()->pd->addAdminModule('ratings');
 	}
@@ -46,7 +49,7 @@ class RatingsModule extends CWebModule {
 			}
 		}
 
-		return ( isset($ratings[$num]) ? $ratings[$num] : 0 );
+		return (isset($ratings[$num]) ? $ratings[$num] : 0);
 	}
 
 	protected static function _addUrlRules () {
@@ -68,25 +71,38 @@ class RatingsModule extends CWebModule {
 			     'Rating',
 			     'modelId',
 			     'joinType' => 'LEFT JOIN',
-			     'on' => 'rating.modelName = \'User\'',
-			     'together'  => true,
+			     'on'       => 'rating.modelName = \'User\'',
+			     'together' => true,
 			),
 			'application.modules.ratings.models.*');
 
-		Yii::app()->pd->addRelations('BlogPost',
+		Yii::app()->pd->addRelations('modules\blogs\models\BlogPost',
 			'rating',
 			array(
 			     CActiveRecord::HAS_ONE,
 			     'Rating',
 			     'modelId',
 			     'joinType' => 'LEFT JOIN',
-			     'on' => 'rating.modelName = \'BlogPost\'',
-			     'together'  => true,
+			     'on'       => 'rating.modelName = \'BlogPost\'',
+			     'together' => true,
+			),
+			'application.modules.ratings.models.*');
+
+		Yii::app()->pd->addRelations('modules\torrents\models\TorrentGroup',
+			'ratings',
+			array(
+			     CActiveRecord::HAS_MANY,
+			     'RatingRelations',
+			     'modelId',
+			     'condition' => 'modelName = :modelName',
+			     'params'    => array(
+				     'modelName' => 'TorrentGroup'
+			     )
 			),
 			'application.modules.ratings.models.*');
 	}
 
-	private static function _addBehaviors() {
+	private static function _addBehaviors () {
 		Yii::app()->pd->registerBehavior('User',
 			array(
 			     'userRatingBehavior' => array(
@@ -99,7 +115,7 @@ class RatingsModule extends CWebModule {
 				     'class' => 'application.modules.ratings.behaviors.BlogRatingBehavior'
 			     )
 			));
-		Yii::app()->pd->registerBehavior('BlogPost',
+		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost',
 			array(
 			     'blogPostRatingBehavior' => array(
 				     'class' => 'application.modules.ratings.behaviors.BlogPostRatingBehavior'
@@ -112,7 +128,7 @@ class RatingsModule extends CWebModule {
 				     'class' => 'application.modules.ratings.behaviors.CommentRatingBehavior'
 			     )
 			));
-		Yii::app()->pd->registerBehavior('TorrentGroup',
+		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup',
 			array(
 			     'torrentRatingBehavior' => array(
 				     'class' => 'application.modules.ratings.behaviors.TorrentRatingBehavior'
@@ -127,9 +143,12 @@ class RatingsModule extends CWebModule {
 			));
 	}
 
-	private static function _setImport(){
+	private static function _setImport () {
 		Yii::app()->pd->setImport(array('application.modules.ratings.behaviors.*'));
 		Yii::app()->pd->setImport(array('application.modules.ratings.models.*'));
 	}
 
+	private static function _addCommandsPath () {
+		Yii::app()->pd->addCommandsPath('application.modules.ratings.commands');
+	}
 }

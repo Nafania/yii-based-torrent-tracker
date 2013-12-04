@@ -12,6 +12,7 @@
  * @property integer             $uId
  * @property integer             $unread
  * @property string              $icon
+ * @property integer             $notified
  */
 class Event extends EActiveRecord {
 	const EVENT_UNREAD = 1;
@@ -152,6 +153,7 @@ class Event extends EActiveRecord {
 			if ( $this->getIsNewRecord() ) {
 				$this->ctime = time();
 				$this->unread = self::EVENT_UNREAD;
+				$this->notified = 0;
 			}
 
 			return true;

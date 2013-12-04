@@ -1,4 +1,10 @@
 <?php
+namespace modules\blogs\models;
+use Yii;
+use CDbCriteria;
+use CActiveDataProvider;
+use CSort;
+use CMap;
 
 /**
  * This is the model class for table "blogs".
@@ -11,7 +17,7 @@
  * @property string  $description
  * @property integer $groupId
  */
-class Blog extends EActiveRecord {
+class Blog extends \EActiveRecord {
 	public $cacheTime = 3600;
 
 	/**
@@ -52,7 +58,7 @@ class Blog extends EActiveRecord {
 				'description',
 				'filter',
 				'filter' => array(
-					new CHtmlPurifier(),
+					new \CHtmlPurifier(),
 					'purify'
 				)
 			),
@@ -72,7 +78,7 @@ class Blog extends EActiveRecord {
 	public function relations () {
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
-		return CMap::mergeArray(parent::relations(),
+		return \CMap::mergeArray(parent::relations(),
 			array(
 			     'user'  => array(
 				     self::BELONGS_TO,
@@ -94,7 +100,7 @@ class Blog extends EActiveRecord {
 
 
 	public function behaviors () {
-		return CMap::mergeArray(parent::behaviors(),
+		return \CMap::mergeArray(parent::behaviors(),
 			array(
 			     'SlugBehavior' => array(
 				     'class'           => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
@@ -146,15 +152,15 @@ class Blog extends EActiveRecord {
 		 */
 		if ( strpos($sort, 'commentsCount') !== false ) {
 			$criteria->select = 't.*, cc.count AS commentsCount';
-			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'' . get_class($this) . '\' AND cc.modelId = t.id)';
+			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'' . $this->resolveClassName() . '\' AND cc.modelId = t.id)';
 			//$criteria->group = 't.id';
 		}
 		/**
 		 * подключаем таблицу рейтингов
 		 */
 		//if ( strpos($sort, 'rating') !== false ) {
-		$criteria->select .= ', r.rating AS rating';
-		$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
+		$criteria->select = 't.*, r.rating AS rating';
+		$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . $this->resolveClassName() . '\' AND r.modelId = t.id)';
 		//}
 
 		$sort = new CSort($this);
@@ -193,18 +199,19 @@ class Blog extends EActiveRecord {
 	 */
 	public function forCurrentUser () {
 		$criteria = new CDbCriteria();
-		$criteria->with = array(
+		/*$criteria->with = array(
 			'group',
 			'group.groupUsers'
 		);
-		$criteria->together = true;
-		$criteria->addCondition('t.ownerId = :ownerId', 'OR');
-		$criteria->addCondition('groupUsers.idUser = :idUser', 'OR');
-		$criteria->addCondition('groupUsers.status = :status', 'AND');
+		$criteria->together = true;*/
+		//$criteria->select .= '*';
+		//$criteria->
+		$criteria->join = 'LEFT OUTER JOIN `groups` `group` ON (`t`.`groupId`=`group`.`id`) LEFT OUTER JOIN `groupUsers` `groupUsers` ON (`groupUsers`.`idGroup`=`group`.`id`) ';
+		$criteria->addCondition('( t.ownerId = :ownerId ) OR (groupUsers.idUser = :idUser AND groupUsers.status = :status)');
 		$criteria->params = array(
 			':ownerId' => Yii::app()->getUser()->getId(),
 			':idUser'  => Yii::app()->getUser()->getId(),
-			':status'  => GroupUser::STATUS_APPROVED,
+			':status'  => \GroupUser::STATUS_APPROVED,
 		);
 
 		$this->getDbCriteria()->mergeWith($criteria);

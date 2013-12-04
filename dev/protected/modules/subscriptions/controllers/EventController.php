@@ -1,6 +1,6 @@
 <?php
 
-class EventController extends Controller {
+class EventController extends components\Controller {
 
 	/**
 	 * @return array action filters
@@ -8,7 +8,7 @@ class EventController extends Controller {
 	public function filters () {
 		return CMap::mergeArray(parent::filters(),
 			array(
-			     'ajaxOnly + getList',
+			     'ajaxOnly + getList, read',
 			));
 	}
 
@@ -39,7 +39,7 @@ class EventController extends Controller {
 	 * @param integer the ID of the model to be loaded
 	 */
 	public function loadModel ( $id ) {
-		$model = Event::model()->findByPk($id);
+		$model = Event::model()->forCurrentUser()->findByPk($id);
 		if ( $model === null ) {
 			throw new CHttpException(404, 'The requested page does not exist.');
 		}

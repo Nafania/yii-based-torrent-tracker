@@ -20,7 +20,7 @@ class TopMenu extends CWidget {
 			     'notTags'            => $notTags,
 			     'searchVal'          => $searchVal,
 			     'sortVal'            => $sortVal,
-			     'periodVal'         => $periodVal,
+			     'periodVal'          => $periodVal,
 			     'settingActive'      => $selectedCategories || $selectedTags || $notTags || $searchVal || $sortVal || $periodVal,
 			));
 	}
@@ -31,10 +31,10 @@ class TopMenu extends CWidget {
 			'class'       => 'bootstrap.widgets.TbMenu',
 			'encodeLabel' => false,
 			'items'       => array(
-				array(
+				/*array(
 					'label' => Yii::t('common', 'Главная'),
 					'url'   => array('/site/index'),
-				),
+				),*/
 				array(
 					'label' => Yii::t('torrentsModule.common', 'Торренты'),
 					'url'   => array('/torrents/default/index'),
@@ -94,26 +94,26 @@ class TopMenu extends CWidget {
 
 			$items['items'] = CMap::mergeArray(array(
 			                                        array(
+				                                        'divider' => true,
+			                                        ),
+			                                        array(
 				                                        'label'   => CHtml::image(Yii::app()->getUser()->profile->getImageUrl(18,
 						                                        18),
 					                                        Yii::app()->getUser()->getName(),
 					                                        array(
-					                                             'width'  => '18',
-					                                             'height' => '18'
+					                                             'style' => 'width:18px;height:18px;',
 					                                        )) . ' <span class="badge ' . $class . '">' . $rating . '</span>',
 				                                        'url'     => '#',
 				                                        'visible' => !Yii::app()->getUser()->getIsGuest(),
 				                                        'items'   => array(
 					                                        array(
-						                                        'label' => 'Друзья',
-						                                        'url'   => '#',
+						                                        'label' => Yii::t('userModule.common', 'Профиль'),
+						                                        'url'   => Yii::app()->getUser()->getUrl(),
 					                                        ),
 					                                        array(
-						                                        'label' => Yii::t('userModule.common', 'Профиль'),
-						                                        'url'   => array(
-							                                        '/user/default/view',
-							                                        'id' => Yii::app()->getUser()->getId()
-						                                        ),
+						                                        'label' => Yii::t('pmsModule.common',
+							                                        'Личные сообщения'),
+						                                        'url'   => array('/pms/default/index'),
 					                                        ),
 					                                        array(
 						                                        'label' => Yii::t('blogsModule.common', 'Мои блоги'),

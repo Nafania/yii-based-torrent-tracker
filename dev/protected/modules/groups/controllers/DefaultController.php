@@ -1,6 +1,6 @@
 <?php
 
-class DefaultController extends Controller {
+class DefaultController extends components\Controller {
 
 	/**
 	 * @return array action filters
@@ -30,7 +30,7 @@ class DefaultController extends Controller {
 			'Просмотр группы "{groupName}"',
 			array('{groupName}' => $model->getTitle(false)));
 
-		$blogPost = new BlogPost('search');
+		$blogPost = new modules\blogs\models\BlogPost('search');
 		$blogPost->forGroup($id);
 
 		/**

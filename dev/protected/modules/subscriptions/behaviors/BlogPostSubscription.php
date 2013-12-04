@@ -7,20 +7,26 @@ class BlogPostSubscription extends CActiveRecordBehavior {
 	public function afterSave ( $e ) {
 		parent::afterSave($e);
 		/**
-		 * @var $owner BlogPost
+		 * @var $owner modules\blogs\models\BlogPost
 		 */
 		$owner = $this->getOwner();
-		$blog = Blog::model()->findByPk($owner->blogId);
+		$blog = modules\blogs\models\Blog::model()->findByPk($owner->blogId);
 
 		if ( $blog ) {
 			$subscriptions = Subscription::model()->findAllByAttributes(array(
 			                                                                 'modelName' => 'Blog',
-			                                                                 'modelId' => $blog->getId()
+			                                                                 'modelId'   => $blog->getId()
 			                                                            ));
 			$url = $owner->getUrl();
 			$icon = 'list';
 
 			foreach ( $subscriptions AS $subscription ) {
+				/**
+				 * Если автор поста является подписчиком, то не шлем ему уведомление
+				 */
+				if ( $owner->ownerId == $subscription->uId ) {
+					continue;
+				}
 				$event = new Event();
 				$event->text = Yii::t('subscriptionsModule.common',
 					'Добавлен новый пост в блог "{title}", за которым вы следите',

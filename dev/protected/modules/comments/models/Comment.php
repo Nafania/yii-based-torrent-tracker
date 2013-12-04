@@ -103,15 +103,15 @@ class Comment extends EActiveRecord implements ChangesInterface {
 	public function attributeLabels () {
 		return array(
 			'id'        => 'ID',
-			'text'      => 'Text',
+			'text'      => Yii::t('commentsModule.common', 'Текст'),
 			'ownerId'   => 'Owner',
-			'ctime'     => 'Ctime',
-			'mtime'     => 'Mtime',
-			'status'    => 'Status',
+			'ctime'     => Yii::t('commentsModule.common', 'Время создания'),
+			'mtime'     => Yii::t('commentsModule.common', 'Время изменения'),
+			'status'    => Yii::t('commentsModule.common', 'Статус'),
 			'parentId'  => 'Parent',
 			'modelName' => 'Model Name',
 			'modelId'   => 'Model',
-			'torrentId'   => Yii::t('commentsModule.common', 'Для торрента'),
+			'torrentId' => Yii::t('commentsModule.common', 'Для торрента'),
 		);
 	}
 
@@ -155,7 +155,7 @@ class Comment extends EActiveRecord implements ChangesInterface {
 				'modelId',
 				array(
 				     'attributeName' => 'id',
-				     'className'     => $this->modelName,
+				     'className'     => self::classNameToNamespace($this->modelName),
 				     'allowEmpty'    => false,
 				));
 			$this->getValidatorList()->insertAt(0, $validator);
@@ -231,13 +231,16 @@ class Comment extends EActiveRecord implements ChangesInterface {
 			case self::APPROVED:
 				return $this->text;
 			case self::DELETED:
-				return '<span class="commentDeleted">' . Yii::t('commentsModule.common', 'Comment deleted') . '</span>';
+				return '<span class="commentDeleted">' . Yii::t('commentsModule.common',
+					'Комментарий удален') . '</span>';
 		}
 	}
 
 
 	public function getTitle () {
-		return $this->id;
+		return Yii::t('commentsModule.common',
+			'Комментарий #{commentId}',
+			array('{commentId}' => $this->getId()));
 	}
 
 	public function getOwner () {
@@ -249,7 +252,7 @@ class Comment extends EActiveRecord implements ChangesInterface {
 	}
 
 	public function getChangesText () {
-		$modelName = $this->modelName;
+		$modelName = self::classNameToNamespace($this->modelName);
 		$owner = $modelName::model()->findByPk($this->modelId);
 
 		return Yii::t('commentsModule.common',
@@ -268,7 +271,7 @@ class Comment extends EActiveRecord implements ChangesInterface {
 	}
 
 	public function getUrl () {
-		$modelName = $this->modelName;
+		$modelName = self::classNameToNamespace($this->modelName);
 		$owner = $modelName::model()->findByPk($this->modelId);
 		return CMap::mergeArray($owner->getUrl(), array('#' => 'comment-' . $this->getId()));
 	}

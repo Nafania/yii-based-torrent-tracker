@@ -49,7 +49,7 @@ class CategoryModule extends CWebModule {
 
 	private static function _addRelations () {
 
-		Yii::app()->pd->addRelations('TorrentGroup',
+		Yii::app()->pd->addRelations('modules\torrents\models\TorrentGroup',
 			'category',
 			array(
 			     CActiveRecord::BELONGS_TO,

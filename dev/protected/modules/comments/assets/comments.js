@@ -9,26 +9,24 @@ $(document).on('click', '.commentReply', function (e) {
 
     if (elem.data('activated') == '1') {
         elem.data('activated', 0);
-        elem.nextAll('.answerBlock').fadeOut('slow', function () {
+        elem.nextAll('.answerBlock').fadeOut('fast', function () {
             $(this).remove();
         });
         return false;
     }
 
     answerBlock.prevAll('.commentReply').data('activated', 0);
-    answerBlock.fadeOut('slow', function () {
-        $(this).remove();
-    });
+    answerBlock.remove();
 
     $.ajax({
         type: 'get',
         dataType: 'json',
         url: commentsUrl,
         data: {modelName: modelName, modelId: modelId, parentId: parentId },
-        cache: true,
+        cache: false,
         success: function (data) {
             $(data.data.view).insertAfter(elem);
-            elem.data('activated', 1);
+            elem.data('activated', '1');
         }
     });
 });
@@ -54,7 +52,20 @@ $(document).on('mouseenter', '.comment', function (e) {
 $(document).on('mouseleave', '.comment', function (e) {
     $(this).find('.commentOptions:first a').fadeOut('fast');
 });
+$(document).on('mousedown', '.redactor_btn_quote', function(e) {
+    var text = "";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    }
+    else {
+        text = document.selection.createRange().text;
+    }
+    $(this).data('selection', text);
+});
+
 jQuery(function ($) {
+    $(".fancybox").fancybox();
+
     $(".fancybox.youtube").click(function (e) {
 
         $.fancybox({

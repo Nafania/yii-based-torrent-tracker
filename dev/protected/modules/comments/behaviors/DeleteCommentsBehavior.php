@@ -5,8 +5,8 @@ class DeleteCommentsBehavior extends CActiveRecordBehavior {
 		parent::afterDelete($e);
 
 		$owner = $this->getOwner();
-		$comments = Comment::model()->findByAttributes(array(
-		                                                    'modelName' => get_class($owner),
+		$comments = Comment::model()->findAllByAttributes(array(
+		                                                    'modelName' => $owner->resolveClassName(),
 		                                                    'modelId'   => $owner->primaryKey
 		                                               ));
 
@@ -16,12 +16,12 @@ class DeleteCommentsBehavior extends CActiveRecordBehavior {
 
 		if ( $count = sizeof($comments) ) {
 			$commentCount = CommentCount::model()->findByPk(array(
-			                                                     'modelName' => get_class($owner),
+			                                                     'modelName' => $owner->resolveClassName(),
 			                                                     'modelId'   => $owner->primaryKey
 			                                                ));
 			if ( !$commentCount ) {
 				$commentCount = new CommentCount();
-				$commentCount->modelName = $this->modelName;
+				$commentCount->modelName = self::classNameToNamespace($this->modelName);
 				$commentCount->modelId = $this->modelId;
 			}
 			$commentCount->count -= $count;

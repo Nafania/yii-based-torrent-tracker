@@ -42,7 +42,8 @@ class SlugBehavior extends CActiveRecordBehavior {
 	const GOOGLE_API_PATH = 'ext.googleapi.Google_Translate_API';
 
 	// source slug
-	public $sourceAttribute = 'title';
+	public $sourceAttribute;
+	public $sourceMethod;
 	// result
 	public $slugAttribute = 'slug';
 	// api path
@@ -51,6 +52,8 @@ class SlugBehavior extends CActiveRecordBehavior {
 	public $mode = self::MODE_TRANSLIT;
 
 	public $connectionId = 'db';
+
+	protected $attribute;
 
 
 	/**
@@ -163,10 +166,20 @@ class SlugBehavior extends CActiveRecordBehavior {
 
 	public function getSlugTitle () {
 		if ( $this->mode == self::MODE_TRANSLIT ) {
-			return $this->convertToSlug($this->getOwner()->{$this->sourceAttribute});
+			if ( $this->sourceAttribute ) {
+				return $this->convertToSlug($this->getOwner()->{$this->sourceAttribute});
+			}
+			else {
+				return $this->convertToSlug($this->getOwner()->{$this->sourceMethod}());
+			}
 		}
 		else if ( $this->mode == self::MODE_TRANSLATE ) {
-			return $this->translateSlug($this->getOwner()->{$this->sourceAttribute});
+			if ( $this->sourceAttribute ) {
+				return $this->translateSlug($this->getOwner()->{$this->sourceAttribute});
+			}
+			else {
+				return $this->translateSlug($this->getOwner()->{$this->sourceMethod}());
+			}
 		}
 	}
 

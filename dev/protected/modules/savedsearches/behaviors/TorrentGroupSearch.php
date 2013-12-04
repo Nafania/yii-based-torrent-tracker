@@ -20,7 +20,7 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 		$period = Yii::app()->getRequest()->getParam('period', $searchData['period']);
 
 		/**
-		 * @var $owner TorrentGroup
+		 * @var $owner modules\torrents\models\TorrentGroup
 		 */
 		$owner = $this->getOwner();
 		$alias = $owner->getTableAlias();
@@ -36,7 +36,8 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 		if ( strpos($sort, 'commentsCount') !== false ) {
 			$_criteria = new CDbCriteria();
 			$_criteria->select = $alias . '.*, cc.count AS commentsCount';
-			$_criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'TorrentGroup\' AND cc.modelId = ' . $alias . '.id)';
+			$_criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = :modelName AND cc.modelId = ' . $alias . '.id)';
+			$_criteria->params[':modelName'] = $owner->resolveClassName();
 			$this->getOwner()->getDbCriteria()->mergeWith($_criteria);
 		}
 		/**
@@ -45,11 +46,12 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 		if ( strpos($sort, 'rating') !== false ) {
 			$_criteria = new CDbCriteria();
 			$_criteria->select = $alias . '.*, r.rating AS rating';
-			$_criteria->join = 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($owner) . '\' AND r.modelId = ' . $alias . '.id)';
+			$_criteria->join = 'LEFT JOIN {{ratings}} r ON ( r.modelName = :modelName AND r.modelId = ' . $alias . '.id)';
+			$_criteria->params[':modelName'] = $owner->resolveClassName();
 			$this->getOwner()->getDbCriteria()->mergeWith($_criteria);
 		}
 
-		$this->getOwner()->getDbCriteria()->mergeWith(TorrentGroup::getPeriodCriteria($period));
+		$this->getOwner()->getDbCriteria()->mergeWith(modules\torrents\models\TorrentGroup::getPeriodCriteria($period));
 
 		list($sortColumn, $sortDesc) = $this->_getSort($sort);
 		$criteria = new CDbCriteria();
@@ -75,7 +77,7 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 			}
 		}
 
-		$sortColumns = TorrentGroup::getSortColums();
+		$sortColumns = modules\torrents\models\TorrentGroup::getSortColums();
 		$_sortColumns = array();
 		foreach ( $sortColumns AS $key => $val ) {
 			list($_sort, $_sortOrder) = explode('.', $key);

@@ -6,10 +6,11 @@
 
 <?php $this->widget('bootstrap.widgets.TbListView',
 	array(
-	     'id'              => 'groupsListView',
-	     'dataProvider'    => $dataProvider,
-	     'itemView'        => '_view',
-	     'template'        => "{sorter}\n{items} {pager}",
+	     'id'                 => 'groupsListView',
+	     'dataProvider'       => $dataProvider,
+	     'itemView'           => '_view',
+	     'template'           => "{sorter}\n{items} {pager}",
+	     'enableHistory'      => true,
 	     'sortableAttributes' => array(
 		     'ctime',
 		     'rating',

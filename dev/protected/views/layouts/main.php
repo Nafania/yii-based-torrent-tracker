@@ -9,6 +9,7 @@ $cs->registerCssFile('/css/style.css');
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="ru" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
 	<title><?php echo $this->pageTitle; ?></title>
 </head>
 
@@ -42,7 +43,9 @@ $this->widget('bootstrap.widgets.TbAlert',
 	));
 
 ?>
-<div class="banBlock1 text-center"><img src="http://placehold.it/728x90" /></div>
+<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+	array('systemName' => 'header'))
+?>
 
 <section class="container-fluid">
 	<div class="row-fluid">
@@ -75,8 +78,12 @@ $this->widget('bootstrap.widgets.TbAlert',
 </section>
 <?php $this->widget('application.modules.user.widgets.UserMenu'); ?>
 <?php $this->widget('application.modules.chat.widgets.MjmChat'); ?>
+<?php $this->widget('application.widgets.AnalyticsWidget'); ?>
 <?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
 	array('systemName' => 'footerCode'))
+?>
+<?php
+echo $this->clips['afterContent'];
 ?>
 </body>
 </html>

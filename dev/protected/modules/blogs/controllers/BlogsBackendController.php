@@ -1,6 +1,12 @@
 <?php
+namespace modules\blogs\controllers;
+use Yii;
+use Ajax;
+use CHtml;
+use CHttpException;
+use modules\blogs\models AS models;
 
-class BlogsBackendController extends YAdminController {
+class BlogsBackendController extends \YAdminController {
 
 	public function filters () {
 		return parent::filters();
@@ -24,7 +30,7 @@ class BlogsBackendController extends YAdminController {
 
 		Yii::import('yiiadmin.extensions.yiiext.zii.widgets.grid.*');
 
-		$model = new BlogPost();
+		$model = new models\BlogPost();
 		$model->setScenario('adminSearch');
 		$model->unsetAttributes();
 
@@ -46,10 +52,10 @@ class BlogsBackendController extends YAdminController {
 		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Создание поста');
 		$this->pageTitle = Yii::t('blogsModule.common', 'Создание поста');
 
-		$model = new BlogPost();
+		$model = new models\BlogPost();
 
-		if ( isset($_POST[get_class($model)]) ) {
-			$model->attributes = $_POST[get_class($model)];
+		if ( isset($_POST[$model->resolveClassName()]) ) {
+			$model->attributes = $_POST[$model->resolveClassName()];
 
 			if ( $model->save() ) {
 				Yii::app()->getUser()->setFlash('flashMessage', Yii::t('blogsModule.common', 'Пост успешно создана'));
@@ -74,13 +80,13 @@ class BlogsBackendController extends YAdminController {
 		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Редактирование поста');
 		$this->pageTitle = Yii::t('blogsModule.common', 'Редактирование поста');
 
-		$model = BlogPost::model()->findByPk($id);
+		$model = models\BlogPost::model()->findByPk($id);
 		if ( !$model ) {
 			throw new CHttpException(404);
 		}
 
-		if ( isset($_POST[get_class($model)]) ) {
-			$model->attributes = $_POST[get_class($model)];
+		if ( isset($_POST[$model->resolveClassName()]) ) {
+			$model->attributes = $_POST[$model->resolveClassName()];
 
 			if ( $model->save() ) {
 				Yii::app()->getUser()->setFlash('flashMessage', Yii::t('blogsModule.common', 'Пост успешно создана'));
@@ -101,7 +107,7 @@ class BlogsBackendController extends YAdminController {
 	}
 
 	public function actionDelete ( $id ) {
-		$model = BlogPost::model()->findByPk($id);
+		$model = models\BlogPost::model()->findByPk($id);
 		if ( !$model ) {
 			throw new CHttpException(404);
 		}

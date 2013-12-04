@@ -34,7 +34,7 @@ echo $form->labelEx($model,
 	array(
 	     'data-toggle'         => 'tooltip',
 	     'data-placement'      => 'right',
-	     'data-original-title' => Yii::t('torrentsModule.common',
+	     'title' => Yii::t('torrentsModule.common',
 		     'Впишите сюда общее название, например, название фильма, игры, программы, автора музыкального альбома или книги и выберете его в выпадающем списке, если оно появится.'),
 	     'class'               => 'attributeDescription',
 	));

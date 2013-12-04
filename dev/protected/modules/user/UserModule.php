@@ -1,6 +1,8 @@
 <?php
 
 class UserModule extends CWebModule {
+	private $_assetsUrl;
+
 	public function init () {
 		// this method is called when the module is being created
 		// you may place code here to customize the module or the application
@@ -11,6 +13,16 @@ class UserModule extends CWebModule {
 		                      'user.components.*',
 		                 ));
 
+	}
+
+	/**
+	 * @return string the base URL that contains all published asset files.
+	 */
+	public function getAssetsUrl () {
+		if ( $this->_assetsUrl === null ) {
+			$this->_assetsUrl = Yii::app()->getAssetManager()->publish(Yii::getPathOfAlias('application.modules.user.assets'));
+		}
+		return $this->_assetsUrl;
 	}
 
 	public static function register () {
@@ -24,11 +36,13 @@ class UserModule extends CWebModule {
 		                                                   'user'  => array(
 			                                                   'class'           => 'application.modules.user.components.WebUser',
 			                                                   'allowAutoLogin'  => true,
-			                                                   'loginUrl'        => '/user/login',
+			                                                   'autoRenewCookie' => true,
+			                                                   'loginUrl'        => array('/user/default/login'),
+			                                                   'registerUrl'     => array('/user/default/register'),
 			                                                   //'loginRequiredAjaxResponse' => 'logged-out',
 			                                                   'autoUpdateFlash' => false,
 			                                                   // add this line to disable the flash counter
-			                                                   'admins' => array('admin'),
+			                                                   'admins'          => array('admin'),
 			                                                   // users with full access
 
 		                                                   ),
@@ -40,17 +54,6 @@ class UserModule extends CWebModule {
 			                                                   'popup'    => true,
 			                                                   // Использовать всплывающее окно вместо перенаправления на сайт провайдера
 			                                                   'services' => array( // Вы можете настроить список провайдеров и переопределить их классы
-				                                                   'google'   => array(
-					                                                   'class' => 'CustomGoogleService',
-				                                                   ),
-				                                                   'yandex'   => array(
-					                                                   'class' => 'CustomYandexService',
-				                                                   ),
-				                                                   'facebook' => array(
-					                                                   'class'         => 'CustomFacebookService',
-					                                                   'client_id'     => '',
-					                                                   'client_secret' => '',
-				                                                   )
 			                                                   ),
 
 		                                                   ),
@@ -59,6 +62,7 @@ class UserModule extends CWebModule {
 
 	protected static function _addUrlRules () {
 		Yii::app()->pd->addUrlRules(array(
+		                                 'user/<name>-<id>'                     => 'user/default/view',
 		                                 'user/<action:\w+>/*'                  => 'user/default/<action>',
 		                                 'user/<controller:\w+>/<action:\w+>/*' => 'user/<controller>/<action>',
 		                            ));

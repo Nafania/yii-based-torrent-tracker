@@ -7,7 +7,7 @@
  * @package auth.components
  */
 
-Yii::import('auth.components.ICachedAuthManager');
+Yii::import('application.modules.auth.components.ICachedAuthManager');
 
 /**
  * Caching layer for CDbAuthManager that allows for caching access checks.

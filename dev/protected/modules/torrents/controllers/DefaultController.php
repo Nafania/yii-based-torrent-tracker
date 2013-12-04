@@ -1,6 +1,18 @@
 <?php
+namespace modules\torrents\controllers;
+use Yii;
+use CMap;
+use CDbCriteria;
+use CException;
+use CHttpException;
+use CArrayDataProvider;
+use CJSON;
+use CHtmlPurifier;
+use components;
+use modules\torrents\models AS models;
+use modules\torrents\components AS tComponents;
 
-class DefaultController extends Controller {
+class DefaultController extends components\Controller {
 
 	/**
 	 * @return array action filters
@@ -13,6 +25,22 @@ class DefaultController extends Controller {
 			));
 	}
 
+
+	public function beforeAction ( $action ) {
+		parent::beforeAction($action);
+
+		$title = Yii::t('torrentsModule.common', 'Торренты');
+
+		if ( $action->getId() == 'index' ) {
+			$this->breadcrumbs[] = $title;
+		}
+		else {
+			$this->breadcrumbs[$title] = array('index');
+		}
+
+		return true;
+	}
+
 	/**
 	 * Displays a particular model.
 	 *
@@ -22,13 +50,11 @@ class DefaultController extends Controller {
 		$model = $this->loadModel($id);
 
 		$title = Yii::t('torrentsModule.common', '{torrentName}', array('{torrentName}' => $model->getTitle()));
-		$this->breadcrumbs = array(
-			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
-			$title
-		);
+		$this->breadcrumbs[] = $title;
+
 		$this->pageTitle = $title;
 		$this->pageDescription = $model->getDescription();
-		$this->pageOgImage = $model->getImageUrl();
+		$this->pageOgImage = $model->getImageUrl(0, 0, true);
 
 		$this->render('view',
 			array(
@@ -40,36 +66,36 @@ class DefaultController extends Controller {
 		$TorrentGroup = $this->loadModel($gId);
 
 		$title = Yii::t('torrentsModule.common',
-			'Загрузка торрента "{title}"',
+			'Добавление торрента в группу "{title}"',
 			array('{title}' => $TorrentGroup->getTitle()));
-		$this->breadcrumbs = array(
-			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
-			$title
-		);
+		$this->breadcrumbs[] = $title;
 		$this->pageTitle = $title;
 
-		$Torrent = new Torrent();
+		$Torrent = new models\Torrent();
 
-		$Category = Category::model()->findByPk($TorrentGroup->cId);
+		$Category = \Category::model()->findByPk($TorrentGroup->cId);
 		if ( !$Category ) {
-			throw new CHttpException(404);
+			throw new \CHttpException(404);
 		}
 
 		$Attributes = $Category->attrs(array('condition' => 'common = 0'));
 
-		if ( isset($_POST['Torrent']) ) {
-			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
+		if ( isset($_POST[$Torrent->resolveClassName()]) ) {
+			$Torrent->info_hash = \CUploadedFile::getInstance($Torrent, 'info_hash');
 			$Torrent->setTags($_POST['torrentTags']);
 
 			$TorrentGroup->addTags($_POST['torrentTags']);
 
 			$valid = $Torrent->validate();
-			$valid = $this->validateAttributes($Attributes) && $valid;
+			$valid = $this->validateAttributes($Attributes, $TorrentGroup) && $valid;
 
 			if ( $valid ) {
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
+
+					$this->processAttributes($Torrent);
+
 					$Torrent->gId = $TorrentGroup->getId();
 					$Torrent->save(false);
 
@@ -77,21 +103,21 @@ class DefaultController extends Controller {
 					$TorrentGroup->save(false);
 
 					//foreach ( $Attributes AS $Attribute ) {
-					$this->processAttributes($Torrent);
+
 					//}
 
 					$transaction->commit();
 
-					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
 						array('#' => 'torrent' . $Torrent->getId())));
-				} catch ( Exception $e ) {
+				} catch ( \CException $e ) {
 
 					$transaction->rollBack();
-					Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+					Yii::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 
-					Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+					Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 						Yii::t('torrentsModule.common',
 							'При создании торента возникли проблемы, пожалуйста, попробуйте позже.'));
 				}
@@ -108,36 +134,38 @@ class DefaultController extends Controller {
 	}
 
 	public function actionDownload ( $id ) {
-		$Torrent = Torrent::model()->findByPk($id);
+		$Torrent = models\Torrent::model()->findByPk($id);
 
 		if ( !$Torrent ) {
-			throw new CHttpException(404, 'The requested page does not exist.');
+			throw new \CHttpException(404, 'The requested page does not exist.');
 		}
-		Yii::app()->getRequest()->sendFile($Torrent->getTitle() . '.torrent',
-			file_get_contents($Torrent->getDownloadPath()),
-			'application/x-bittorrent');
+
+		$url = $Torrent->torrentGroup->getUrl();
+		$torrent = new tComponents\TorrentComponent($Torrent->getDownloadPath());
+		$torrent->comment(Yii::app()->createAbsoluteUrl(array_shift($url), $url));
+		$torrent->announce(array($Torrent->getAnnounce()));
+		$torrent->send($Torrent->getTitle() . '.torrent');
 	}
 
 	public function actionCreateGroup ( $cId ) {
 		$title = Yii::t('torrentsModule.common', 'Загрузка торрента');
-		$this->breadcrumbs = array(
-			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
-			$title
-		);
+		$this->breadcrumbs[] = $title;
 		$this->pageTitle = $title;
 
-		$TorrentGroup = new TorrentGroup();
-		$Torrent = new Torrent();
-		$Category = Category::model()->findByPk($cId);
+		$TorrentGroup = new models\TorrentGroup();
+		$Torrent = new models\Torrent();
+		$Category = \Category::model()->findByPk($cId);
 		if ( !$Category ) {
-			throw new CHttpException(404);
+			throw new \CHttpException(404);
 		}
 
 		$Attributes = $Category->attrs;
 
-		if ( isset($_POST['TorrentGroup']) ) {
-			$TorrentGroup->attributes = $_POST['TorrentGroup'];
-			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
+		$TorrentGroup->cId = $Category->getId();
+
+		if ( isset($_POST[$TorrentGroup->resolveClassName()]) ) {
+			$TorrentGroup->attributes = $_POST[$TorrentGroup->resolveClassName()];
+			$Torrent->info_hash = \CUploadedFile::getInstance($Torrent, 'info_hash');
 			$Torrent->setTags($_POST['torrentTags']);
 
 			$TorrentGroup->setTags($_POST['torrentTags']);
@@ -148,19 +176,13 @@ class DefaultController extends Controller {
 
 			if ( $Category->attrs ) {
 				$Attributes = $Category->attrs;
-				$valid = $this->validateAttributes($Attributes) && $valid;
+				$valid = $this->validateAttributes($Attributes, $TorrentGroup) && $valid;
 			}
 
 			if ( $valid ) {
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
-					$TorrentGroup->cId = $Category->getId();
-					$TorrentGroup->save(false);
-
-					$Torrent->gId = $TorrentGroup->getId();
-					$Torrent->save(false);
-
 					foreach ( $Attributes AS $Attribute ) {
 						if ( $Attribute->common ) {
 							$this->processAttributes($TorrentGroup, $Attribute->id);
@@ -170,18 +192,23 @@ class DefaultController extends Controller {
 						}
 					}
 
+					$TorrentGroup->save(false);
+
+					$Torrent->gId = $TorrentGroup->getId();
+					$Torrent->save(false);
+
 					$transaction->commit();
 
-					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
 						array('#' => 'torrent' . $Torrent->getId())));
-				} catch ( Exception $e ) {
+				} catch ( \CException $e ) {
 
 					$transaction->rollBack();
-					Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+					Yii::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 
-					Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+					Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 						Yii::t('torrentsModule.common',
 							'При создании торента возникли проблемы, пожалуйста, попробуйте позже.'));
 				}
@@ -205,23 +232,20 @@ class DefaultController extends Controller {
 	 */
 	public function actionCreate () {
 		$title = Yii::t('torrentsModule.common', 'Загрузка торрента');
-		$this->breadcrumbs = array(
-			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
-			$title
-		);
+		$this->breadcrumbs[] = $title;
 		$this->pageTitle = $title;
 
 		Yii::import('application.modules.category.models.*');
 
-		$model = new TorrentGroup('upload');
-		$category = new Category('createTorrent');
+		$model = new models\TorrentGroup('upload');
+		$category = new \Category('createTorrent');
 
 		// Uncomment the following line if AJAX validation is needed
 		//$this->performAjaxValidation(array($model, $category));
 
-		if ( isset($_GET['TorrentGroup']) ) {
-			$model->attributes = $_GET['TorrentGroup'];
-			$category->attributes = $_GET['Category'];
+		if ( isset($_GET[$model->resolveClassName()]) ) {
+			$model->attributes = $_GET[$model->resolveClassName()];
+			$category->attributes = $_GET[$category->resolveClassName()];
 
 			$gId = Yii::app()->getRequest()->getParam('gId', 0);
 
@@ -258,44 +282,43 @@ class DefaultController extends Controller {
 			'Редактирование группы "{title}"',
 			array('{title}' => $TorrentGroup->getTitle()));
 		$this->breadcrumbs = array(
-			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
-			$TorrentGroup->getTitle()                   => $TorrentGroup->getUrl(),
+			$TorrentGroup->getTitle() => $TorrentGroup->getUrl(),
 			$title
 		);
 		$this->pageTitle = $title;
 
 		$Attributes = $TorrentGroup->getEavAttributeKeys();
 
-		if ( isset($_POST['TorrentGroup']) ) {
-			$TorrentGroup->attributes = $_POST['TorrentGroup'];
+		if ( isset($_POST[$TorrentGroup->resolveClassName()]) ) {
+			$TorrentGroup->attributes = $_POST[$TorrentGroup->resolveClassName()];
 
 			$valid = $TorrentGroup->validate();
 
 
 			if ( $Attributes ) {
-				$valid = $this->validateAttributes($Attributes) && $valid;
+				$valid = $this->validateAttributes($Attributes, $TorrentGroup) && $valid;
 			}
 
 			if ( $valid ) {
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
+					$this->processAttributes($TorrentGroup);
+
 					$TorrentGroup->title = '';
 					$TorrentGroup->save(false);
 
-					$this->processAttributes($TorrentGroup);
-
 					$transaction->commit();
 
-					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
 					$this->redirect($TorrentGroup->getUrl());
-				} catch ( Exception $e ) {
+				} catch ( \CException $e ) {
 
 					$transaction->rollBack();
-					Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+					Yii::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 
-					Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+					Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 						Yii::t('torrentsModule.common',
 							'При создании торента возникли проблемы, пожалуйста, попробуйте позже.'));
 				}
@@ -318,10 +341,10 @@ class DefaultController extends Controller {
 	 * @param integer $id the ID of the model to be updated
 	 */
 	public function actionUpdateTorrent ( $id ) {
-		$Torrent = Torrent::model()->findByPk($id);
+		$Torrent = models\Torrent::model()->findByPk($id);
 
 		if ( !$Torrent ) {
-			throw new CHttpException(404);
+			throw new \CHttpException(404);
 		}
 
 		$TorrentGroup = $Torrent->torrentGroup;
@@ -330,16 +353,15 @@ class DefaultController extends Controller {
 			'Редактирование торрента "{title}"',
 			array('{title}' => $Torrent->getTitle()));
 		$this->breadcrumbs = array(
-			Yii::t('torrentsModule.common', 'Торренты') => array('index'),
-			$TorrentGroup->getTitle()                   => $TorrentGroup->getUrl(),
+			$TorrentGroup->getTitle() => $TorrentGroup->getUrl(),
 			$title
 		);
 		$this->pageTitle = $title;
 
 
-		$Category = Category::model()->findByPk($TorrentGroup->cId);
+		$Category = \Category::model()->findByPk($TorrentGroup->cId);
 		if ( !$Category ) {
-			throw new CHttpException(404);
+			throw new \CHttpException(404);
 		}
 
 		$Attributes = $Category->attrs(array('condition' => 'common = 0'));
@@ -347,8 +369,8 @@ class DefaultController extends Controller {
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
-		if ( isset($_POST['Torrent']) ) {
-			$Torrent->info_hash = CUploadedFile::getInstance($Torrent, 'info_hash');
+		if ( isset($_POST[$Torrent->resolveClassName()]) ) {
+			$Torrent->info_hash = \CUploadedFile::getInstance($Torrent, 'info_hash');
 
 			$TorrentGroup->removeTags($Torrent->getTags());
 
@@ -357,37 +379,39 @@ class DefaultController extends Controller {
 			$TorrentGroup->addTags($_POST['torrentTags']);
 
 			$valid = $Torrent->validate();
-			$valid = $this->validateAttributes($Attributes) && $valid;
+			$valid = $this->validateAttributes($Attributes, $TorrentGroup) && $valid;
 
 			if ( $valid ) {
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
+					$this->processAttributes($Torrent);
+
 					$Torrent->title = '';
 					$Torrent->gId = $TorrentGroup->getId();
 					$Torrent->save(false);
 
-					if ( $Torrent->info_hash instanceof CUploadedFile ) {
+					if ( $Torrent->info_hash instanceof \CUploadedFile ) {
 						$TorrentGroup->mtime = time();
 					}
 					$TorrentGroup->save(false);
 
 					//foreach ( $Attributes AS $Attribute ) {
-					$this->processAttributes($Torrent);
+
 					//}
 
 					$transaction->commit();
 
-					Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
 						Yii::t('torrentsModule.common', 'Торрент успешно изменен'));
 					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
 						array('#' => 'torrent' . $Torrent->getId())));
-				} catch ( Exception $e ) {
+				} catch ( \CException $e ) {
 
 					$transaction->rollBack();
-					Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+					Yii::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 
-					Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+					Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 						Yii::t('torrentsModule.common',
 							'При создании торента возникли проблемы, пожалуйста, попробуйте позже.'));
 				}
@@ -411,41 +435,41 @@ class DefaultController extends Controller {
 	 * @param integer $id the ID of the model to be deleted
 	 */
 	public function actionDelete ( $id ) {
-		$model = TorrentGroup::model()->findByPk($id);
+		$model = models\TorrentGroup::model()->findByPk($id);
 		if ( $model === null ) {
-			throw new CHttpException(404, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
+			throw new \CHttpException(404, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
 		}
 
 
 		if ( $model->delete() ) {
-			Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+			Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
 				Yii::t('torrentsModule.common',
 					'Группа торрентов удалена успешно'));
 		}
 		else {
-			Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+			Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 				Yii::t('torrentsModule.common',
 					'При удалении группы торрентов возникли ошибки'));
 		}
-		$this->redirect(Yii::app()->getUser()->returnUrl);
+		$this->redirect(array('/torrents/default/index'));
 	}
 
 	public function actionDeleteTorrent ( $id ) {
 		// we only allow deletion via POST request
-		$model = Torrent::model()->findByPk($id);
+		$model = models\Torrent::model()->findByPk($id);
 		if ( $model === null ) {
-			throw new CHttpException(404, Yii::t('torrentsModule.common', 'Торрент не найден'));
+			throw new \CHttpException(404, Yii::t('torrentsModule.common', 'Торрент не найден'));
 		}
 
 		$url = $model->torrentGroup->getUrl();
 
 		if ( $model->delete() ) {
-			Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+			Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
 				Yii::t('torrentsModule.common',
 					'Торрент удален успешно'));
 		}
 		else {
-			Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+			Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 				Yii::t('torrentsModule.common',
 					'При удалении торрента возникли ошибки'));
 		}
@@ -458,12 +482,9 @@ class DefaultController extends Controller {
 	 */
 	public function actionIndex () {
 		$title = Yii::t('torrentsModule.common', 'Торренты');
-		$this->breadcrumbs = array(
-			$title
-		);
 		$this->pageTitle = $title;
 
-		$model = new TorrentGroup();
+		$model = new models\TorrentGroup();
 
 		$model->unsetAttributes(); // clear any default values
 		$model->setScenario('search');
@@ -476,7 +497,7 @@ class DefaultController extends Controller {
 
 		$dataProvider = $model->search();
 
-		Ajax::renderAjax('index',
+		\Ajax::renderAjax('index',
 			array(
 			     'dataProvider' => $dataProvider
 
@@ -488,11 +509,11 @@ class DefaultController extends Controller {
 	}
 
 	public function actionSuggest ( $term, $category ) {
-		$TorrentGroup = new TorrentGroup();
-		$Category = Category::model()->findByPk($category);
+		$TorrentGroup = new models\TorrentGroup();
+		$Category = \Category::model()->findByPk($category);
 
 		if ( !$Category ) {
-			Ajax::send(Ajax::AJAX_ERROR,
+			\Ajax::send(\Ajax::AJAX_ERROR,
 				Yii::t('torrentsModule.common',
 					'Сначала выберете категорию, а после этого заполните поле "{fieldName}"',
 					array('{fieldName}' => $TorrentGroup->getAttributeLabel('title'))));
@@ -517,17 +538,17 @@ class DefaultController extends Controller {
 				'text' => $model->getTitle(),
 			);
 		}
-		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', array('titles' => $return));
+		\Ajax::send(\Ajax::AJAX_SUCCESS, 'ok', array('titles' => $return));
 	}
 
 	public function actionFileList ( $id ) {
-		$Torrent = Torrent::model()->findByPk($id);
+		$Torrent = models\Torrent::model()->findByPk($id);
 
 		if ( !$Torrent ) {
 			throw new CHttpException(404);
 		}
 
-		$torrent = new TorrentComponent($Torrent->getDownloadPath());
+		$torrent = new tComponents\TorrentComponent($Torrent->getDownloadPath());
 		$contents = $torrent->content();
 		ksort($contents);
 
@@ -553,7 +574,14 @@ class DefaultController extends Controller {
 		                                                   ),
 		                                              ));
 
-		Ajax::renderAjax('fileList', array('dataProvider' => $dataProvider), false, true, true);
+		\Ajax::renderAjax('fileList',
+			array(
+			     'dataProvider' => $dataProvider,
+			     'model'        => $Torrent
+			),
+			false,
+			true,
+			true);
 	}
 
 	public function actionTagsSuggest ( $q ) {
@@ -562,7 +590,7 @@ class DefaultController extends Controller {
 		$criteria->group = 't.name';
 		$criteria->limit = 50;
 		$criteria->order = 'count DESC';
-		$tags = Torrent::model()->getAllTags($criteria);
+		$tags = models\Torrent::model()->getAllTags($criteria);
 
 		$result = array();
 
@@ -573,7 +601,7 @@ class DefaultController extends Controller {
 			);
 		}
 
-		Ajax::send(Ajax::AJAX_SUCCESS,
+		\Ajax::send(\Ajax::AJAX_SUCCESS,
 			'ok',
 			array(
 			     'tags'  => $result,
@@ -604,15 +632,13 @@ class DefaultController extends Controller {
 		}
 		$attributes = new CMap($attributes);
 
-		$deleteModel = $model::model()->findByPk($model->getId());
-
 		if ( $key ) {
-			$deleteModel->deleteEavAttributes(array($key), true);
+			$model->deleteEavAttributes(array($key), true);
 		}
 		else {
-			$deleteModel->deleteEavAttributes(array(), true);
+			$model->deleteEavAttributes(array(), true);
 		}
-
+		//var_dump($attributes);
 		$purify = new CHtmlPurifier();
 		// Delete empty values
 		foreach ( $attributes AS $key => $val ) {
@@ -624,50 +650,112 @@ class DefaultController extends Controller {
 			}
 		}
 
-		return $model->setEavAttributes($attributes->toArray(), true);
+		return $model->setEavAttributes($attributes->toArray());
 	}
 
 	/**
 	 * Validate required store attributes
 	 *
-	 * @param array   $attributes
-	 * @param integer $k
+	 * @param array               $attributes
+	 * @param models\TorrentGroup $TorrentGroup
+	 * @param bool                $sendJson
 	 *
 	 * @return bool
 	 */
-	public function validateAttributes ( &$attributes ) {
+	public function validateAttributes ( &$attributes, models\TorrentGroup $TorrentGroup, $sendJson = false ) {
 		if ( !$attributes ) {
 			return true;
 		}
 
 		$errors = false;
+		$jsonErrors = array();
 		foreach ( $attributes AS $attr ) {
 			if ( $attr->required && $_POST['Attribute'][$attr->id] === '' ) {
 				$errors = true;
-				$attr->addError('title',
-					Yii::t('yii', '{attribute} cannot be blank.', array('{attribute}' => $attr->title)));
+				if ( !$sendJson ) {
+					$attr->addError('title',
+						Yii::t('yii', '{attribute} cannot be blank.', array('{attribute}' => $attr->title)));
+				}
+				else {
+					$jsonErrors['Attribute_' . $attr->id][] = Yii::t('yii',
+						'{attribute} cannot be blank.',
+						array('{attribute}' => $attr->title));
+				}
 			}
 			if ( $attr->validator ) {
-				$validator = CValidator::createValidator($attr->validator, $attr, $attr->id);
+				$validator = \CValidator::createValidator($attr->validator, $attr, $attr->id);
 				$validator->validate($attr, $attr->id);
 
 				if ( $errorsText = $attr->getErrors() ) {
 					$errors = true;
+					if ( $sendJson ) {
+						$attr->clearErrors();
+						$jsonErrors['Attribute_' . $attr->id] = $errorsText;
+					}
 				}
 			}
 		}
 
-		return !$errors;
+		/**
+		 * Проверка на уникальность
+		 */
+
+		if ( $TorrentGroup->getIsNewRecord() ) {
+			$findAttributes = array();
+			$uniqueAttributes = $TorrentGroup->getTitleAttributes();
+			foreach ( $uniqueAttributes AS $uniqueAttribute ) {
+				if ( !empty($_POST['Attribute'][$uniqueAttribute['attrId']]) ) {
+					$findAttributes[$uniqueAttribute['attrId']] = trim($_POST['Attribute'][$uniqueAttribute['attrId']]);
+				}
+			}
+
+			if ( $findAttributes ) {
+				$model = models\TorrentGroup::model()->withEavAttributes($findAttributes)->find();
+				if ( $model ) {
+					$firstKey = array_shift(array_keys($findAttributes));
+
+					$errorText = Yii::t('torrentsModule.common',
+						'Торрент с названием "{title}" уже есть на трекере, он называется "{newTitle}" (кликните, чтобы посмотреть). Если вы загружаете такой же торрент, то кликните {here}, чтобы добавить ваш торрент в группу "{newTitle}".',
+						array(
+						     '{title}'    => \CHtml::encode($_POST['Attribute'][$firstKey]),
+						     '{newTitle}' => \CHtml::link($model->getTitle(),
+							     $model->getUrl(),
+							     array('target' => '_blank')),
+						     '{here}'     => \CHtml::link(Yii::t('torrentsModule.common', 'здесь'),
+							     array(
+							          '/torrents/default/createTorrent',
+							          'gId' => $model->getId()
+							     ))
+						));
+
+					$errors = true;
+
+					if ( !$sendJson ) {
+						$attributes[$firstKey]->addError('title', $errorText);
+					}
+					else {
+						$jsonErrors['Attribute_' . $firstKey][] = $errorText;
+					}
+				}
+			}
+		}
+		if ( isset($_POST['ajax']) && $_POST['ajax'] === 'torrent-form' ) {
+			echo CJSON::encode($jsonErrors);
+			Yii::app()->end();
+		}
+		else {
+			return !$errors;
+		}
 	}
 
 	/**
-	 * Returns the data model based on the primary key given in the GET variable.
-	 * If the data model is not found, an HTTP exception will be raised.
+	 * @param $id
 	 *
-	 * @param integer the ID of the model to be loaded
+	 * @return \modules\torrents\models\TorrentGroup
+	 * @throws \CHttpException
 	 */
 	public function loadModel ( $id ) {
-		$model = TorrentGroup::model()->findByPk($id);
+		$model = models\TorrentGroup::model()->findByPk($id);
 		if ( $model === null ) {
 			throw new CHttpException(404, 'The requested page does not exist.');
 		}
@@ -677,12 +765,17 @@ class DefaultController extends Controller {
 	/**
 	 * Performs the AJAX validation.
 	 *
-	 * @param CModel the model to be validated
+	 * @param \CModel the model to be validated
 	 */
 	protected function performAjaxValidation ( $model ) {
 		if ( isset($_POST['ajax']) && $_POST['ajax'] === 'torrent-form' ) {
-			echo CActiveForm::validate($model);
+			echo \CActiveForm::validate($model);
 			Yii::app()->end();
 		}
+	}
+
+
+	public function getPagesForSitemap () {
+		return models\TorrentGroup::model();
 	}
 }

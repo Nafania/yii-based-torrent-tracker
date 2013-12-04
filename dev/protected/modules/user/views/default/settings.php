@@ -5,16 +5,22 @@
  * @var $socialServices array
  */
 ?>
+<?php
+$cs = Yii::app()->getClientScript();
+$cs->registerScriptFile(Yii::app()->getModule('user')->getAssetsUrl() . '/js/users.js');
+$url = Yii::app()->assetManager->publish(Yii::getPathOfAlias('application.modules.user.extensions.eauth.assets'));
+$cs->registerCssFile($url . '/css/auth.css');
+?>
 
 <h1><?php echo $user->getName() ?></h1>
 <div class="row-fluid">
 	<div class="span2">
 	<?php echo CHtml::image($profile->getImageUrl(150, 150),
-			$user->getName(),
-			array(
-			     'class' => 'img-polaroid',
-			     'style' => 'width:150px'
-			)); ?>
+		$user->getName(),
+		array(
+		     'class' => 'img-polaroid',
+		     'style' => 'width:150px'
+		)); ?>
 	</div>
 
 	<div class="span10">
@@ -52,18 +58,31 @@
 
 			?>
 
+
+
+
+
+
 			<ul class="auth-services clear">
 		  <?php
-				foreach ( $user->socialAccounts AS $account ) {
-					$service = $socialServices[$account->service];
-					echo '<li class="auth-service ' . $service->id . '">';
-					$html = '<span class="auth-link"><span class="auth-icon ' . $service->id . '"><i></i></span>';
-					$html .= '<span class="auth-title">' . $account->name . '</span></span>';
-					echo $html;
-					echo '</li>';
-					unset($socialServices[$account->service]);
-				}
-				?>
+		  foreach ( $user->socialAccounts AS $account ) {
+			  $service = $socialServices[$account->service];
+			  echo '<li class="auth-service ' . $service->id . '" title="' . Yii::t('userModule.common',
+					  'Кликните, чтобы удалить') . '" data-toggle="tooltip">';
+			  $html = '<span class="auth-link"><span class="auth-icon ' . $service->id . '"><i></i></span>';
+			  $html .= '<span class="auth-title">' . $account->name . '</span></span>';
+			  echo CHtml::link($html,
+				  array(
+				       '/user/default/socialDelete',
+				       'service' => $account->service
+				  ),
+				  array(
+				       'data-action' => 'social-delete',
+				  ));
+			  echo '</li>';
+			  unset($socialServices[$account->service]);
+		  }
+		  ?>
 		  </ul>
 
 
@@ -84,22 +103,22 @@
 
 		<div class="form-actions">
 				<?php $this->widget('bootstrap.widgets.TbButton',
-				array(
-				     'buttonType' => 'submit',
-				     'type'       => 'primary',
-				     'label'      => Yii::t('userModule.common', 'Сохранить'),
-				));
-
-			if ( !$user->emailConfirmed ) {
-
-				$this->widget('bootstrap.widgets.TbButton',
 					array(
-					     'label' => Yii::t('userModule.common', 'Подтвердить email'),
-					     'type'  => 'link',
-					     'url'   => array('/user/default/confirmEmail'),
+					     'buttonType' => 'submit',
+					     'type'       => 'primary',
+					     'label'      => Yii::t('userModule.common', 'Сохранить'),
 					));
-			}
-			?>
+
+				if ( !$user->emailConfirmed ) {
+
+					$this->widget('bootstrap.widgets.TbButton',
+						array(
+						     'label' => Yii::t('userModule.common', 'Подтвердить email'),
+						     'type'  => 'link',
+						     'url'   => array('/user/default/confirmEmail'),
+						));
+				}
+				?>
 		</div>
 
 		<?php $this->endWidget(); ?>

@@ -4,13 +4,13 @@ class ChangesBehavior extends CActiveRecordBehavior {
 		parent::beforeSave($e);
 
 		$owner = $this->getOwner();
-		$className = get_class($owner);
+		$className = $owner->resolveClassName();
 
 		if ( !($owner instanceof ChangesInterface) || $owner->getIsNewRecord() ) {
 			return true;
 		}
 
-		$oldModel = $className::model()->findByPk($owner->getPrimaryKey());
+		$oldModel = $owner::model()->findByPk($owner->getPrimaryKey());
 
 		if ( $owner->getMtime() <= $oldModel->getMtime() ) {
 			return true;

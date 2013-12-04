@@ -1,6 +1,6 @@
 <?php
 
-class DefaultController extends Controller {
+class DefaultController extends components\Controller {
 	public function filters () {
 		return array('suggest +ajaxOnly');
 	}

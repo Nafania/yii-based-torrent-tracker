@@ -20,6 +20,9 @@ $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
     }
 });
 $(document).ajaxError(function (event, request, settings) {
+    if (settings.suppressErrors) {
+        return;
+    }
     if (request.status === 0 || request.readyState === 0) {
         return;
     }
@@ -59,14 +62,16 @@ $(function () {
         });
 
     $(document).on('click', 'a[href="/user/login"]', function (e) {
-        e.preventDefault();
-        $("#loginModal").modal("show")
+        if ($("#loginModal").length) {
+            e.preventDefault();
+            $("#loginModal").modal("show");
+        }
     });
 
     $(document).on('click', 'a:not([data-action])[href*="/delete"]', function (e) {
         e.preventDefault();
-        console.log($(this));
 
+        //TODO: translate
         if (confirm('Are you sure?')) {
             $.yii.submitForm(this, $(this).attr('href'), {'csrf': $('meta[name="csrf"]').attr('content')});
         }
@@ -80,83 +85,82 @@ $(function () {
         $(this).button('loading');
     });
 
-    (function ($) {
 
-        //some closures
-        var cont = ($.browser.msie && parseInt($.browser.version) <= 7) ? document.createElement("div") : null,
-            mergeIfXhr = 0,
-            resMap2Request = function (url) {
-                if (!url.match(/\?/))
-                    url += "?";
-                return url + "&nlsc_map=" + $.nlsc.smap();
-            };
-
-        if (!$.nlsc)
-            $.nlsc = {resMap: {}};
-
-        $.nlsc.normUrl = function (url) {
-            if (!url) return null;
-            if (cont) {
-                cont.innerHTML = "<a href=\"" + url + "\"></a>";
-                //cont.innerHTML = cont.innerHTML;
-                url = cont.firstChild.href;
-                //console.log(url);
-            }
-            return url.replace(/\?*(_=\d+)?$/g, "");
-        }
-        $.nlsc.h = function (s) {
-            var h = 0, i;
-            for (i = 0; i < s.length; i++) {
-                h = (((h << 5) - h) + s.charCodeAt(i)) & 1073741823;
-            }
-            return "" + h;
-        }
-        $.nlsc.fetchMap = function () {
-            //fetching scripts from the DOM
-            for (var url, i = 0, res = $(document).find("script[src]"); i < res.length; i++) {
-                if (!(url = this.normUrl(res[i].src ? res[i].src : res[i].href))) continue;
-                this.resMap[url] = $.nlsc.h(url);
-            }//i
-        }
-        $.nlsc.smap = function () {
-            var s = "[";
-            for (var url in this.resMap)
-                s += "\"" + this.resMap[url] + "\",";
-            return s.replace(/,$/, "") + "]";
-        }
-
-        var c = {
-            global: true,
-            beforeSend: function (xhr, opt) {
-                if (opt.dataType != "script") {
-                    //hack: letting the server know what is already in the dom...
-                    if (mergeIfXhr)
-                        opt.url = resMap2Request(opt.url);
-                    return true;
-                }
-
-                if (!$.nlsc.fetched) {
-                    $.nlsc.fetched = 1;
-                    $.nlsc.fetchMap();
-                }//if
-
-                var url = $.nlsc.normUrl(opt.url);
-                if (!url) return true;
-                if ($.nlsc.resMap[url]) return false;
-                $.nlsc.resMap[url] = $.nlsc.h(url);
-                return true;
-            }//beforeSend
-        };//c
-
-        //removing "defer" attribute from IE scripts anyway
-        if ($.browser.msie)
-            c.dataFilter = function (data, type) {
-                if (type && type != "html" && type != "text")
-                    return data;
-                return data.replace(/(<script[^>]+)defer(=[^\s>]*)?/ig, "$1");
-            };
-
-        $.ajaxSetup(c);
-
-    })(jQuery);
 });
+(function ($) {
+
+    //some closures
+    var cont = ($.browser.msie && parseInt($.browser.version) <= 7) ? document.createElement("div") : null,
+        mergeIfXhr = 0,
+        resMap2Request = function (url) {
+            if (!url.match(/\?/))
+                url += "?";
+            return url + "&nlsc_map=" + $.nlsc.smap();
+        };
+
+    if (!$.nlsc)
+        $.nlsc = {resMap: {}};
+
+    $.nlsc.normUrl = function (url) {
+        if (!url) return null;
+        if (cont) {
+            cont.innerHTML = "<a href=\"" + url + "\"></a>";
+            url = cont.firstChild.href;
+        }
+        return url.replace(/\?*(_=\d+)?$/g, "");
+    }
+    $.nlsc.h = function (s) {
+        var h = 0, i;
+        for (i = 0; i < s.length; i++) {
+            h = (((h << 5) - h) + s.charCodeAt(i)) & 1073741823;
+        }
+        return "" + h;
+    }
+    $.nlsc.fetchMap = function () {
+        //fetching scripts from the DOM
+        for (var url, i = 0, res = $(document).find("script[src]"); i < res.length; i++) {
+            if (!(url = this.normUrl(res[i].src ? res[i].src : res[i].href))) continue;
+            this.resMap[url] = $.nlsc.h(url);
+        }//i
+    }
+    $.nlsc.smap = function () {
+        var s = "[";
+        for (var url in this.resMap)
+            s += "\"" + this.resMap[url] + "\",";
+        return s.replace(/,$/, "") + "]";
+    }
+
+    var c = {
+        global: true,
+        beforeSend: function (xhr, opt) {
+            if (opt.dataType != "script") {
+                //hack: letting the server know what is already in the dom...
+                if (mergeIfXhr)
+                    opt.url = resMap2Request(opt.url);
+                return true;
+            }
+
+            if (!$.nlsc.fetched) {
+                $.nlsc.fetched = 1;
+                $.nlsc.fetchMap();
+            }//if
+
+            var url = $.nlsc.normUrl(opt.url);
+            if (!url) return true;
+            if ($.nlsc.resMap[url]) return false;
+            $.nlsc.resMap[url] = $.nlsc.h(url);
+            return true;
+        }//beforeSend
+    };//c
+
+    //removing "defer" attribute from IE scripts anyway
+    if ($.browser.msie)
+        c.dataFilter = function (data, type) {
+            if (type && type != "html" && type != "text")
+                return data;
+            return data.replace(/(<script[^>]+)defer(=[^\s>]*)?/ig, "$1");
+        };
+
+    $.ajaxSetup(c);
+
+})(jQuery);

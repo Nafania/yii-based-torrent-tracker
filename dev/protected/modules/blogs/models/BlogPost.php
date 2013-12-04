@@ -1,4 +1,12 @@
 <?php
+namespace modules\blogs\models;
+use Yii;
+use CDbCriteria;
+use CActiveDataProvider;
+use CSort;
+use CMap;
+use CHtml;
+use CHtmlPurifier;
 
 /**
  * This is the model class for table "blogposts".
@@ -12,9 +20,10 @@
  * @property integer $ctime
  * @property integer $mtime
  * @property integer $hidden
+ * @property integer $pinned
  * @property Blog    blog
  */
-class BlogPost extends EActiveRecord implements ChangesInterface {
+class BlogPost extends \EActiveRecord implements \ChangesInterface {
 	const HIDDEN = 1;
 	const NOT_HIDDEN = 0;
 
@@ -86,7 +95,7 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 			array(
 			     'blog' => array(
 				     self::BELONGS_TO,
-				     'Blog',
+				     'modules\blogs\models\Blog',
 				     'blogId'
 			     ),
 			     'user' => array(
@@ -115,16 +124,16 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 	 */
 	public function attributeLabels () {
 		return array(
-			'id'      => 'ID',
-			'title'   => Yii::t('blogsModule.common', 'Название'),
-			'text'    => Yii::t('blogsModule.common', 'Текст'),
-			'blogId'  => 'Blog',
-			'ownerId' => 'Owner',
-			'ctime'   => Yii::t('blogsModule.common', 'Дата создания'),
-			'mtime'   => Yii::t('blogsModule.common', 'Дата изменения'),
-			'hidden'  => Yii::t('blogsModule.common', 'Скрытая запись'),
-			'rating'      => Yii::t('blogsModule.common', 'Рейтинг'),
-			'commentsCount'      => Yii::t('blogsModule.common', 'Кол-во комментариев'),
+			'id'            => 'ID',
+			'title'         => Yii::t('blogsModule.common', 'Название'),
+			'text'          => Yii::t('blogsModule.common', 'Текст'),
+			'blogId'        => 'Blog',
+			'ownerId'       => 'Owner',
+			'ctime'         => Yii::t('blogsModule.common', 'Дата создания'),
+			'mtime'         => Yii::t('blogsModule.common', 'Дата изменения'),
+			'hidden'        => Yii::t('blogsModule.common', 'Скрытая запись'),
+			'rating'        => Yii::t('blogsModule.common', 'Рейтинг'),
+			'commentsCount' => Yii::t('blogsModule.common', 'Кол-во комментариев'),
 		);
 	}
 
@@ -161,22 +170,23 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 		 * подключаем таблицу рейтингов
 		 */
 		if ( strpos($sort, 'rating') !== false ) {
-			$criteria->select .= 't.*, r.rating AS rating';
+			$criteria->select = 't.*, r.rating AS rating';
 			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
 		}
 
 		$sort = new CSort($this);
-		$sort->defaultOrder = $alias . '.ctime DESC';
+		//$sort->applyOrder($alias . '.pinned DESC');
+		$sort->defaultOrder = $alias . '.pinned DESC, ' . $alias . '.ctime DESC';
 		$sort->attributes = array(
 			'*',
 			'commentsCount' => array(
-				'asc'  => 'commentsCount ASC',
-				'desc' => 'commentsCount DESC',
+				'asc'     => 'commentsCount ASC',
+				'desc'    => 'commentsCount DESC',
 				'default' => 'desc',
 			),
 			'rating'        => array(
-				'asc'  => 'rating ASC',
-				'desc' => 'rating DESC',
+				'asc'     => 'rating ASC',
+				'desc'    => 'rating DESC',
 				'default' => 'desc',
 			),
 		);
@@ -190,7 +200,7 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 		/**
 		 * если запись скрытая
 		 */
-		if ( $this->hidden == BlogPost::HIDDEN ) {
+		if ( $this->hidden == self::HIDDEN ) {
 			$group = $this->blog->group;
 
 			/**
@@ -200,8 +210,8 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 				/**
 				 * а текущий юзер не член этой группы, то записи как бэ нет
 				 */
-				if ( !Group::checkJoin($group) ) {
-					throw new CHttpException(404);
+				if ( !\Group::checkJoin($group) ) {
+					throw new \CHttpException(404);
 				}
 			}
 			/**
@@ -212,7 +222,7 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 				     'ownerId' => $this->ownerId
 				))
 			) {
-				throw new CHttpException(404);
+				throw new \CHttpException(404);
 			}
 		}
 
@@ -276,11 +286,24 @@ class BlogPost extends EActiveRecord implements ChangesInterface {
 	}
 
 	public function getUrl () {
-		return array(
-			'/blogs/post/view',
-			'id'    => $this->getId(),
-			'title' => $this->getSlugTitle(),
-		);
+		if ( $this->blog->groupId ) {
+			return array(
+				'/blogs/post/view',
+				'id'         => $this->getId(),
+				'title'      => $this->getSlugTitle(),
+				'groupId'    => $this->blog->groupId,
+				'groupTitle' => $this->blog->group->getSlugTitle(),
+			);
+		}
+		else {
+			return array(
+				'/blogs/post/view',
+				'id'        => $this->getId(),
+				'title'     => $this->getSlugTitle(),
+				'blogId'    => $this->blogId,
+				'blogTitle' => $this->blog->getSlugTitle(),
+			);
+		}
 	}
 
 	public function getCtime ( $format = false ) {

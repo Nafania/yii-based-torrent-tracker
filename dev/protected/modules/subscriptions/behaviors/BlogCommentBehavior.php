@@ -9,7 +9,7 @@ class BlogCommentBehavior extends CActiveRecordBehavior {
 			return false;
 		}
 
-		$blogPost = BlogPost::model()->findByPk($owner->modelId);
+		$blogPost = modules\blogs\models\BlogPost::model()->findByPk($owner->modelId);
 		if ( !$blogPost ) {
 			return false;
 		}

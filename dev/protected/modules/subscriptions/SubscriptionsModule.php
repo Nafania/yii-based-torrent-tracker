@@ -37,9 +37,9 @@ class SubscriptionsModule extends CWebModule {
 				'label'       => '<i class="icon-' . $icon . '"></i> ' . CHtml::encode($event->getTitle()),
 				'url'         => $event->getUrl(),
 				'linkOptions' => array(
-					'data-toggle'         => 'tooltip',
-					'data-original-title' => $event->getText(),
-					'data-placement'      => 'right',
+					'data-toggle'    => 'tooltip',
+					'title'          => $event->getText(),
+					'data-placement' => 'right',
 				)
 			);
 		}
@@ -52,6 +52,8 @@ class SubscriptionsModule extends CWebModule {
 		self::_addUrlRules();
 		self::_addBehaviors();
 		self::_setImport();
+		self::_addRelations();
+		self::_addCommandsPath();
 	}
 
 	private static function _addUrlRules () {
@@ -66,8 +68,23 @@ class SubscriptionsModule extends CWebModule {
 		                            ));
 	}
 
+	private static function _addRelations () {
+		Yii::app()->pd->addRelations('modules\torrents\models\TorrentGroup',
+			'subscriptions',
+			array(
+			     CActiveRecord::HAS_MANY,
+			     'Subscription',
+			     'modelId',
+			     'condition' => 'modelName = :modelName',
+			     'params'    => array(
+				     'modelName' => 'TorrentGroup'
+			     )
+			),
+			'application.modules.subscriptions.models.*');
+	}
+
 	private static function _addBehaviors () {
-		Yii::app()->pd->registerBehavior('TorrentGroup',
+		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup',
 			array(
 			     'changesBehavior' => array(
 				     'class' => 'application.modules.subscriptions.behaviors.ChangesBehavior'
@@ -102,10 +119,24 @@ class SubscriptionsModule extends CWebModule {
 			     )
 			));
 
-		Yii::app()->pd->registerBehavior('BlogPost',
+		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost',
 			array(
 			     'blogPostSubscription' => array(
 				     'class' => 'application.modules.subscriptions.behaviors.BlogPostSubscription'
+			     )
+			));
+
+		Yii::app()->pd->registerBehavior('PrivateMessage',
+			array(
+			     'pmBehavior' => array(
+				     'class' => 'application.modules.subscriptions.behaviors.PmBehavior'
+			     )
+			));
+
+		Yii::app()->pd->registerBehavior('Comment',
+			array(
+			     'torrentCommentBehavior' => array(
+				     'class' => 'application.modules.subscriptions.behaviors.TorrentCommentBehavior'
 			     )
 			));
 	}
@@ -115,5 +146,10 @@ class SubscriptionsModule extends CWebModule {
 		                               'application.modules.subscriptions.interfaces.*',
 		                               'application.modules.subscriptions.models.*'
 		                          ));
+	}
+
+
+	private static function _addCommandsPath () {
+		Yii::app()->pd->addCommandsPath('application.modules.subscriptions.commands');
 	}
 }

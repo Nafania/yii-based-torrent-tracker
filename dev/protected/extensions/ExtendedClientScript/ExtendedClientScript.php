@@ -321,7 +321,16 @@ class ExtendedClientScript extends CClientScript {
 	 */
 	private function minifyJs ( $js ) {
 		Yii::import($this->jsMinPath);
-		return trim(JSMin::minify($js));
+
+		$md5 = md5($js);
+		if ( $cache = Yii::app()->cache->get(__FILE__ . 'js' . $md5) ) {
+			return $cache;
+		}
+
+		$minified = trim(JSMin::minify($js));
+
+		Yii::app()->cache->set(__FILE__ . 'js' . $md5, $minified);
+		return $minified;
 	}
 
 	/**
@@ -332,7 +341,16 @@ class ExtendedClientScript extends CClientScript {
 	private function minifyCss ( $css ) {
 		Yii::import($this->jsMinPath);
 		Yii::import($this->cssMinPath);
-		return cssmin::minify($css, $this->cssMinFilters, $this->cssMinPlugins);
+
+		$md5 = md5($css);
+		if ( $cache = Yii::app()->cache->get(__FILE__ . 'css' . $md5) ) {
+			return $cache;
+		}
+
+		$minified = cssmin::minify($css, $this->cssMinFilters, $this->cssMinPlugins);
+
+		Yii::app()->cache->set(__FILE__ . 'css' . $md5, $minified);
+		return $minified;
 	}
 
 	/**
@@ -341,7 +359,7 @@ class ExtendedClientScript extends CClientScript {
 	 * @param <type> $file
 	 */
 	private function isRemoteFile ( $file ) {
-		return (strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0) ? true : false;
+		return (strpos($file, '//') === 0 || strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0) ? true : false;
 	}
 
 	private function getRealPath ( $file ) {

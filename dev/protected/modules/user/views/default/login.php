@@ -4,7 +4,8 @@
  */
 ?>
 
-<?php $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
+<?php
+$form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	array(
 	     'id'                     => 'login-form',
 	     'enableAjaxValidation'   => true,
@@ -23,14 +24,14 @@
 			array(
 			     'buttonType'  => 'submit',
 			     'type'        => 'primary',
-			     'label'       => Yii::t('userModule.common', 'Login'),
+			     'label'       => Yii::t('userModule.common', 'Вход'),
 			)); ?>
 
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(
 			     'buttonType' => 'link',
 			     'type'       => 'link',
-			     'label'      => Yii::t('userModule.common', 'Forgot password'),
+			     'label'      => Yii::t('userModule.common', 'Забыли пароль?'),
 			     'url'        => Yii::app()->createUrl('/user/default/restore'),
 			)); ?>
 	</div>

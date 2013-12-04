@@ -1,6 +1,13 @@
 <?php
+namespace modules\blogs\controllers;
 
-class PostController extends Controller {
+use Yii;
+use CMap;
+use CHttpException;
+use components;
+use modules\blogs\models AS models;
+
+class PostController extends components\Controller {
 
 	/**
 	 * @return array action filters
@@ -13,7 +20,7 @@ class PostController extends Controller {
 	}
 
 	public function actionCreate ( $blogId ) {
-		$blog = Blog::model()->findByPk($blogId);
+		$blog = models\Blog::model()->findByPk($blogId);
 
 		if ( !$blog ) {
 			throw new CHttpException(404);
@@ -21,14 +28,14 @@ class PostController extends Controller {
 
 		if ( !Yii::app()->user->checkAccess('createPostInOwnBlog',
 				array('ownerId' => $blog->ownerId)) && !Yii::app()->user->checkAccess('createPostInBlog') && !Yii::app()->user->checkAccess('createPostInGroupMemberBlog',
-				array('isMember' => Group::checkJoin($blog->group))) && !Yii::app()->user->checkAccess('createPostInGroup')
+				array('isMember' => \Group::checkJoin($blog->group))) && !Yii::app()->user->checkAccess('createPostInGroup')
 		) {
 			throw new CHttpException(403);
 		}
 
 		if ( $blog->groupId ) {
 			$this->pageTitle = Yii::t('blogsModule.common',
-				'Создание записи в группе "{groupTitle}"',
+				'Создание поста в группе "{groupTitle}"',
 				array(
 				     '{groupTitle}' => $blog->group->getTitle(),
 				));
@@ -38,7 +45,7 @@ class PostController extends Controller {
 					'Просмотр группы "{groupTitle}"',
 					array('{groupTitle}' => $blog->group->getTitle())) => $blog->group->getUrl(),
 				Yii::t('groupsModule.common',
-					'Создание записи в группе "{groupTitle}"',
+					'Создание поста в группе "{groupTitle}"',
 					array(
 					     '{groupTitle}' => $blog->group->getTitle(),
 					))
@@ -46,7 +53,7 @@ class PostController extends Controller {
 		}
 		else {
 			$this->pageTitle = Yii::t('blogsModule.common',
-				'Создание записи в блоге "{blogTitle}"',
+				'Создание поста в блоге "{blogTitle}"',
 				array(
 				     '{blogTitle}' => $blog->getTitle(),
 				));
@@ -56,27 +63,27 @@ class PostController extends Controller {
 					'Просмотр блога "{blogPostName}"',
 					array('{blogPostName}' => $blog->getTitle())) => $blog->getUrl(),
 				Yii::t('blogsModule.common',
-					'Создание записи в блоге "{blogTitle}"',
+					'Создание поста в блоге "{blogTitle}"',
 					array(
 					     '{blogTitle}' => $blog->getTitle(),
 					))
 			);
 		}
 
-		$blogPost = new BlogPost();
+		$blogPost = new models\BlogPost();
 
 		// Uncomment the following line if AJAX validation is needed
-		$this->performAjaxValidation($blog);
+		$this->performAjaxValidation($blogPost);
 
-		if ( isset($_POST['BlogPost']) ) {
-			$blogPost->attributes = $_POST['BlogPost'];
+		if ( isset($_POST[$blogPost->resolveClassName()]) ) {
+			$blogPost->attributes = $_POST[$blogPost->resolveClassName()];
 			$blogPost->blogId = $blogId;
 			$blogPost->setTags($_POST['blogTags']);
 
 			if ( $blogPost->save() ) {
 
-				Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-					Yii::t('blogsModule.common', 'Запись создана успешно'));
+				Yii::app()->user->setFlash(\User::FLASH_SUCCESS,
+					Yii::t('blogsModule.common', 'Пост создан успешно'));
 				$this->redirect($blogPost->getUrl());
 			}
 		}
@@ -102,7 +109,7 @@ class PostController extends Controller {
 
 		if ( $blog->groupId ) {
 			$this->pageTitle = Yii::t('blogsModule.common',
-				'Редактирование записи в группе "{groupTitle}"',
+				'Редактирование поста в группе "{groupTitle}"',
 				array(
 				     '{groupTitle}' => $blog->group->getTitle(),
 				));
@@ -112,7 +119,7 @@ class PostController extends Controller {
 					'Просмотр группы "{groupTitle}"',
 					array('{groupTitle}' => $blog->group->getTitle())) => $blog->group->getUrl(),
 				Yii::t('groupsModule.common',
-					'Редактирование записи в группе "{groupTitle}"',
+					'Редактирование поста в группе "{groupTitle}"',
 					array(
 					     '{groupTitle}' => $blog->group->getTitle(),
 					))
@@ -120,7 +127,7 @@ class PostController extends Controller {
 		}
 		else {
 			$this->pageTitle = Yii::t('blogsModule.common',
-				'Редактирование записи в блоге "{blogTitle}"',
+				'Редактирование поста в блоге "{blogTitle}"',
 				array(
 				     '{blogTitle}' => $blog->getTitle(),
 				));
@@ -130,7 +137,7 @@ class PostController extends Controller {
 					'Просмотр блога "{blogPostName}"',
 					array('{blogPostName}' => $blog->getTitle())) => $blog->getUrl(),
 				Yii::t('blogsModule.common',
-					'Редактирование записи в блоге "{blogTitle}"',
+					'Редактирование поста в блоге "{blogTitle}"',
 					array(
 					     '{blogTitle}' => $blog->getTitle(),
 					))
@@ -138,16 +145,16 @@ class PostController extends Controller {
 		}
 
 		// Uncomment the following line if AJAX validation is needed
-		$this->performAjaxValidation($blog);
+		$this->performAjaxValidation($blogPost);
 
-		if ( isset($_POST['BlogPost']) ) {
-			$blogPost->attributes = $_POST['BlogPost'];
+		if ( isset($_POST[$blogPost->resolveClassName()]) ) {
+			$blogPost->attributes = $_POST[$blogPost->resolveClassName()];
 			$blogPost->setTags($_POST['blogTags']);
 
 			if ( $blogPost->save() ) {
 
-				Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-					Yii::t('blogsModule.common', 'Запись отредатктирована успешно'));
+				Yii::app()->user->setFlash(\User::FLASH_SUCCESS,
+					Yii::t('blogsModule.common', 'Пост отредактирован успешно'));
 				$this->redirect($blogPost->getUrl());
 			}
 		}
@@ -178,7 +185,7 @@ class PostController extends Controller {
 		}
 
 		$this->breadcrumbs[] = $this->pageTitle = Yii::t('blogsModule.common',
-			'Просмотр записи "{blogTitle}"',
+			'Просмотр поста "{blogTitle}"',
 			array(
 			     '{blogTitle}' => $blogPost->getTitle(),
 			));
@@ -191,10 +198,10 @@ class PostController extends Controller {
 
 
 	public function actionTagsSuggest ( $q ) {
-		$criteria = new CDbCriteria();
+		$criteria = new \CDbCriteria();
 		$criteria->addSearchCondition('t.name', $q, true);
 		$criteria->group = 't.name';
-		$tags = BlogPost::model()->with('blog:forCurrentUser')->getAllTags($criteria);
+		$tags = models\BlogPost::model()->with('blog:forCurrentUser')->getAllTags($criteria);
 
 		$result = array();
 
@@ -205,7 +212,7 @@ class PostController extends Controller {
 			);
 		}
 
-		Ajax::send(Ajax::AJAX_SUCCESS,
+		\Ajax::send(\Ajax::AJAX_SUCCESS,
 			'ok',
 			array(
 			     'tags'  => $result,
@@ -224,8 +231,8 @@ class PostController extends Controller {
 
 		// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
 		if ( !isset($_GET['ajax']) ) {
-			Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-				Yii::t('blogsModule.common', 'Запись удалена успешно'));
+			Yii::app()->user->setFlash(\User::FLASH_SUCCESS,
+				Yii::t('blogsModule.common', 'Пост удален успешно'));
 			$this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('/blogs/default/index'));
 		}
 	}
@@ -237,11 +244,11 @@ class PostController extends Controller {
 	 *
 	 * @param integer $id the ID of the model to be loaded
 	 *
-	 * @return BlogPost the loaded model
+	 * @return models\BlogPost the loaded model
 	 * @throws CHttpException
 	 */
 	public function loadModel ( $id ) {
-		$model = BlogPost::model()->findByPk($id);
+		$model = models\BlogPost::model()->findByPk($id);
 		if ( $model === null ) {
 			throw new CHttpException(404, 'The requested page does not exist.');
 		}
@@ -258,8 +265,13 @@ class PostController extends Controller {
 			$model = array($model);
 		}
 		if ( isset($_POST['ajax']) && $_POST['ajax'] === 'blogPost-form' ) {
-			echo CActiveForm::validate($model);
+			echo \CActiveForm::validate($model);
 			Yii::app()->end();
 		}
+	}
+
+
+	public function getPagesForSitemap () {
+		return models\BlogPost::model()->onlyVisible();
 	}
 }

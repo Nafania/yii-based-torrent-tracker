@@ -22,7 +22,7 @@
 		array(
 		     'data-toggle'         => 'tooltip',
 		     'data-placement'      => 'right',
-		     'data-original-title' => Yii::t('torrentsModule.common',
+		     'title' => Yii::t('torrentsModule.common',
 			     'В открытую группу может вступить любой человек, в закрытую же только по приглашению владельца группы.'),
 		     'class'               => 'attributeDescription',
 		));

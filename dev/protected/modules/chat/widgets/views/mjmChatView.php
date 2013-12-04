@@ -1,4 +1,10 @@
-<div id="mjmChatRoom">
+<?php
+/**
+ * @var $showChat boolean
+ */
+?>
+
+<div id="mjmChatRoom"<?php echo ( $showChat ? ' style="bottom:0;right:0;"' : '' ) ?>>
 	<div id="mjmChatRoomHead">
 		<span id="mjmChatRoomTitle" title="Minimize"><?php echo Yii::t('chatModule.common', 'Чат') ?></span>
 		<span id="mjmChatRoomMinimize" title="Minimize">-</span>

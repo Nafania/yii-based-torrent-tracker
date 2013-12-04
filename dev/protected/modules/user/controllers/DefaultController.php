@@ -1,10 +1,10 @@
 <?php
 
-class DefaultController extends Controller {
+class DefaultController extends components\Controller {
 
 	public function filters () {
 		return array(
-			'ajaxOnly + suggest',
+			'ajaxOnly + suggest,socialDelete',
 			array('application.modules.auth.filters.AuthFilter -logout,socialLogin,login'),
 		);
 	}
@@ -27,7 +27,7 @@ class DefaultController extends Controller {
 			$User->attributes = $_POST['User'];
 			// validate user input and redirect to the previous page if valid
 			if ( $User->validate() && $User->login() ) {
-				Yii::app()->user->setFlash(User::FLASH_SUCCESS, Yii::t('userModule.common', 'Login successful'));
+				Yii::app()->user->setFlash(User::FLASH_SUCCESS, Yii::t('userModule.common', 'Вы успешно вошли на сайт'));
 				$this->redirect(Yii::app()->user->returnUrl);
 			}
 		}
@@ -39,7 +39,7 @@ class DefaultController extends Controller {
 	 * Logs out the current user and redirect to homepage.
 	 */
 	public function actionLogout () {
-		Yii::app()->user->setFlash(User::FLASH_SUCCESS, Yii::t('userModule.common', 'Logout successful'));
+		Yii::app()->user->setFlash(User::FLASH_SUCCESS, Yii::t('userModule.common', 'Вы успешно вышли с сайта'));
 		Yii::app()->user->logout();
 		$this->redirect(Yii::app()->homeUrl);
 	}
@@ -63,7 +63,7 @@ class DefaultController extends Controller {
 				Yii::app()->getAuthManager()->assign('registered', $User->getId());
 
 				Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-					Yii::t('userModule.common', 'Register and login successful'));
+					Yii::t('userModule.common', 'Вы успешно зарегистрировались и вошли на сайт.'));
 
 				$User->login();
 
@@ -89,7 +89,7 @@ class DefaultController extends Controller {
 
 				if ( $User->save() && $User->sendRestore() ) {
 					Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-						Yii::t('userModule.common', 'Restore successful. Email with future instructions sent to you.'));
+						Yii::t('userModule.common', 'Email с инструкциями по восстановлению пароля выслан на ваш email адрес.'));
 
 					$this->redirect(Yii::app()->user->returnUrl);
 				}
@@ -105,7 +105,7 @@ class DefaultController extends Controller {
 		$User = User::model()->findByAttributes(array('resetHash' => $hash));
 
 		if ( !$User ) {
-			throw new CHttpException(404, Yii::t('userModule.common', 'User not found'));
+			throw new CHttpException(404, Yii::t('userModule.common', 'Пользователь не найден'));
 		}
 
 		$User->setScenario('reset');
@@ -113,7 +113,7 @@ class DefaultController extends Controller {
 		if ( $User->save() && $User->sendReset() ) {
 			Yii::app()->user->setFlash(User::FLASH_SUCCESS,
 				Yii::t('userModule.common',
-					'Reset successfull. Email with future instructions sent to you. Please, follow link from that email.'));
+					'Email с инструкциями по восстановлению пароля выслан на ваш email адрес.'));
 			$this->redirect(Yii::app()->homeUrl);
 		}
 
@@ -123,7 +123,7 @@ class DefaultController extends Controller {
 		$User = User::model()->findByPk(Yii::app()->getUser()->getId());
 
 		if ( $User->emailConfirmed ) {
-			Yii::app()->user->setFlash(User::FLASH_INFO, Yii::t('userModule.common', 'Your email already confirmed'));
+			Yii::app()->user->setFlash(User::FLASH_INFO, Yii::t('userModule.common', 'Ваш email адрес уже подтвержден.'));
 			$this->redirect(array('/user/default/settings'));
 		}
 
@@ -135,12 +135,12 @@ class DefaultController extends Controller {
 				$User->save();
 
 				Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-					Yii::t('userModule.common', 'You successfully confirm your email address'));
+					Yii::t('userModule.common', 'Вы успешно подтвердили свой email адрес.'));
 				$this->redirect(Yii::app()->homeUrl);
 			}
 			else {
 				Yii::app()->user->setFlash(User::FLASH_ERROR,
-					Yii::t('userModule.common', 'Incorrect confirm code, please repeat confirm email procedure.'));
+					Yii::t('userModule.common', 'Неверный код подтверждения. Пожалуйста, повторите процедуру подтверждения email адреса.'));
 				$this->redirect(array('/user/default/settings'));
 			}
 		}
@@ -148,7 +148,7 @@ class DefaultController extends Controller {
 			$User->sendConfirmEmail();
 			Yii::app()->user->setFlash(User::FLASH_SUCCESS,
 				Yii::t('userModule.common',
-					'Confirm mail sent to you. Please, follow link from mail to confirm your email address.'));
+					'Email со ссылкой для подтверждения вашего адреса выслан вам. Пожалуйста, используйте ссылку из письма для подтверждения вашего email адреса.'));
 			$this->redirect(array('/user/default/settings'));
 		}
 	}
@@ -207,6 +207,24 @@ class DefaultController extends Controller {
 			));
 	}
 
+	public function actionSocialDelete () {
+		$service = Yii::app()->getRequest()->getParam('service', '');
+
+		$account = UserSocialAccount::model()->findByAttributes(array('uId' => Yii::app()->getUser()->getId(), 'service' => $service));
+
+		if ( !$account ) {
+			throw new CHttpException(404);
+		}
+		else {
+			if ( $account->delete() ) {
+				Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('userModule.common', 'Аккаунт социальной сети удален успешно.'));
+			}
+			else {
+				Ajax::send(Ajax::AJAX_ERROR, Yii::t('userModule.common', 'При удалении аккаунта социальной сети возникли ошибки, попробуйте удалить его позднее.'));
+			}
+		}
+	}
+
 	public function actionSocialAdd ( $service ) {
 		$authIdentity = Yii::app()->eauth->getIdentity($service);
 		$authIdentity->redirectUrl = $this->createAbsoluteUrl('/user/default/settings');
@@ -250,14 +268,12 @@ class DefaultController extends Controller {
 	}
 
 	public function actionSocialLogin ( $service ) {
-		Yii::import('application.modules.user.models.*');
+		//Yii::import('application.modules.user.models.*');
 
-		$this->pageTitle = Yii::t('userModule.common', 'Вход через социальные сети');
-		$this->breadcrumbs[] = Yii::t('userModule.common', 'Вход через социальные сети');
+		//$this->pageTitle = Yii::t('userModule.common', 'Вход через социальные сети');
+		//$this->breadcrumbs[] = Yii::t('userModule.common', 'Вход через социальные сети');
 
-		$User = new User('socialLogin');
-		$Profile = new UserProfile('socialLogin');
-
+		/** @var $authIdentity EAuthServiceBase */
 		$authIdentity = Yii::app()->eauth->getIdentity($service);
 		$authIdentity->redirectUrl = Yii::app()->user->returnUrl;
 		$authIdentity->cancelUrl = $this->createAbsoluteUrl('/user/default/login');
@@ -279,6 +295,9 @@ class DefaultController extends Controller {
 							'name'  => $authIdentity->name,
 							'email' => $authIdentity->email,
 						);
+						$User = new User('socialLogin');
+						$Profile = new UserProfile('socialLogin');
+
 						$User->emailConfirmed = ($authIdentity->email ? 1 : 0);
 
 						$profileAttributes = array(
@@ -324,7 +343,7 @@ class DefaultController extends Controller {
 						$identity->id = $UserSocialAccount->uId;
 
 						Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-							Yii::t('userModule.common', 'Login successful'));
+							Yii::t('userModule.common', 'Вы успешно вошли на сайт.'));
 						Yii::app()->user->login($identity);
 						$authIdentity->redirect();
 					}
@@ -349,6 +368,17 @@ class DefaultController extends Controller {
 		}
 	}
 
+	public function actionView ( $id ) {
+		$model = $this->loadModel($id);
+
+		$title = Yii::t('userModule.common', 'Просмотр профиля "{name}"', array('{name}' => $model->getName()));
+		$this->pageTitle = $title;
+		$this->breadcrumbs[] = $title;
+
+		$this->render('view', array(
+		                           'model' => $model
+		                      ));
+	}
 
 	public function actionSuggest ( $term ) {
 		$criteria = new CDbCriteria();
@@ -381,7 +411,7 @@ class DefaultController extends Controller {
 	public function loadModel ( $id ) {
 		$model = User::model()->findByPk((int) $id);
 		if ( $model === null ) {
-			throw new CHttpException(404, 'The requested page does not exist.');
+			throw new CHttpException(404, 'Указанная страница не найдена');
 		}
 		return $model;
 	}

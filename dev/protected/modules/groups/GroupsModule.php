@@ -41,6 +41,7 @@ class GroupsModule extends CWebModule {
 		                                 'yiiadmin/groups/backend/<action:\w+>/*' => 'groups/groupsBackend/<action>',
 		                                 'yiiadmin/groups/backend/*'              => 'groups/groupsBackend',
 
+		                                 'groups/<title>-<id>'                    => 'groups/default/view',
 		                                 'groups/'                                => 'groups/default/index',
 		                                 'groups/<action:\w+>/*'                  => 'groups/default/<action>',
 		                                 'groups/<controller:\w+>/<action:\w+>/*' => 'groups/<controller>/<action>',
@@ -84,11 +85,33 @@ class GroupsModule extends CWebModule {
 			     CActiveRecord::HAS_MANY,
 			     'Group',
 			     'idGroup',
-			     'through' => 'groupUser',
+			     'through'   => 'groupUser',
 			     'condition' => 'status = :status',
-			     'params' => array(
+			     'params'    => array(
 				     ':status' => GroupUser::STATUS_APPROVED,
 			     )
+			),
+			'application.modules.groups.models.*');
+
+		Yii::app()->pd->addRelations('User',
+			'groupsMemberCount',
+			array(
+			     CActiveRecord::STAT,
+			     'GroupUser',
+			     'idUser',
+			     'condition' => 'status = :status',
+			     'params'    => array(
+				     ':status' => GroupUser::STATUS_APPROVED,
+			     )
+			),
+			'application.modules.groups.models.*');
+
+		Yii::app()->pd->addRelations('User',
+			'groupsOwnerCount',
+			array(
+			     CActiveRecord::STAT,
+			     'Group',
+			     'ownerId',
 			),
 			'application.modules.groups.models.*');
 	}

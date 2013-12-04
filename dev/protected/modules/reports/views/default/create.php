@@ -10,19 +10,20 @@
 }
 ?>
 <?php
-$form = $this->beginWidget('CActiveForm',
+$form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	array(
 	     'id'                     => 'report-form',
 	     'enableAjaxValidation'   => true,
 	     'enableClientValidation' => true,
 	     'action'                 => Yii::app()->createUrl('/reports/default/create',
 		     array(
-		          'modelName' => get_class($model),
+		          'modelName' => $model->resolveClassName(),
 		          'modelId'   => $model->getId()
 		     )),
 	     'clientOptions'          => array(
 		     'validateOnSubmit' => true,
 		     'afterValidate'    => 'js:function(form,data,hasError){
+		     var button = form.find("button[type=submit]");
 		                           if(!hasError){
 		                                $.ajax({
 		                                type:"POST",
@@ -39,8 +40,14 @@ $form = $this->beginWidget('CActiveForm',
 		                                        },
 		                                        type: "success"
 		                                    }).show();
-		                                           },
+		                                },
+		                                complete: function(data){
+		                                    button.button("reset");
+		                                }
 		                                   });
+		                           }
+		                           else {
+		                            button.button("reset");
 		                           }
 		                           }'
 
@@ -52,9 +59,8 @@ $form = $this->beginWidget('CActiveForm',
 	<div class="modal-header">
 	<a class="close" data-dismiss="modal">&times;</a>
 	<h4><?php echo Yii::t('reportsModule.common',
-			'Report for {model} {title}',
+			'Жалоба на "{title}"',
 			array(
-			     '{model}' => get_class($model),
 			     '{title}' => $model->getTitle(),
 			)); ?></h4>
 </div>
@@ -67,15 +73,21 @@ $form = $this->beginWidget('CActiveForm',
 	</div>
 
 	<div class="modal-footer">
-	<?php
-	echo CHtml::submitButton(Yii::t('reportsModule.common', 'Report'),
-		array('class' => 'btn btn-primary'));
-	echo CHtml::button(Yii::t('reportsModule.common', 'Cancel'),
-		array(
-		     'class'        => 'btn btn-cancel',
-		     'data-dismiss' => 'modal'
-		));
-	?>
+		<?php $this->widget('bootstrap.widgets.TbButton',
+			array(
+			     'buttonType'  => 'submit',
+			     'type'        => 'primary',
+			     'label'       => Yii::t('reportsModule.common', 'Пожаловаться'),
+			     'loadingText' => Yii::t('reportsModule.common', 'Идет отправка...'),
+			)); ?>
+
+		<?php
+		echo CHtml::button(Yii::t('reportsModule.common', 'Отмена'),
+			array(
+			     'class'        => 'btn btn-cancel',
+			     'data-dismiss' => 'modal'
+			));
+		?>
 </div>
 <?php
 $this->endWidget();

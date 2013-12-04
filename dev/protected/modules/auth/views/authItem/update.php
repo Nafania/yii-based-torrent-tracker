@@ -3,12 +3,6 @@
 /* @var $model AuthItemForm */
 /* @var $item CAuthItem */
 /* @var $form TbActiveForm */
-
-$this->breadcrumbs = array(
-	$this->capitalize($this->getTypeText(true)) => array('index'),
-	$item->description => array('view', 'name' => $item->name),
-	Yii::t('AuthModule.main', 'Edit'),
-);
 ?>
 
 <h1>

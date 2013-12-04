@@ -14,6 +14,7 @@
  * @property integer $append
  * @property integer $prepend
  * @property integer $separate
+ * @property integer $common
  */
 class Attribute extends EActiveRecord {
 

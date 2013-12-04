@@ -1,9 +1,12 @@
 <?php
+namespace components;
+use Yii;
+use CHtml;
 /**
  * Controller is the customized base controller class.
  * All controller classes for this application should extend from this base class.
  */
-class Controller extends CController {
+class Controller extends \CController {
 	/**
 	 * @var string the default layout for the controller view. Defaults to '//layouts/column1',
 	 * meaning using a single column layout. See 'protected/views/layouts/column1.php'.
@@ -42,7 +45,15 @@ class Controller extends CController {
 		parent::init();
 		$this->attachBehaviors($this->behaviors());
 
-		Yii::app()->getComponent('bootstrap');
+		$app = Yii::app();
+
+		$app->getComponent('bootstrap');
+
+		$url = $app->getRequest()->getUrl();
+		if ( !$app->getRequest()->getIsAjaxRequest() && !$app->getRequest()->getIsPostRequest() && $url != CHtml::normalizeUrl($app->getComponent('user')->loginUrl) && $url != CHtml::normalizeUrl($app->getComponent('user')->registerUrl) ) {
+			$app->getUser()->setReturnUrl($url);
+		}
+
 
 		return true;
 	}
@@ -98,5 +109,14 @@ class Controller extends CController {
 	public function addOgMeta ( $name, $value ) {
 		$cs = Yii::app()->getClientScript();
 		$cs->registerMetaTag($value, null, null, array('property' => 'og:' . $name), 'og:' . $name);
+	}
+
+	public function beginClip ( $id, $properties = array() ) {
+		$properties['id'] = $id;
+		$this->beginWidget('application.widgets.EClipWidget', $properties);
+	}
+
+	public function endClip () {
+		$this->endWidget('application.widgets.EClipWidget');
 	}
 }

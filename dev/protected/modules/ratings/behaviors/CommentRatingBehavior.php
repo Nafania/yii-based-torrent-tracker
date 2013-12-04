@@ -4,7 +4,7 @@ class CommentRatingBehavior extends RatingBehavior {
 
 	public function calculateRating () {
 		$owner = $this->getOwner();
-		$ratings = RatingRelations::model()->findAllByAttributes(array('modelName' => get_class($owner), 'modelId' => $owner->primaryKey));
+		$ratings = RatingRelations::model()->findAllByAttributes(array('modelName' => $owner->resolveClassName(), 'modelId' => $owner->primaryKey));
 
 		$ratingVal = 0;
 		foreach ( $ratings AS $rating ) {

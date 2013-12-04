@@ -1,4 +1,6 @@
 <?php
+use modules\torrents\models AS models;
+
 class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 	private $_torrentId = false;
 
@@ -31,9 +33,27 @@ class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 		if ( $this->getOwner()->torrent ) {
 			return $this->getOwner()->torrent->torrentGroup;
 		}
-		$Torrent = Torrent::model()->findByPk($this->getTorrentId());
+		$Torrent = models\Torrent::model()->findByPk($this->getTorrentId());
+
+		if ( !$Torrent ) {
+			throw new CHttpException(404, Yii::t('torrentsModule.common', 'Указанный торрент не найден'));
+		}
 
 		return $Torrent->torrentGroup;
+	}
+
+	public function getTorrent () {
+		Yii::import('application.modules.torrents.models.*');
+		if ( $this->getOwner()->torrent ) {
+			return $this->getOwner()->torrent;
+		}
+		$Torrent = models\Torrent::model()->findByPk($this->getTorrentId());
+
+		if ( !$Torrent ) {
+			throw new CHttpException(404, Yii::t('torrentsModule.common', 'Указанный торрент не найден'));
+		}
+
+		return $Torrent;
 	}
 
 	public function beforeSave ( $event ) {

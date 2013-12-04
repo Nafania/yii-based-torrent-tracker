@@ -1,6 +1,6 @@
 <?php
 /* @var $this DefaultController */
-/* @var $model Blog */
+/* @var $model modules\blogs\models\Blog */
 ?>
 <div class="media">
 	<?php
@@ -26,7 +26,7 @@
 				array(
 				     'buttonType'  => 'link',
 				     'type'        => 'primary',
-				     'label'       => 'Create post',
+				     'label'       => Yii::t('blogsModule.common', 'Написать пост'),
 				     'url'         => array(
 					     '/blogs/post/create', 'blogId' => $model->getId()
 				     ),

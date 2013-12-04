@@ -1,6 +1,11 @@
 <?php
+namespace modules\blogs;
+use Yii;
+use CActiveRecord;
 
-class BlogsModule extends CWebModule {
+class BlogsModule extends \CWebModule {
+	public $controllerNamespace = '\modules\blogs\controllers';
+
 	public $backendController = 'blogsBackend';
 	public $defaultController = 'default';
 
@@ -10,8 +15,7 @@ class BlogsModule extends CWebModule {
 
 		// import the module-level models and components
 		$this->setImport(array(
-		                      'blogs.models.*',
-		                      'blogs.components.*',
+		                      'modules\blogs\models.*',
 		                 ));
 	}
 
@@ -31,8 +35,18 @@ class BlogsModule extends CWebModule {
 			'blogPostsCount',
 			array(
 			     CActiveRecord::STAT,
-			     'BlogPost',
+			     'modules\blogs\models\BlogPost',
 			     'ownerId',
+			),
+			'application.modules.blogs.models.*');
+
+		Yii::app()->pd->addRelations('User',
+			'blogsCount',
+			array(
+			     CActiveRecord::STAT,
+			     'modules\blogs\models\Blog',
+			     'ownerId',
+			     'condition' => 'groupId IS NULL'
 			),
 			'application.modules.blogs.models.*');
 
@@ -40,7 +54,7 @@ class BlogsModule extends CWebModule {
 			'blog',
 			array(
 			     CActiveRecord::HAS_ONE,
-			     'Blog',
+			     'modules\blogs\models\Blog',
 			     'groupId',
 			),
 			'application.modules.blogs.models.*');
@@ -48,13 +62,16 @@ class BlogsModule extends CWebModule {
 
 	private static function _addUrlRules () {
 		Yii::app()->pd->addUrlRules(array(
-		                                 'yiiadmin/blogs/backend/<action:\w+>/*' => 'blogs/blogsBackend/<action>',
-		                                 'yiiadmin/blogs/backend/*'              => 'blogs/blogsBackend',
+		                                 'yiiadmin/blogs/backend/<action:\w+>/*'           => 'blogs/blogsBackend/<action>',
+		                                 'yiiadmin/blogs/backend/*'                        => 'blogs/blogsBackend',
 
-		                                 'blogs/'                                => 'blogs/default/index',
-		                                 'blogs/post/<action:\w+>/*'             => 'blogs/post/<action>',
-		                                 'blogs/<action:\w+>/*'                  => 'blogs/default/<action>',
-		                                 'blogs/<controller:\w+>/<action:\w+>/*' => 'blogs/<controller>/<action>',
+		                                 'blogs/<title>-<id>'                              => 'blogs/default/view',
+		                                 'blogs/'                                          => 'blogs/default/index',
+		                                 'groups/<groupTitle>-<groupId>/post/<title>-<id>' => 'blogs/post/view',
+		                                 'blogs/<blogTitle>-<blogId>/<title>-<id>'    => 'blogs/post/view',
+		                                 'blogs/post/<action:\w+>/*'                       => 'blogs/post/<action>',
+		                                 'blogs/<action:\w+>/*'                            => 'blogs/default/<action>',
+		                                 'blogs/<controller:\w+>/<action:\w+>/*'           => 'blogs/<controller>/<action>',
 		                            ));
 	}
 
@@ -62,11 +79,11 @@ class BlogsModule extends CWebModule {
 		Yii::app()->pd->setImport(array('application.modules.blogs.models.*'));
 	}
 
-	private static function _registerBehaviors() {
+	private static function _registerBehaviors () {
 		Yii::app()->pd->registerBehavior('Group',
 			array(
 			     'autoCreateBlog' => array(
-				     'class'          => 'application.modules.blogs.behaviors.AutoCreateBlogForGroup',
+				     'class' => 'application.modules.blogs.behaviors.AutoCreateBlogForGroup',
 			     ),
 			));
 	}

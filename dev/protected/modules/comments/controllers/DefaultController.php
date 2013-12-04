@@ -1,8 +1,8 @@
 <?php
 
-class DefaultController extends Controller {
+class DefaultController extends components\Controller {
 	public function filters () {
-		return CMap::mergeArray(parent::filters(), array('ajaxOnly + create'));
+		return CMap::mergeArray(parent::filters(), array('ajaxOnly + create, loadAnswerBlock'));
 	}
 
 	public function actionCreate () {
@@ -35,7 +35,15 @@ class DefaultController extends Controller {
 
 		$comment = new Comment();
 
+		/**
+		 * disable all scripts
+		 */
 		Yii::app()->getClientScript()->scriptMap['jquery.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['jquery.min.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['jquery.yiiactiveform.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['redactor.min.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['redactor.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['ru.js'] = false;
 		//var_dump(Yii::app()->getClientScript()->scriptMap);
 		$view = $this->renderPartial('application.modules.comments.widgets.views.answer',
 			array(

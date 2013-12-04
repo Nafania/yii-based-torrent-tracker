@@ -6,11 +6,6 @@
 /* @var $formModel AddAuthItemForm */
 /* @var $form TbActiveForm */
 /* @var $childOptions array */
-
-$this->breadcrumbs = array(
-	$this->capitalize($this->getTypeText(true)) => array('index'),
-	$item->description,
-);
 ?>
 
 <div class="title-row clearfix">

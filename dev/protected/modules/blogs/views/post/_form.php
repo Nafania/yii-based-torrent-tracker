@@ -29,8 +29,9 @@
 		     'imageUpload'  => Yii::app()->createUrl('files/default/upload'),
 		     'uploadFields' => array(
 			     Yii::app()->getRequest()->csrfTokenName => Yii::app()->getRequest()->getCsrfToken(),
-			     'modelName'                             => get_class($blogPost)
-		     )
+			     'modelName'                             => $blogPost->resolveClassName()
+		     ),
+		     'keyupCallback' => 'js:function(html){$("#BlogPost_text").trigger("change");this.sync();}'
 	     ),
 	));?>
 <?php echo $form->error($blogPost, 'text'); ?>
@@ -95,11 +96,11 @@ $this->widget('bootstrap.widgets.TbSelect2',
 		echo $form->labelEx($blogPost,
 			'hidden',
 			array(
-			     'data-toggle'         => 'tooltip',
-			     'data-placement'      => 'right',
-			     'data-original-title' => Yii::t('blogsModule.common',
+			     'data-toggle'    => 'tooltip',
+			     'data-placement' => 'right',
+			     'title'          => Yii::t('blogsModule.common',
 				     'Этот пост будет виден только вам, если вы публикуете его в личном блоге. Если это блог группы, то он будет виден только участникам группы.'),
-			     'class'               => 'attributeDescription checkbox',
+			     'class'          => 'attributeDescription checkbox',
 			));
 		?>
 	</div>
@@ -114,3 +115,8 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	</div>
 
 <?php $this->endWidget(); ?>
+<?php $this->widget('application.modules.drafts.widgets.DraftWidget',
+	array(
+	     'formId' => 'blogPost-form',
+	     'model'  => $blogPost
+	));?>

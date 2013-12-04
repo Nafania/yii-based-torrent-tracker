@@ -38,29 +38,11 @@ class FilesModule extends CWebModule {
 	private static function _addBehaviors () {
 		Yii::import('application.modules.files.models.*');
 
-		Yii::app()->pd->registerBehavior('TorrentGroup',
+		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup',
 			array(
 			     'image' => array(
-				     'class'     => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
-				     'types'     => array(
-					     'gif',
-					     'jpg',
-					     'png',
-					     'jpeg'
-				     ),
-				     'attribute' => 'picture',
-				     'maxSize'   => 1 * 1024 * 1024,
-				     # Default image to return if no image path is found in the DB
-				     'fallback_image' => '/images/NoImageAvailable.jpg',
-				     'path'      => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
-			     ),
-			));
-
-		Yii::app()->pd->registerBehavior('Group',
-			array(
-			     'image' => array(
-				     'class'     => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
-				     'types'     => array(
+				     'class'          => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
+				     'types'          => array(
 					     'gif',
 					     'jpg',
 					     'png',
@@ -70,15 +52,33 @@ class FilesModule extends CWebModule {
 				     'maxSize'        => 1 * 1024 * 1024,
 				     # Default image to return if no image path is found in the DB
 				     'fallback_image' => '/images/NoImageAvailable.jpg',
-				     'path'      => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
+				     'path'           => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
+			     ),
+			));
+
+		Yii::app()->pd->registerBehavior('Group',
+			array(
+			     'image' => array(
+				     'class'          => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
+				     'types'          => array(
+					     'gif',
+					     'jpg',
+					     'png',
+					     'jpeg'
+				     ),
+				     'attribute'      => 'picture',
+				     'maxSize'        => 1 * 1024 * 1024,
+				     # Default image to return if no image path is found in the DB
+				     'fallback_image' => '/images/NoImageAvailable.jpg',
+				     'path'           => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
 			     ),
 			));
 
 		Yii::app()->pd->registerBehavior('UserProfile',
 			array(
 			     'image' => array(
-				     'class'     => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
-				     'types'     => array(
+				     'class'          => 'application.modules.files.behaviors.yii-attachment-behavior.AttachmentBehavior',
+				     'types'          => array(
 					     'gif',
 					     'jpg',
 					     'png',
@@ -88,24 +88,29 @@ class FilesModule extends CWebModule {
 				     'attribute'      => 'picture',
 				     # Default image to return if no image path is found in the DB
 				     'fallback_image' => '/images/no_photo.png',
-				     'path'      => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
+				     'path'           => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",
 			     ),
 			));
 
-		Yii::app()->pd->registerBehavior('BlogPost',
+		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost',
 			array(
 			     '_update' => array(
-				     'class'     => 'application.modules.files.behaviors.UpdateModelsBehavior',
+				     'class' => 'application.modules.files.behaviors.UpdateModelsBehavior',
 			     ),
 			));
 	}
 
 	private static function _addModelRules () {
-		Yii::app()->pd->addModelRules('TorrentGroup',
+		Yii::app()->pd->addModelRules('modules\torrents\models\TorrentGroup',
 			array(
 			     'picture',
 			     'required',
-			     'on' => 'insert'
+			     'on' => 'insert',
+			),
+			array(
+			     'picture',
+			     'safe',
+			     'on' => 'update',
 			));
 		//array(
 		//     'picture',

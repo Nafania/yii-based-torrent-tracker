@@ -9,8 +9,8 @@ class AdvertisementBackendController extends YAdminController {
 	}
 
 	public function actionIndex () {
-		$this->breadcrumbs[] = Yii::t('advertisementModule.common', 'Управление проблемами');
-		$this->pageTitle = Yii::t('advertisementModule.common', 'Управление проблемами');
+		$this->breadcrumbs[] = Yii::t('advertisementModule.common', 'Управление рекламой');
+		$this->pageTitle = Yii::t('advertisementModule.common', 'Управление рекламой');
 
 		Yii::import('yiiadmin.extensions.yiiext.zii.widgets.grid.*');
 

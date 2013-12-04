@@ -1,5 +1,10 @@
 <?php
-class TorrentsModule extends CWebModule {
+namespace modules\torrents;
+use Yii;
+use CActiveRecord;
+
+class TorrentsModule extends \CWebModule {
+	public $controllerNamespace = '\modules\torrents\controllers';
 
 	public $backendController = 'torrentsBackend';
 	public $defaultController = 'default';
@@ -8,8 +13,8 @@ class TorrentsModule extends CWebModule {
 
 	public function init () {
 		$this->setImport(array(
-		                      'torrents.models.*',
-		                      'torrents.components.*',
+		                      'modules\torrents\models.*',
+		                      'modules\torrents\components.*',
 		                 ));
 	}
 
@@ -39,8 +44,8 @@ class TorrentsModule extends CWebModule {
 
 	protected static function _addUrlRules () {
 		Yii::app()->pd->addUrlRules(array(
-		                                 'yiiadmin/torrents/backend/<action:\w+>/*' => 'torrents/torrentsBackend/<action>',
-		                                 'yiiadmin/torrents/backend/*'              => 'torrents/torrentsBackend',
+		                                 'yiiadmin/torrents/backend/<action:\w+>' => 'torrents/torrentsBackend/<action>',
+		                                 'yiiadmin/torrents/backend'              => 'torrents/torrentsBackend',
 
 		                                 'torrents/<title>-<id>'                    => 'torrents/default/view',
 		                                 'torrents/'                                => 'torrents/default/index',
@@ -57,7 +62,7 @@ class TorrentsModule extends CWebModule {
 			'torrents',
 			array(
 			     CActiveRecord::HAS_MANY,
-			     'Torrent',
+			     'modules\torrents\models\Torrent',
 			     'uId',
 			),
 			'application.modules.torrents.models.*');
@@ -66,7 +71,7 @@ class TorrentsModule extends CWebModule {
 			'torrentsCount',
 			array(
 			     CActiveRecord::STAT,
-			     'Torrent',
+			     'modules\torrents\models\Torrent',
 			     'uid',
 			),
 			'application.modules.torrents.models.*');
@@ -75,7 +80,7 @@ class TorrentsModule extends CWebModule {
 			'torrentComments',
 			array(
 			     CActiveRecord::HAS_ONE,
-			     'TorrentCommentsRelations',
+			     'modules\torrents\models\TorrentCommentsRelations',
 			     'commentId',
 			),
 			'application.modules.torrents.models.*');
@@ -84,7 +89,7 @@ class TorrentsModule extends CWebModule {
 			'torrent',
 			array(
 			     CActiveRecord::HAS_ONE,
-			     'Torrent',
+			     'modules\torrents\models\Torrent',
 			     'torrentId',
 			     'through' => 'torrentComments'
 			),

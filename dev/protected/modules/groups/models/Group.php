@@ -206,7 +206,7 @@ class Group extends EActiveRecord {
 		 */
 		//if ( strpos($sort, 'rating') !== false ) {
 			$criteria->select .= ', r.rating AS rating';
-			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
+			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . $this->resolveClassName() . '\' AND r.modelId = t.id)';
 		//}
 
 		$sort = new CSort($this);

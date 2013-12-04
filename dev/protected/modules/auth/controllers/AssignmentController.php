@@ -1,140 +1,141 @@
 <?php
 /**
  * AssignmentController class file.
- * @author Christoffer Niska <ChristofferNiska@gmail.com>
+ * @author    Christoffer Niska <ChristofferNiska@gmail.com>
  * @copyright Copyright &copy; Christoffer Niska 2012-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package auth.controllers
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @package   auth.controllers
  */
 
 /**
  * Controller for assignment related actions.
  */
-class AssignmentController extends AuthController
-{
-    /**
-     * Displays the a list of all the assignments.
-     */
-    public function actionIndex()
-    {
-        $dataProvider = new CActiveDataProvider($this->module->userClass);
+class AssignmentController extends AuthController {
+	/**
+	 * Displays the a list of all the assignments.
+	 */
+	public function actionIndex () {
+		$this->breadcrumbs[] = Yii::t('AuthModule.main', 'Assignments');
 
-        $this->render(
-            'index',
-            array(
-                'dataProvider' => $dataProvider
-            )
-        );
-    }
+		$dataProvider = new CActiveDataProvider($this->module->userClass);
 
-    /**
-     * Displays the assignments for the user with the given id.
-     * @param string $id the user id.
-     */
-    public function actionView($id)
-    {
-        $formModel = new AddAuthItemForm();
+		$this->render('index',
+			array(
+			     'dataProvider' => $dataProvider
+			));
+	}
 
-        /* @var $am CAuthManager|AuthBehavior */
-        $am = Yii::app()->getAuthManager();
+	/**
+	 * Displays the assignments for the user with the given id.
+	 *
+	 * @param string $id the user id.
+	 */
+	public function actionView ( $id ) {
+		$formModel = new AddAuthItemForm();
 
-        if (isset($_POST['AddAuthItemForm'])) {
-            $formModel->attributes = $_POST['AddAuthItemForm'];
-            if ($formModel->validate()) {
-                if (!$am->isAssigned($formModel->items, $id)) {
-                    $am->assign($formModel->items, $id);
-                    if ($am instanceof CPhpAuthManager) {
-                        $am->save();
-                    }
 
-                    if ($am instanceof ICachedAuthManager) {
-                        $am->flushAccess($formModel->items, $id);
-                    }
-                }
-            }
-        }
+		/* @var $am CAuthManager|AuthBehavior */
+		$am = Yii::app()->getAuthManager();
 
-        $model = CActiveRecord::model($this->module->userClass)->findByPk($id);
+		if ( isset($_POST['AddAuthItemForm']) ) {
+			$formModel->attributes = $_POST['AddAuthItemForm'];
+			if ( $formModel->validate() ) {
+				if ( !$am->isAssigned($formModel->items, $id) ) {
+					$am->assign($formModel->items, $id);
+					if ( $am instanceof CPhpAuthManager ) {
+						$am->save();
+					}
 
-        $assignments = $am->getAuthAssignments($id);
-        $authItems = $am->getItemsPermissions(array_keys($assignments));
-        $authItemDp = new AuthItemDataProvider();
-        $authItemDp->setAuthItems($authItems);
+					if ( $am instanceof ICachedAuthManager ) {
+						$am->flushAccess($formModel->items, $id);
+					}
+				}
+			}
+		}
 
-        $assignmentOptions = $this->getAssignmentOptions($id);
-        if (!empty($assignmentOptions)) {
-            $assignmentOptions = array_merge(
-                array('' => Yii::t('AuthModule.main', 'Select item') . ' ...'),
-                $assignmentOptions
-            );
-        }
+		$model = CActiveRecord::model($this->module->userClass)->findByPk($id);
 
-        $this->render(
-            'view',
-            array(
-                'model' => $model,
-                'authItemDp' => $authItemDp,
-                'formModel' => $formModel,
-                'assignmentOptions' => $assignmentOptions,
-            )
-        );
-    }
+		$this->breadcrumbs[] = CHtml::value($model, $this->module->userNameColumn);
 
-    /**
-     * Revokes an assignment from the given user.
-     * @throws CHttpException if the request is invalid.
-     */
-    public function actionRevoke()
-    {
-        if (isset($_GET['itemName'], $_GET['userId'])) {
-            $itemName = $_GET['itemName'];
-            $userId = $_GET['userId'];
+		$assignments = $am->getAuthAssignments($id);
+		$authItems = $am->getItemsPermissions(array_keys($assignments));
+		$authItemDp = new AuthItemDataProvider();
+		$authItemDp->setAuthItems($authItems);
 
-            /* @var $am CAuthManager|AuthBehavior */
-            $am = Yii::app()->getAuthManager();
+		$assignmentOptions = $this->getAssignmentOptions($id);
+		if ( !empty($assignmentOptions) ) {
+			$assignmentOptions = array_merge(array('' => Yii::t('AuthModule.main', 'Select item') . ' ...'),
+				$assignmentOptions);
+		}
 
-            if ($am->isAssigned($itemName, $userId)) {
-                $am->revoke($itemName, $userId);
-                if ($am instanceof CPhpAuthManager) {
-                    $am->save();
-                }
+		$this->render('view',
+			array(
+			     'model'             => $model,
+			     'authItemDp'        => $authItemDp,
+			     'formModel'         => $formModel,
+			     'assignmentOptions' => $assignmentOptions,
+			));
+	}
 
-                if ($am instanceof ICachedAuthManager) {
-                    $am->flushAccess($itemName, $userId);
-                }
-            }
+	/**
+	 * Revokes an assignment from the given user.
+	 * @throws CHttpException if the request is invalid.
+	 */
+	public function actionRevoke () {
+		if ( isset($_GET['itemName'], $_GET['userId']) ) {
+			$itemName = $_GET['itemName'];
+			$userId = $_GET['userId'];
 
-            if (!isset($_POST['ajax'])) {
-                $this->redirect(array('view', 'id' => $userId));
-            }
-        } else {
-            throw new CHttpException(400, Yii::t('AuthModule.main', 'Invalid request.'));
-        }
-    }
+			/* @var $am CAuthManager|AuthBehavior */
+			$am = Yii::app()->getAuthManager();
 
-    /**
-     * Returns a list of possible assignments for the user with the given id.
-     * @param string $userId the user id.
-     * @return array the assignment options.
-     */
-    protected function getAssignmentOptions($userId)
-    {
-        $options = array();
+			if ( $am->isAssigned($itemName, $userId) ) {
+				$am->revoke($itemName, $userId);
+				if ( $am instanceof CPhpAuthManager ) {
+					$am->save();
+				}
 
-        /* @var $am CAuthManager|AuthBehavior */
-        $am = Yii::app()->authManager;
+				if ( $am instanceof ICachedAuthManager ) {
+					$am->flushAccess($itemName, $userId);
+				}
+			}
 
-        $assignments = $am->getAuthAssignments($userId);
-        $assignedItems = array_keys($assignments);
+			if ( !isset($_POST['ajax']) ) {
+				$this->redirect(array(
+				                     'view',
+				                     'id' => $userId
+				                ));
+			}
+		}
+		else {
+			throw new CHttpException(400, Yii::t('AuthModule.main', 'Invalid request.'));
+		}
+	}
 
-        /* @var $authItems CAuthItem[] */
-        $authItems = $am->getAuthItems();
-        foreach ($authItems as $itemName => $item) {
-            if (!in_array($itemName, $assignedItems)) {
-                $options[$this->capitalize($this->getItemTypeText($item->type, true))][$itemName] = $item->description;
-            }
-        }
+	/**
+	 * Returns a list of possible assignments for the user with the given id.
+	 *
+	 * @param string $userId the user id.
+	 *
+	 * @return array the assignment options.
+	 */
+	protected function getAssignmentOptions ( $userId ) {
+		$options = array();
 
-        return $options;
-    }
+		/* @var $am CAuthManager|AuthBehavior */
+		$am = Yii::app()->authManager;
+
+		$assignments = $am->getAuthAssignments($userId);
+		$assignedItems = array_keys($assignments);
+
+		/* @var $authItems CAuthItem[] */
+		$authItems = $am->getAuthItems();
+		foreach ( $authItems as $itemName => $item ) {
+			if ( !in_array($itemName, $assignedItems) ) {
+				$options[$this->capitalize($this->getItemTypeText($item->type, true))][$itemName] = $item->description;
+			}
+		}
+
+		return $options;
+	}
 }

@@ -8,6 +8,7 @@
  * @property string  $systemName
  * @property string  $description
  * @property string  $code
+ * @property string  $bizRule
  */
 class Advertisement extends EActiveRecord {
 	public $cacheTime = 3600;
@@ -37,6 +38,9 @@ class Advertisement extends EActiveRecord {
 			array(
 				'systemName',
 				'unique'
+			),
+			array(
+				'bizRule', 'safe'
 			),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.

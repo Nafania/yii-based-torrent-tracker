@@ -20,7 +20,7 @@ if ( Yii::app()->user->checkAccess('createPostInGroupMemberBlog',
 		     'htmlOptions' => array(
 			     'data-toggle'         => 'tooltip',
 			     'data-placement'      => 'top',
-			     'data-original-title' => Yii::t('blogsModule.common', 'Создать запись в этой группе'),
+			     'title' => Yii::t('blogsModule.common', 'Создать запись в этой группе'),
 		     )
 		));
 }
@@ -36,10 +36,10 @@ if ( Subscription::check($group) ) {
 		     'htmlOptions' => array(
 			     'data-toggle'         => 'tooltip',
 			     'data-placement'      => 'top',
-			     'data-model'          => get_class($group),
+			     'data-model'          => $group->resolveClassName(),
 			     'data-id'             => $group->getId(),
 			     'data-action'         => 'subscription',
-			     'data-original-title' => Yii::t('groupsModule.common',
+			     'title' => Yii::t('groupsModule.common',
 				     'Перестать следить за этой группой')
 		     ),
 		     'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.delete'),
@@ -54,10 +54,10 @@ else {
 		     'htmlOptions' => array(
 			     'data-toggle'         => 'tooltip',
 			     'data-placement'      => 'top',
-			     'data-model'          => get_class($group),
+			     'data-model'          => $group->resolveClassName(),
 			     'data-id'             => $group->getId(),
 			     'data-action'         => 'subscription',
-			     'data-original-title' => Yii::t('groupsModule.common',
+			     'title' => Yii::t('groupsModule.common',
 				     'Следить за этой группой')
 		     ),
 		     'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.create'),
@@ -129,7 +129,7 @@ if ( Yii::app()->user->checkAccess('editOwnGroup',
 			     'data-action'         => 'groupInvite',
 			     'data-toggle'         => 'tooltip',
 			     'data-placement'      => 'top',
-			     'data-original-title' => Yii::t('groupsModule.common', 'Пригласить пользователей в группу'),
+			     'title' => Yii::t('groupsModule.common', 'Пригласить пользователей в группу'),
 		     )
 		));
 	?>
@@ -151,7 +151,7 @@ if ( Yii::app()->user->checkAccess('editOwnGroup',
 			     ),
 			     'data-toggle'         => 'tooltip',
 			     'data-placement'      => 'top',
-			     'data-original-title' => Yii::t('groupsModule.common', 'Редактировать группу'),
+			     'title' => Yii::t('groupsModule.common', 'Редактировать группу'),
 		     )
 		));
 	?>
@@ -180,7 +180,7 @@ if ( Yii::app()->user->checkAccess('deleteOwnGroup',
 			     ),
 			     'data-toggle'         => 'tooltip',
 			     'data-placement'      => 'top',
-			     'data-original-title' => Yii::t('groupsModule.common', 'Удалить группу'),
+			     'title' => Yii::t('groupsModule.common', 'Удалить группу'),
 		     )
 		));
 	?>

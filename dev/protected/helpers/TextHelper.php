@@ -2,7 +2,7 @@
 class TextHelper {
 
 	static function makeClickable ( $text ) {
-		$text = preg_replace("#(^|[\n\s>])([\w]+?://[^\s\"\n\r\t<]*)#is", "\\1<a href=\"\\2\">\\2</a>", $text);
+		$text = preg_replace("#(^|[\n\s>])([\w]+?://[^\s\"\n\r\t<]*)#is", "\\1<a href=\"\\2\" target=\"_blank\">\\2</a>", $text);
 
 		return $text;
 	}

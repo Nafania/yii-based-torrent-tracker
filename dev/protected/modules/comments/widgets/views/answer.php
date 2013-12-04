@@ -3,10 +3,6 @@
 /* @var $comment Comment */
 /* @var $form TbActiveForm */
 ?>
-<?php if ( !Yii::app()->getUser()->checkAccess('comments.default.create') ) {
-	return;
-}
-?>
 <div class="answerBlock">
 <?php
 $form = $this->beginWidget('ext.bootstrap.widgets.TbActiveForm',
@@ -61,14 +57,26 @@ $form = $this->beginWidget('ext.bootstrap.widgets.TbActiveForm',
 ?>
 	<?php //echo $form->labelEx($comment, 'torrentId'); ?>
 	<?php if ( !$parentId && $torrents ) {
-		echo $form->dropDownListRow($comment,
+		echo '<div>' . $form->labelEx($comment,
+				'torrentId',
+				array(
+				     'data-toggle'    => 'tooltip',
+				     'data-placement' => 'right',
+				     'title'          => Yii::t('torrentsModule.common',
+					     'Если ваш комментарий относится к конкретному торренту, то выберите его в этом списке.'),
+				     'class'          => 'attributeDescription',
+				)) . '</div>';
+
+		echo $form->dropDownList($comment,
 			'torrentId',
 			CHtml::listData($torrents,
 				'id',
 				function ( $data ) {
 					return $data->getSeparateAttribute();
 				}),
-			array('empty' => ''));
+			array(
+			     'empty' => '',
+			));
 	}
 	?>
 
@@ -94,19 +102,12 @@ $form = $this->beginWidget('ext.bootstrap.widgets.TbActiveForm',
 			     ),
 			     'buttonsCustom' => array(
 				     'quote' => array(
-					     'title'    => 'Quote',
+					     'title'    => Yii::t('commentsModule.common', 'Цитата'),
 					     'callback' => 'js:function(buttonName, buttonDOM, buttonObject) {
 					        this.buttonActive(buttonName);
-					        var text = "";
-					        if (window.getSelection) {
-					            text = window.getSelection().toString();
-					        }
-					        else {
-					            if (document.selection.createRange) {
-					                text = document.selection.createRange().text;
-					            }
-					        }
-					        this.insertHtml(text);}',
+					        this.insertHtml("<blockquote>" + buttonDOM.data("selection") + "</blockquote>\n");
+					        this.buttonInactive(buttonName);
+					        }',
 				     ),
 			     ),
 			     'lang'          => 'ru',
@@ -126,7 +127,8 @@ $form = $this->beginWidget('ext.bootstrap.widgets.TbActiveForm',
 <?php
 echo CHtml::submitButton($comment->isNewRecord ? Yii::t('commentsModule.common',
 		'Отправить комментарий') : Yii::t('commentsModule.common', 'Обновить комментарий'),
-	array('class'            => 'btn btn-primary',
+	array(
+	     'class'             => 'btn btn-primary',
 	     'data-loading-text' => Yii::t('commentsModule.common', 'Идет отправка...'),
 	));
 ?>

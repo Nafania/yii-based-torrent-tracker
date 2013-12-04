@@ -9,7 +9,7 @@ class CommentsRating extends CWidget {
 
 		$this->render('commentsRating',
 			array(
-			     'modelName' => get_class($this->model),
+			     'modelName' => $this->model->resolveClassName(),
 			     'modelId'   => $this->model->getId(),
 			     'rating'    => (int) $this->model->getRating()
 			));

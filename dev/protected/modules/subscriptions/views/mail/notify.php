@@ -1,0 +1,2 @@
+<p>Здравствуйте, у вас есть непрочитанные уведомления на сайте <?php echo  Yii::app()->config->get('base.siteName') ?>.</p>
+<p>Для просмотра уведомлений зайдите на сайт <?php echo CHtml::link(Yii::app()->config->get('base.siteName'), Yii::app()->createAbsoluteUrl('/')); ?></p>

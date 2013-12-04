@@ -9,6 +9,10 @@ class AnswerWidget extends CWidget {
 	public function init () {
 		parent::init();
 
+		if ( !Yii::app()->getUser()->checkAccess('comments.default.create') ) {
+			return;
+		}
+
 		Yii::import('application.modules.comments.models.*');
 
 		if ( !$this->model instanceof CActiveRecord ) {
@@ -16,7 +20,8 @@ class AnswerWidget extends CWidget {
 		}
 
 		$this->modelId = $this->model->getPrimaryKey();
-		$this->modelName = get_class($this->model);
+		//$this->modelName = end(explode('\\', get_class($this->model)));
+		$this->modelName = $this->model->resolveClassName();
 
 		if ( !$this->modelName || !$this->modelId ) {
 			throw new CException('Not enough data');
@@ -26,12 +31,13 @@ class AnswerWidget extends CWidget {
 	public function run () {
 		$comment = new Comment();
 
-		$this->render('answer', array(
-		                                   'comment' => $comment,
-		                                   'modelId' => $this->modelId,
-		                                   'modelName' => $this->modelName,
-		                                   'parentId' => $this->parentId,
-		                                   'torrents' => $this->torrents,
-		                              ));
+		$this->render('answer',
+			array(
+			     'comment'   => $comment,
+			     'modelId'   => $this->modelId,
+			     'modelName' => $this->modelName,
+			     'parentId'  => $this->parentId,
+			     'torrents'  => $this->torrents,
+			));
 	}
 }

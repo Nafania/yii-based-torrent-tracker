@@ -3,20 +3,21 @@
  * @var TbActiveForm $form
  * @var TorrentGroup $torrentGroup
  * @var Torrent      $torrent
+ * @var Category     $category
  */
 ?>
 <h1><?php echo Yii::t('torrentsModule.common',
-			'Загрузка торрента'); ?></h1>
+		'Загрузка торрента'); ?></h1>
 <?php
 $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	array(
-	     'id' => 'torrent-form',
-	     'enableClientValidation' => true,
-	     'action' => Yii::app()->createUrl('/torrents/default/createGroup',
+	     'id'                     => 'torrent-form',
+	     'action'                 => Yii::app()->createUrl('/torrents/default/createGroup',
 		     array('cId' => $category->getId())),
-	     'htmlOptions' => array(
+	     'enableClientValidation' => true,
+	     'htmlOptions'            => array(
 		     'enctype' => 'multipart/form-data'
-	     )
+	     ),
 	)); ?>
 
 
@@ -27,7 +28,7 @@ echo $form->fileFieldRow($torrentGroup, 'picture', array('class' => 'span5'));
 
 $this->renderPartial('_attributes',
 	array(
-	     'model' => $torrentGroup,
+	     'model'      => $torrentGroup,
 	     'attributes' => $attributes,
 	));
 
@@ -39,7 +40,7 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	     'value'          => $torrent->tags->toString(true),
 	     'options'        => array(
 		     //'containerCssClass' => 'span5',
-		     'width' => '40.1709%',
+		     'width'              => '40.1709%',
 
 		     'minimumInputLength' => 2,
 		     'multiple'           => true,
@@ -82,13 +83,20 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	));
 ?>
 
-	<div class="form-actions">
+<div class="form-actions">
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => ( $torrentGroup->getIsNewRecord() ? Yii::t('torrentsModule.common', 'Загрузить') : Yii::t('torrentsModule.common', 'Сохранить') ),
+			     'label'      => ($torrentGroup->getIsNewRecord() ? Yii::t('torrentsModule.common',
+				     'Загрузить') : Yii::t('torrentsModule.common', 'Сохранить')),
 			)); ?>
 	</div>
 
 <?php $this->endWidget(); ?>
+<?php
+$this->widget('application.modules.drafts.widgets.DraftWidget',
+	array(
+	     'formId' => 'torrent-form',
+	     'model'  => $torrent,
+	));?>

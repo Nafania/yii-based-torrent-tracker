@@ -39,6 +39,7 @@
  * @private string $filename
  * @private integer $filesize
  * @private string $parsedPath
+ * @method CActiveRecord getOwner()
  * */
 class AttachmentBehavior extends CActiveRecordBehavior {
 
@@ -161,7 +162,7 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 			$src = ($src ? '/' . $src : $this->fallback_image);
 		}
 
-		return Yii::app()->getBaseUrl($absolutePath) . $src;
+		return Yii::app()->getBaseUrl($absolutePath) . '/' . ltrim($src, '/');
 	}
 
 	/*
@@ -217,15 +218,6 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		}
 	}
 
-	/*public function beforeValidate ( $e ) {
-		parent::beforeValidate($e);
-
-		if ( CUploadedFile::getInstance($this->getOwner(), $this->attribute) ) {
-			$this->getOwner()->{$this->attribute} = md5(time());
-		}
-		return true;
-	}*/
-
 	public function beforeSave ( $e ) {
 		parent::beforeSave($e);
 
@@ -249,6 +241,8 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 	public function afterSave ( $e ) {
 		parent::afterSave($e);
 
+		$owner = $this->getOwner();
+
 		$file = CUploadedFile::getInstance($this->getOwner(), $this->attribute);
 
 		if ( !empty($file->name) ) {
@@ -262,14 +256,16 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				mkdir($folder, 0777, true);
 			}
 
-			if ( $file->saveAs($path) ) {
+			if ( $file->saveAs(Yii::getPathOfAlias('webroot') . '/' . $path) ) {
 				/**
 				 * зачем менять флаг isNewRecord читайте тут http://code.google.com/p/yii/issues/detail?id=1603
 				 */
-				$isNewRecord = $this->getOwner()->isNewRecord;
-				$this->getOwner()->isNewRecord = false;
-				$this->getOwner()->saveAttributes(array($this->attribute => $path));
-				$this->getOwner()->isNewRecord = $isNewRecord;
+				$owner->{$this->attribute} = $path;
+				$isNewRecord = $owner->isNewRecord;
+				$owner->isNewRecord = false;
+				$owner->saveAttributes(array($this->attribute => $path));
+				$owner->isNewRecord = $isNewRecord;
+				//exit();
 			}
 		}
 
@@ -280,18 +276,39 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		parent::beforeValidate($e);
 		//CVarDumper::dump($this->getOwner(), 3, true);exit();
 
-		$CFileValidator = new CFileValidator();
-		$CFileValidator->allowEmpty = $this->allowEmpty;
-		$CFileValidator->types = $this->types;
-		$CFileValidator->mimeTypes = $this->mimeTypes;
-		$CFileValidator->maxFiles = $this->maxFiles;
-		$CFileValidator->maxSize = $this->maxSize;
-		$CFileValidator->minSize = $this->minSize;
+		if ( $file = CUploadedFile::getInstance($this->getOwner(), $this->attribute) ) {
+			$this->getOwner()->{$this->attribute} = $file;
 
-		$CFileValidator->attributes = array($this->attribute);
-		$CFileValidator->validate($this->getOwner());
+			$validator = CValidator::createValidator('file',
+				$this->getOwner(),
+				$this->attribute,
+				array(
+				     'allowEmpty' => $this->allowEmpty,
+				     'types'      => $this->types,
+				     'mimeTypes'  => $this->mimeTypes,
+				     'maxFiles'   => $this->maxFiles,
+				     'maxSize'    => $this->maxSize,
+				     'minSize'    => $this->minSize
+				));
+			$this->getOwner()->getValidatorList()->insertAt(0, $validator);
 
-		return ($this->getOwner()->getError($this->attribute)) ? false : true;
+			return true;
+		}
+		else {
+			return true;
+		}
+	}
+
+	public function afterValidate ( $e ) {
+		parent::afterValidate($e);
+
+		/**
+		 * удаляем атрибут после валидации за тем, чтобы не произошло авто сохранения, а сработало наше сохранение из
+		 * afterSave($e)
+		 */
+		unset($this->getOwner()->{$this->attribute});
+
+		return true;
 	}
 
 	public function getParsedPath ( $custom = '' ) {

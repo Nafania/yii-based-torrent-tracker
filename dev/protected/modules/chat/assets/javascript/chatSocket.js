@@ -10,15 +10,18 @@ $(function () {
     socket.on('connect', function () {
 
         socket.on('newMessage', function (data) {
-            var time = new moment(data.time);
+            if ( !data.user ) {
+                return false;
+            }
+            var time = new moment(data.time), maxMergeTime = 60;
             var hl = '';
-            var pos = data.message.indexOf(data.user.name, 0); // returns -1
+            var pos = data.message.indexOf(user.name, 0); // returns -1
             if (pos >= 0) {
                 hl = ' chatHighlight';
             }
 
             var $lastDiv = $("#chatMessages").find('.media:last');
-            if (typeof $lastDiv != 'undefined' && $lastDiv.data('uid') == data.user.id) {
+            if (typeof $lastDiv != 'undefined' && $lastDiv.data('uid') == data.user.id && ( time.format('X') - new moment($lastDiv.find('abbr').data('isotimestamp')).format('X') < maxMergeTime ) ) {
                 $lastDiv.find('.commentText').append('<br>' + data.message);
             }
             else {
@@ -27,7 +30,7 @@ $(function () {
             	<div class="media-body">\
             		<div class="comment">\
                     <h6 class="media-heading">\
-            	        <a href="' + user.url + '" data-action="chatusername">' + data.user.name + '</a>, <abbr data-livestamp="' + time.toISOString() + '" title="' + time.format('DD.MM.YY HH:mm') + '">' + time.fromNow() + '</abbr>\
+            	        <a href="' + data.user.url + '" data-action="chatusername">' + data.user.name + '</a><span class="userRating ' + data.user.ratingClass + '">' + data.user.rating + '</span>, <abbr data-isotimestamp="' + time.toISOString() + '" data-livestamp="' + time.toISOString() + '" title="' + time.format('DD.MM.YY HH:mm') + '">' + time.fromNow() + '</abbr>\
             	        </h6>\
                          <div class="commentText">' + data.message + '</div>\
             					</div>\
@@ -53,14 +56,12 @@ $(function () {
                 if (!value) {
                     return;
                 }
-                $("#mjmChatUsersList").append('<li><a href="' + value.url + '">' + value.name + '</a></li>');
+                $("#mjmChatUsersList").append('<li><a href="' + value.url + '">' + value.name + '</a><span class="userRating ' + value.ratingClass + '">' + value.rating + '</span></li>');
             });
         });
     });
     if ($.cookie('showChat') == 1) {
         socket.emit('addUser', user);
-        $("#mjmChatRoom").css('bottom', '0px');
-        $("#mjmChatRoom").css('right', '0px');
     }
 
     $("#mjmChatRoomMinimize, #mjmChatRoomTitle").click(function () {

@@ -1,6 +1,6 @@
 <?php
 /**
- * @var $this DefaultController
+ * @var $this    DefaultController
  * @var $model   TorrentGroup
  * @var $torrent Torrent
  */
@@ -8,11 +8,11 @@
 <?php
 $cs = Yii::app()->getClientScript();
 $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/js/torrents.js');
-$cs->registerCssFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fancyapps-fancyBox/source/jquery.fancybox.css');
-$cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fancyapps-fancyBox/source/jquery.fancybox.js');
+$cs->registerCssFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/source/jquery.fancybox.css');
+$cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/source/jquery.fancybox.js');
 ?>
 
-<h1><?php echo $model->getTitle() ?></h1>
+	<h1><?php echo $model->getTitle() ?></h1>
 
 	<div class="row-fluid">
 	<div class="span3">
@@ -31,19 +31,23 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 		     'model' => $model
 		));
 	?>
-
+	<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+		array(
+		     'systemName' => 'underTorrentImage',
+		))
+	?>
 	</div>
 
 	<div class="span9">
 
 		<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
-			array('systemName' => 'rightTorrentView'))
-		?>
-		<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
-			array('systemName' => 'topTorrentView', 'model' => $model))
+			array(
+			     'systemName' => 'topTorrentView',
+			     'model'      => $model
+			))
 		?>
 
-	<dl class="dl-horizontal torrentView">
+		<dl class="dl-horizontal torrentView">
 			<?php
 			foreach ( $model->getEavAttributesWithKeys() AS $name => $value ) {
 				echo '<dt>' . $name . '</dt>';
@@ -51,11 +55,17 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 			}
 			?>
 
+			<dt><?php echo Yii::t('categoryModule.common', 'Категория'); ?></dt>
+			<dd><?php echo CHtml::link($model->category->getTitle(),
+					array(
+					     '/torrents/default/index',
+					     'category[]' => $model->category->getTitle()
+					)); ?></dd>
 
-		<?php
-		if ($model->getTags()) {
-		?>
-		<dt><?php echo Yii::t('tagsModule.common', 'Теги'); ?></dt>
+			<?php
+			if ($model->getTags()) {
+			?>
+			<dt><?php echo Yii::t('tagsModule.common', 'Теги'); ?></dt>
 						<dd>
 				<?php
 				$tags = '';
@@ -78,6 +88,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 				     'model' => $model,
 				)); ?>
 		</dd>
+
 		</dl>
 
 	<div class="accordion torrentsList">
@@ -92,9 +103,9 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 		     'id' => $torrent->getId()
 		),
 		array(
-		     'class'               => 'btn btn-mini',
-		     'data-toggle'         => 'tooltip',
-		     'data-original-title' => Yii::t('torrentsModule',
+		     'class'       => 'btn btn-mini',
+		     'data-toggle' => 'tooltip',
+		     'title'       => Yii::t('torrentsModule',
 			     'Скачать {torrentName}',
 			     array(
 			          '{torrentName}' => $torrent->getTitle()
@@ -103,7 +114,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 
 		<?php if ( Yii::app()->getUser()->checkAccess('reports.default.create') ) { ?>
 
-			<a href="<?php echo Yii::app()->createUrl('/reports/default/create/'); ?>" data-model="<?php echo get_class($torrent); ?>" data-id="<?php echo $torrent->getId(); ?>" data-action="report" class="btn btn-mini" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('reportsModule.common',
+			<a href="<?php echo Yii::app()->createUrl('/reports/default/create/'); ?>" data-model="<?php echo $torrent->resolveClassName(); ?>" data-id="<?php echo $torrent->getId(); ?>" data-action="report" class="btn btn-mini" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('reportsModule.common',
 				'Пожаловаться на {torrentName}',
 				array(
 				     '{torrentName}' => $torrent->getTitle()
@@ -111,13 +122,13 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 
 		<?php } ?>
 
-		<a href="#" class="btn btn-mini" data-comments-for="<?php echo $torrent->getId() ?>" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule.common',
+		<a href="#" class="btn btn-mini" data-comments-for="<?php echo $torrent->getId() ?>" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 			'Смотреть комментарии только для {torrentName}',
 			array(
 			     '{torrentName}' => $torrent->getTitle()
 			)); ?>"><i class="icon-comment"></i></a>
 
-		<a href="<?php echo Yii::app()->createUrl('/torrents/default/fileList') ?>" class="btn btn-mini" data-action="fileList" data-id="<?php echo $torrent->getId(); ?>" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule.common',
+		<a href="<?php echo Yii::app()->createUrl('/torrents/default/fileList') ?>" class="btn btn-mini" data-action="fileList" data-id="<?php echo $torrent->getId(); ?>" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 			'Смотреть список файлов для {torrentName}',
 			array(
 			     '{torrentName}' => $torrent->getTitle()
@@ -129,7 +140,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 			<a href="<?php echo Yii::app()->createUrl('/torrents/default/updateTorrent/',
 				array(
 				     'id' => $torrent->getId()
-				)); ?>" class="btn btn-mini" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule.common',
+				)); ?>" class="btn btn-mini" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 				'Редактировать {torrentName}',
 				array(
 				     '{torrentName}' => $torrent->getTitle()
@@ -139,7 +150,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 		if ( Yii::app()->getUser()->checkAccess('torrents.default.deleteTorrent') ) {
 			?>
 			<a href="<?php echo Yii::app()->createUrl('/torrents/default/deleteTorrent',
-				array('id' => $torrent->getId())) ?>" class="btn btn-mini torrentDelete" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('torrentsModule.common',
+				array('id' => $torrent->getId())) ?>" class="btn btn-mini torrentDelete" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 				'Удалить торрент {torrentName}',
 				array(
 				     '{torrentName}' => $torrent->getTitle()
@@ -164,8 +175,8 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 
 		<span class="divider-vertical">|</span>
 
-		<span><i class="icon-upload" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo $torrent->getAttributeLabel('seeders') ?>"></i> <?php echo $torrent->getSeeders(); ?>
-			<i class="icon-download" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo $torrent->getAttributeLabel('leechers') ?>"></i> <?php echo $torrent->getLeechers(); ?></span>
+		<span><i class="icon-upload" data-toggle="tooltip" data-placement="top" title="<?php echo $torrent->getAttributeLabel('seeders') ?>"></i> <?php echo $torrent->getSeeders(); ?>
+			<i class="icon-download" data-toggle="tooltip" data-placement="top" title="<?php echo $torrent->getAttributeLabel('leechers') ?>"></i> <?php echo $torrent->getLeechers(); ?></span>
 
 		<span class="divider-vertical">|</span>
 
@@ -203,6 +214,7 @@ $cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/fa
 			     'torrents' => $model->torrents
 			)); ?>
 	</div>
+
 	</div>
 
 <?php $this->widget('application.modules.reports.widgets.ReportModal'); ?>

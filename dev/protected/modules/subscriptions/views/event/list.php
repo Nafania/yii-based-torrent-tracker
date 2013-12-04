@@ -6,16 +6,19 @@ foreach ( $events AS $event ) {
 		'label'       => '<i class="icon-' . $icon . '"></i> ' . CHtml::encode($event->getTitle()),
 		'url'         => $event->getUrl(),
 		'linkOptions' => array(
-			'data-toggle'         => 'tooltip',
-			'data-original-title' => $event->getText(),
-			'data-placement'      => 'right',
-		)
+			'data-toggle'    => 'tooltip',
+			'title'          => $event->getText(),
+			'data-placement' => 'right',
+			'data-id'        => $event->getId(),
+			'data-action'    => 'event',
+		),
+
 	);
 }
 
 $this->widget('bootstrap.widgets.TbDropdown',
 	array(
 	     'encodeLabel' => false,
-	     'items' => $eventItems,
-	     'id' => 'eventsList',
+	     'items'       => $eventItems,
+	     'id'          => 'eventsList',
 	));

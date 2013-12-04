@@ -34,7 +34,7 @@ $this->widget('bootstrap.widgets.TbNavbar',
 	     'type'     => null,
 	     'fixed'    => false,
 	     // null or 'inverse'
-	     'brand'    => false,
+	     'brand'    => CHtml::image(Yii::app()->config->get('base.logoUrl'), Yii::app()->config->get('base.siteName')),
 	     //'brandUrl' => '#',
 	     'collapse' => true,
 	     // requires bootstrap-responsive.css
@@ -45,6 +45,9 @@ $this->widget('bootstrap.widgets.TbNavbar',
 	     )
 	));
 if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
+
+	$this->getController()->beginClip('afterContent');
+
 	$this->beginWidget('bootstrap.widgets.TbModal', array('id' => 'searchSettings'));
 	$form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 		array(
@@ -59,20 +62,21 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 	<h4><?php echo Yii::t('torrentsModule.common', 'Расширенный поиск'); ?></h4>
 </div>
 	<div class="modal-body">
+	<div class="row-fluid">
 	<div class="control-group searchSettings clearfix">
-		<div class="span3">
+		<div class="span5">
 		<?php
 		echo CHtml::label(Yii::t('common', 'Поисковая фраза'), 'search');
 		echo CHtml::textField('search', $searchVal, array('class' => 'input-large'));
 		?>
 		</div>
 
-		<div class="span2">
+		<div class="span4">
 		<?php
 		echo CHtml::label(Yii::t('common', 'Сортировка'), 'sort');
 		echo CHtml::dropDownList('sort',
 			$sortVal,
-			TorrentGroup::getSortColums(),
+			modules\torrents\models\TorrentGroup::getSortColums(),
 			array(
 			     'class' => 'input-medium',
 			     'empty' => '',
@@ -80,7 +84,7 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 		?>
 		</div>
 
-		<div class="span2">
+		<div class="span3">
 		<?php
 		echo CHtml::label(Yii::t('common', 'Период'), 'period');
 		echo CHtml::dropDownList('period',
@@ -114,7 +118,7 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 			     'name'           => 'tags',
 			     'value'          => $selectedTags,
 			     'htmlOptions'    => array(
-				     'class' => 'span7 clearfix'
+				     'class' => 'span12 clearfix'
 			     ),
 			     'options'        => array(
 				     'dropdownCssClass'   => 'input-xxlarge',
@@ -159,7 +163,7 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 			     'name'           => 'notTags',
 			     'value'          => $notTags,
 			     'htmlOptions'    => array(
-				     'class' => 'span7 clearfix'
+				     'class' => 'span12 clearfix'
 			     ),
 			     'options'        => array(
 				     'dropdownCssClass'   => 'input-xlarge',
@@ -196,6 +200,7 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 			));
 		?>
 
+		</div>
 </div>
 
 
@@ -225,15 +230,17 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 				                 }).show();}",
 			     ),
 			     'htmlOptions' => array(
-				     'data-toggle'         => 'tooltip',
-				     'data-original-title' => Yii::t('savedsearchesModule.common',
+				     'data-toggle'    => 'tooltip',
+				     'title'          => Yii::t('savedsearchesModule.common',
 					     'Ваши настройки поиска будут запомнены и в дальнейшем будут применяться к поиску.'),
-				     'data-placement'      => 'top',
+				     'data-placement' => 'top',
 			     ),
 			)); ?>
 </div>
 
 	<?php $this->endWidget(); ?><!-- endform -->
 	<?php $this->endWidget(); ?><!-- endmodal -->
+
+	<?php $this->getController()->endClip('afterContent'); ?>
 
 <?php } ?>

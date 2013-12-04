@@ -10,6 +10,8 @@ class WebUser extends AuthWebUser {
 
 	public $loginRequiredAjaxResponse;
 
+	public $registerUrl;
+
 	public function init () {
 		parent::init();
 		$this->attachBehaviors($this->behaviors());
@@ -95,7 +97,8 @@ class WebUser extends AuthWebUser {
 			Yii::app()->end();
 		}
 		else {
-			Yii::app()->user->setFlash(User::FLASH_ERROR, Yii::t('userModule.common', 'Для выполнения данного действия вам необходимо войти на сайт.'));
+			Yii::app()->user->setFlash(User::FLASH_ERROR,
+				Yii::t('userModule.common', 'Для выполнения данного действия вам необходимо войти на сайт.'));
 			parent::loginRequired();
 		}
 	}
@@ -109,4 +112,34 @@ class WebUser extends AuthWebUser {
 				)));
 	}
 
+	public function setState ( $key, $value, $defaultValue = null ) {
+		$key = $this->getStateKeyPrefix() . $key;
+		if ( $value === $defaultValue ) {
+			unset(Yii::app()->session[$key]);
+		}
+		else {
+			Yii::app()->session[$key] = $value;
+		}
+	}
+
+	public function getState ( $key, $defaultValue = null ) {
+		$key = $this->getStateKeyPrefix() . $key;
+		return isset(Yii::app()->session[$key]) ? Yii::app()->session[$key] : $defaultValue;
+	}
+
+	public function hasState ( $key ) {
+		$key = $this->getStateKeyPrefix() . $key;
+		return isset(Yii::app()->session[$key]);
+	}
+
+	public function clearStates () {
+		$keys = array_keys(Yii::app()->session);
+		$prefix = $this->getStateKeyPrefix();
+		$n = strlen($prefix);
+		foreach ( $keys as $key ) {
+			if ( !strncmp($key, $prefix, $n) ) {
+				unset(Yii::app()->session[$key]);
+			}
+		}
+	}
 }

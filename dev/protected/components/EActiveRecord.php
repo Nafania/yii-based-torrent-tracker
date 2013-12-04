@@ -3,7 +3,7 @@ class EActiveRecord extends CActiveRecord {
 
 	public $cacheTime = 0;
 
-	public function init() {
+	public function init () {
 		parent::init();
 
 		return Yii::app()->pd->loadEvents($this);
@@ -13,11 +13,11 @@ class EActiveRecord extends CActiveRecord {
 		return Yii::app()->pd->loadBehaviors($this);
 	}
 
-	public function relations() {
+	public function relations () {
 		return Yii::app()->pd->loadRelations($this);
 	}
 
-	public function rules() {
+	public function rules () {
 		return Yii::app()->pd->loadModelRules($this);
 	}
 
@@ -34,7 +34,8 @@ class EActiveRecord extends CActiveRecord {
 		if ( $this->cacheTime ) {
 			$dependency = new CTagCacheDependency($this->getCacheKey());
 			$this->cache($this->cacheTime, $dependency);
-			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds at ' . date('d.m.Y H:i:s') . ' last change at ' . date('d.m.Y H:i:s', $dependency->generateDependentData()));
+			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds at ' . date('d.m.Y H:i:s') . ' last change at ' . date('d.m.Y H:i:s',
+				$dependency->generateDependentData()));
 		}
 
 		parent::beforeFind();
@@ -50,6 +51,18 @@ class EActiveRecord extends CActiveRecord {
 	}
 
 	public function getCacheKey () {
-		return 'EActiveRecordModelCache'  . get_class($this);
+		return 'EActiveRecordModelCache' . get_class($this);
+	}
+
+	public function resolveClassName () {
+		$name = get_class($this);
+		return str_replace('\\', '_', $name);
+	}
+
+	public static function classNameToNamespace ( $class ) {
+		if ( is_object($class) ) {
+			$class = get_class($class);
+		}
+		return str_replace('_', '\\', $class);
 	}
 }

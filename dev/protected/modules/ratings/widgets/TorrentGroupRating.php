@@ -9,7 +9,7 @@ class TorrentGroupRating extends CWidget {
 		Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('ratings')->getAssetsUrl() . '/js/ratings.js');
 		Yii::app()->getComponent('bootstrap')->registerPackage('loading');
 
-		$modelName = get_class($this->model);
+		$modelName = $this->model->resolveClassName();
 		$modelId = $this->model->getId();
 
 		$positiveRating = $negativeRating = 0;

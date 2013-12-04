@@ -7,20 +7,35 @@
  * @license http://www.opensource.org/licenses/bsd-license.php
  */
 
-require_once dirname(dirname(__FILE__)) . '/services/GoogleOpenIDService.php';
+require_once dirname(dirname(__FILE__)) . '/services/GoogleOAuthService.php';
 
-class CustomGoogleService extends GoogleOpenIDService {
-
-	//protected $jsArguments = array('popup' => array('width' => 450, 'height' => 450));
-
-	protected $requiredAttributes = array(
-		'name' => array('firstname', 'namePerson/first'),
-		'lastname' => array('lastname', 'namePerson/last'),
-		'email' => array('email', 'contact/email'),
-		'language' => array('language', 'pref/language'),
-	);
+class CustomGoogleService extends GoogleOAuthService {
+	public $scope = 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 
 	protected function fetchAttributes() {
-		$this->attributes['fullname'] = $this->attributes['name'] . ' ' . $this->attributes['lastname'];
+		$info = (array)$this->makeSignedRequest('https://www.googleapis.com/oauth2/v1/userinfo');
+
+		$this->attributes['id'] = $info['id'];
+		$this->attributes['name'] = $info['name'];
+
+		if (!empty($info['link'])) {
+			$this->attributes['url'] = $info['link'];
+		}
+		else {
+			$this->attributes['url'] = 'https://plus.google.com/' . $info['id'];
+		}
+		$this->attributes['email'] = $info['email'];
+//var_dump($info);exit();
+		/*if (!empty($info['gender']))
+			$this->attributes['gender'] = $info['gender'] == 'male' ? 'M' : 'F';
+
+		if (!empty($info['picture']))
+			$this->attributes['photo'] = $info['picture'];
+
+		$info['given_name']; // first name
+		$info['family_name']; // last name
+		$info['birthday']; // format: 0000-00-00
+		$info['locale']; // format: en*/
+
 	}
 }

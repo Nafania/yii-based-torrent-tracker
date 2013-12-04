@@ -28,8 +28,11 @@ abstract class AuthController extends YAdminController
     public function init()
     {
         parent::init();
-        $this->layout = $this->module->defaultLayout;
-	    $this->breadcrumbs[] = Yii::t('AuthModule.main', 'Auth module');
+        $this->layout = '/layouts/main';
+
+	    $this->breadcrumbs[Yii::t('AuthModule.main', 'Auth module')] = array('/auth/assignment/index');
+	    $this->pageTitle = Yii::t('AuthModule.main', 'Auth module');
+
         $this->menu = $this->getSubMenu();
     }
 

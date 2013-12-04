@@ -66,11 +66,8 @@ class CustomYandexOAuthService extends YandexOAuthService {
 
 		$this->attributes['id'] = $info['id'];
 		$this->attributes['name'] = $info['real_name'];
-		$this->attributes['fullname'] = $info['real_name'];
-		$this->attributes['nickname'] = $info['display_name'];
 		$this->attributes['email'] = $info['default_email'];
-		$this->attributes['sex'] = ($info['sex'] == 'male') ? 'm' : 'f';
-		$this->attributes['birth_dt'] = $info['birthday'];
+		$this->attributes['url'] = 'http://' . strtolower($info['display_name']) . '.ya.ru';
 	}
 
 }

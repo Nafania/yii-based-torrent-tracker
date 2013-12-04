@@ -10,7 +10,7 @@ class AddBlogSubscription extends CActiveRecordBehavior {
 		if ( $blog ) {
 			$subscription = new Subscription();
 			$subscription->modelId = $blog->getId();
-			$subscription->modelName = get_class($blog);
+			$subscription->modelName = $blog->resolveClassName();
 			$subscription->uId = Yii::app()->getUser()->getId();
 			return $subscription->save();
 		}
@@ -24,7 +24,7 @@ class AddBlogSubscription extends CActiveRecordBehavior {
 		if ( $blog ) {
 			$subscriptions = Subscription::model()->findAllByAttributes(array(
 			                                                                'modelId' => $blog->getId(),
-			                                                                'modelName' => get_class($blog),
+			                                                                'modelName' => $blog->resolveClassName(),
 			                                                                'uId' => Yii::app()->getUser()->getId(),
 			                                                           ));
 			foreach ( $subscriptions AS $subscription ) {

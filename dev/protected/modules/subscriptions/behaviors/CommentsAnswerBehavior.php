@@ -4,7 +4,7 @@ class CommentsAnswerBehavior extends CActiveRecordBehavior {
 		parent::afterSave($e);
 
 		$owner = $this->getOwner();
-		$className = get_class($owner);
+		$className = $owner->resolveClassName();
 
 		if ( !($owner instanceof ChangesInterface) ) {
 			return true;

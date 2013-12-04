@@ -14,7 +14,7 @@ class BlogPostRatingBehavior extends RatingBehavior {
 		$owner = $this->getOwner();
 
 		$comm = Yii::app()->getDb()->createCommand('SELECT MAX(ctime) AS maxTime FROM {{comments}} WHERE modelName = :modelName AND modelId = :modelId AND ownerId != :ownerId');
-		$comm->bindValue(':modelName', get_class($owner));
+		$comm->bindValue(':modelName', $owner->resolveClassName());
 		$comm->bindValue(':modelId', $owner->getPrimaryKey());
 		$comm->bindValue(':ownerId', $owner->ownerId);
 		$maxTime = ( $row = $comm->queryRow() ) ? $row['maxTime'] : 0;

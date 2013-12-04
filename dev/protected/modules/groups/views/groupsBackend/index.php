@@ -25,16 +25,6 @@ $this->widget('zii.widgets.grid.CGridView',
 		     'title',
 		     array(
 			     'class'        => 'DToggleColumn',
-			     'name'         => 'hided',
-			     'confirmation' => Yii::t('GroupsModule.common', 'Изменить статус?'),
-			     'linkUrl' => Yii::app()->createUrl('actions/actionsBackend/toggle'),
-			     'filter'       => array(
-				     Group::HIDED     => Yii::t('GroupsModule.common', 'Hided'),
-				     Group::NOT_HIDED => Yii::t('GroupsModule.common', 'Not hided')
-			     ),
-		     ),
-		     array(
-			     'class'        => 'DToggleColumn',
 			     'name'         => 'blocked',
 			     'confirmation' => Yii::t('GroupsModule.common', 'Изменить блокировку?'),
 			     'linkUrl' => Yii::app()->createUrl('actions/actionsBackend/toggle'),

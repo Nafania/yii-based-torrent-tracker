@@ -1,14 +1,15 @@
 <?php
 /*
- * @var $model StaticPage
+ * @var $model modules\blogs\models\BlogPost
+ * @var $this modules\blogs\controllers\BlogsBackendController
  */
 ?>
 	<h1><?php echo Yii::t('blogsModule.common', 'Управление постами'); ?></h1>
 	<ul class="tools">
     <li> 
        <?php echo CHtml::link(Yii::t('blogsModule.common', 'Создать пост'),
-		    $this->createUrl('/blogs/blogsBackend/create'),
-		    array('class' => 'add-handler focus')); ?>
+	       $this->createUrl('/blogs/blogsBackend/create'),
+	       array('class' => 'add-handler focus')); ?>
     </li> 
     </ul>
 
@@ -25,12 +26,12 @@ $this->widget('zii.widgets.grid.CGridView',
 		     'title',
 		     array(
 			     'class'        => 'DToggleColumn',
-			     'name'         => 'hided',
+			     'name'         => 'hidden',
 			     'confirmation' => Yii::t('blogsModule.common', 'Изменить статус?'),
-			     'linkUrl' => Yii::app()->createUrl('blogs/blogsBackend/toggle'),
+			     'linkUrl'      => Yii::app()->createUrl('blogs/blogsBackend/toggle'),
 			     'filter'       => array(
-				     BlogPost::HIDED     => Yii::t('blogsModule.common', 'Hided'),
-				     BlogPost::NOT_HIDED => Yii::t('blogsModule.common', 'Not hided')
+				     modules\blogs\models\BlogPost::HIDDEN     => Yii::t('blogsModule.common', 'Hided'),
+				     modules\blogs\models\BlogPost::NOT_HIDDEN => Yii::t('blogsModule.common', 'Not hided')
 			     ),
 		     ),
 		     'ctime',

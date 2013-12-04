@@ -1,21 +1,27 @@
 <?php
 
-class DefaultController extends Controller {
+class DefaultController extends components\Controller {
 	public function filters () {
 		return CMap::mergeArray(parent::filters(), array('ajaxOnly + create'));
 	}
 
 	public function actionCreate () {
+		/**
+		 * disable all scripts
+		 */
+		Yii::app()->getClientScript()->scriptMap['jquery.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['jquery.min.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['common.js'] = false;
+
 		$modelName = Yii::app()->getRequest()->getParam('modelName', '');
 		$modelId = Yii::app()->getRequest()->getParam('modelId', 0);
 
-		$this->pageTitle = Yii::t('reportsModule.common', 'Создание жалобы');
-		$this->breadcrumbs[] = Yii::t('reportsModule.common', 'Создание жалобы');
+		$className = EActiveRecord::classNameToNamespace($modelName);
 
-		if ( !class_exists($modelName) ) {
+		if ( !class_exists($className) ) {
 			throw new CHttpException(404, Yii::t('reportsModule.common', 'Данные не существуют'));
 		}
-		$model = $modelName::model()->findByPk($modelId);
+		$model = $className::model()->findByPk($modelId);
 
 		if ( !$model ) {
 			throw new CHttpException(404, Yii::t('reportsModule.common', 'Указанные данные не найдены'));
@@ -32,10 +38,10 @@ class DefaultController extends Controller {
 			$reportContent->attributes = $_POST['ReportContent'];
 
 			if ( $reportContent->save() ) {
-				Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('reportsModule.common', 'Report sent successfully'));
+				Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('reportsModule.common', 'Жалоба успешно отправлена.'));
 			}
 			else {
-				Ajax::send(Ajax::AJAX_WARNING, Yii::t('reportsModule.common', 'Some errors occurred during save'));
+				Ajax::send(Ajax::AJAX_WARNING, Yii::t('reportsModule.common', 'При отправке жалобы возникли проблемы, пожалуйста, попробуйте отправить жалобу позднее.'));
 			}
 		}
 

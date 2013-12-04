@@ -7,8 +7,8 @@
  */
 ?>
 <h1><?php echo Yii::t('torrentsModule.common',
-			'Загрузка торрента "{title}"',
-			array('{title}' => $torrentGroup->getTitle())); ?></h1>
+		'Добавление торрента в группу "{title}"',
+		array('{title}' => $torrentGroup->getTitle())); ?></h1>
 <?php
 
 $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
@@ -37,7 +37,7 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	     'value'          => $torrent->tags->toString(true),
 	     'options'        => array(
 		     //'containerCssClass' => 'span5',
-		     'width' => '40.1709%',
+		     'width'              => '40.1709%',
 
 		     'minimumInputLength' => 2,
 		     'multiple'           => true,
@@ -80,13 +80,19 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	));
 ?>
 
-	<div class="form-actions">
+<div class="form-actions">
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(
 			     'buttonType' => 'submit',
 			     'type'       => 'primary',
-			     'label'      => ( $torrent->getIsNewRecord() ? Yii::t('torrentsModule.common', 'Загрузить') : Yii::t('torrentsModule.common', 'Сохранить') ),
+			     'label'      => ($torrent->getIsNewRecord() ? Yii::t('torrentsModule.common',
+				     'Загрузить') : Yii::t('torrentsModule.common', 'Сохранить')),
 			)); ?>
 	</div>
 
 <?php $this->endWidget(); ?>
+<?php $this->widget('application.modules.drafts.widgets.DraftWidget',
+	array(
+	     'formId' => 'torrent-form',
+	     'model'  => $torrent
+	));?>

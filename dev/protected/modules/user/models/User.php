@@ -149,6 +149,35 @@ class User extends EActiveRecord {
 				'email',
 				'email'
 			),
+			/**
+			 * нельзя использовать имя admin
+			 */
+			array(
+				'name',
+				'compare',
+				'operator'     => '!=',
+				'compareValue' => 'admin',
+				'message'      => Yii::t('userModule.common', 'There is can be only one admin! You shall not pass!')
+			),
+			/**
+			 * имя должно быть не менее чем 2 символа и не более чем 125
+			 */
+			array(
+				'name',
+				'length',
+				'min' => 2,
+				'max' => 125,
+			),
+			/**
+			 * регексп, для ограничения символов в имени
+			 */
+			array(
+				'name',
+				'match',
+				'pattern' => '/^([а-яa-z0-9-_ ])+$/iu',
+				'message' => Yii::t('userModule.common',
+					'Вы можете использовать буквы, цифры, пробел, тире и подчеркивание.'),
+			),
 		);
 	}
 
@@ -471,7 +500,15 @@ class User extends EActiveRecord {
 	public function getUrl () {
 		return array(
 			'/user/default/view',
-			'id' => $this->getId()
+			'id'   => $this->getId(),
+			'name' => $this->getName(),
 		);
+	}
+
+	public function getCtime ( $format = false ) {
+		if ( $format ) {
+			return date($format, $this->ctime);
+		}
+		return $this->ctime;
 	}
 }

@@ -34,6 +34,13 @@ return array(
 
 	// application components
 	'components' => array(
+		'urlManager'   => array(
+			'baseUrl'          => 'dev.yii-torrent',
+			'urlFormat'        => 'path',
+			'showScriptName'   => false,
+			'useStrictParsing' => true,
+		),
+
 		'pd'           => array(
 			'class' => 'application.components.PluginsDispatcher',
 		),
@@ -73,11 +80,11 @@ return array(
 		),
 
 		'cache'        => array(
-			'class'     => 'system.caching.CFileCache',
+			'class'     => 'system.caching.CDummyCache',
 			'keyPrefix' => 'ts_',
 		),
 
-		'image' => array(
+		'image'        => array(
 			'class' => 'ext.ImageHandler.CImageHandler',
 		),
 

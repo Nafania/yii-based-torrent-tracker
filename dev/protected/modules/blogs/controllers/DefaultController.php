@@ -1,7 +1,10 @@
 <?php
+namespace modules\blogs\controllers;
+use Yii;
+use components;
+use modules\blogs\models AS models;
 
-class DefaultController extends Controller {
-
+class DefaultController extends components\Controller {
 	/**
 	 * @return array action filters
 	 */
@@ -33,7 +36,7 @@ class DefaultController extends Controller {
 						'Просмотр блога "{blogPostName}"',
 						array('{blogPostName}' => $model->getTitle()))
 		);
-		$blogPost = new BlogPost('search');
+		$blogPost = new models\BlogPost('search');
 		$blogPost->forBlog($id);
 
 		/**
@@ -72,22 +75,19 @@ class DefaultController extends Controller {
 		$this->pageTitle = Yii::t('blogsModule.common', 'Создание блога');
 		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Создание блога');
 
-		$blog = new Blog();
+		$blog = new models\Blog();
 
 		// Uncomment the following line if AJAX validation is needed
 		$this->performAjaxValidation($blog);
 
-		if ( isset($_POST['Blog']) ) {
-			$blog->attributes = $_POST['Blog'];
+		if ( isset($_POST[$blog->resolveClassName()]) ) {
+			$blog->attributes = $_POST[$blog->resolveClassName()];
 
 			if ( $blog->save() ) {
 
-				Yii::app()->user->setFlash(User::FLASH_SUCCESS,
+				Yii::app()->user->setFlash(\User::FLASH_SUCCESS,
 					Yii::t('blogsModule.common', 'Блог создан успешно'));
-				$this->redirect(array(
-				                     'view',
-				                     'id' => $blog->getId()
-				                ));
+				$this->redirect($blog->getUrl());
 			}
 		}
 
@@ -104,28 +104,27 @@ class DefaultController extends Controller {
 	 * @param integer $id the ID of the model to be updated
 	 */
 	public function actionUpdate ( $id ) {
-		$this->pageTitle = Yii::t('blogsModule.common', 'Редактирование материала');
-		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Редактирование материала');
+		$this->pageTitle = Yii::t('blogsModule.common', 'Редактирование блога');
+		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Редактирование блога');
 
 		$blog = $this->loadModel($id);
 
 		if ( !Yii::app()->user->checkAccess('updateOwnBlog',
 			array('ownerId' => $blog->ownerId)) && !Yii::app()->user->checkAccess('updateBlog')
 		) {
-			throw new CHttpException(403);
+			throw new \CHttpException(403);
 		}
 
 		// Uncomment the following line if AJAX validation is needed
 		$this->performAjaxValidation($blog);
 
 
-		if ( isset($_POST['Blog']) ) {
-			$blog->attributes = $_POST['Blog'];
-			$blog->setTags($_POST['tags']);
+		if ( isset($_POST[$blog->resolveClassName()]) ) {
+			$blog->attributes = $_POST[$blog->resolveClassName()];
 
 			if ( $blog->save() ) {
 
-				Yii::app()->user->setFlash(User::FLASH_SUCCESS,
+				Yii::app()->user->setFlash(\User::FLASH_SUCCESS,
 					Yii::t('blogsModule.common', 'Блог отредактирован успешно'));
 				$this->redirect(array('my'));
 
@@ -150,9 +149,9 @@ class DefaultController extends Controller {
 
 		// if AJAX request (triggered by deletion via admin grid view), we should not redirect the browser
 		if ( !isset($_GET['ajax']) ) {
-			Yii::app()->user->setFlash(User::FLASH_SUCCESS,
+			Yii::app()->user->setFlash(\User::FLASH_SUCCESS,
 				Yii::t('blogsModule.common', 'Блог удален успешно'));
-			$this->redirect(isset($_POST['returnUrl']) ? $_POST['returnUrl'] : array('my'));
+			$this->redirect(Yii::app()->getUser()->returnUrl);
 		}
 	}
 
@@ -163,7 +162,7 @@ class DefaultController extends Controller {
 		$this->pageTitle = Yii::t('blogsModule.common', 'Блоги');
 		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Блоги');
 
-		$model = Blog::model()->onlyUsers();
+		$model = models\Blog::model()->onlyUsers();
 		$model->unsetAttributes(); // clear any default values
 		$model->setScenario('search');
 
@@ -173,7 +172,7 @@ class DefaultController extends Controller {
 
 		$dataProvider = $model->search();
 
-		Ajax::renderAjax('index',
+		\Ajax::renderAjax('index',
 			array(
 			     'dataProvider' => $dataProvider,
 			     'model'        => $model,
@@ -187,13 +186,13 @@ class DefaultController extends Controller {
 		$this->pageTitle = Yii::t('blogsModule.common', 'Мои блоги');
 		$this->breadcrumbs[] = Yii::t('blogsModule.common', 'Мои блоги');
 
-		$model = Blog::model()->forCurrentUser();
+		$model = models\Blog::model()->forCurrentUser();
 		$model->unsetAttributes(); // clear any default values
 		$model->setScenario('search');
 
 		$dataProvider = $model->search();
 
-		Ajax::renderAjax('my',
+		\Ajax::renderAjax('my',
 			array(
 			     'dataProvider' => $dataProvider,
 			     'model'        => $model,
@@ -210,13 +209,13 @@ class DefaultController extends Controller {
 	 *
 	 * @param integer $id the ID of the model to be loaded
 	 *
-	 * @return BlogPost the loaded model
-	 * @throws CHttpException
+	 * @return models\BlogPost the loaded model
+	 * @throws \CHttpException
 	 */
 	public function loadModel ( $id ) {
-		$model = Blog::model()->findByPk($id);
+		$model = models\Blog::model()->findByPk($id);
 		if ( $model === null ) {
-			throw new CHttpException(404, 'The requested page does not exist.');
+			throw new \CHttpException(404, 'The requested page does not exist.');
 		}
 		return $model;
 	}
@@ -231,8 +230,12 @@ class DefaultController extends Controller {
 			$model = array($model);
 		}
 		if ( isset($_POST['ajax']) && $_POST['ajax'] === 'blog-form' ) {
-			echo CActiveForm::validate($model);
+			echo \CActiveForm::validate($model);
 			Yii::app()->end();
 		}
+	}
+
+	public function getPagesForSitemap () {
+		return models\Blog::model()->onlyUsers();
 	}
 }

@@ -57,7 +57,7 @@ class CommentsModule extends CWebModule {
 			),
 			'application.modules.comments.models.*');
 
-		Yii::app()->pd->addRelations('TorrentGroup',
+		Yii::app()->pd->addRelations('modules\torrents\models\TorrentGroup',
 			'commentsCount',
 			array(
 			     CActiveRecord::HAS_ONE,
@@ -65,14 +65,25 @@ class CommentsModule extends CWebModule {
 			     'modelId',
 			     'condition' => 'modelName = :modelName',
 			     'params'    => array(
-				     'modelName' => 'TorrentGroup'
+				     'modelName' => 'modules_torrents_models_TorrentGroup'
 			     )
 			),
 			'application.modules.comments.models.*');
 
+		Yii::app()->pd->addRelations('modules\torrents\models\TorrentGroup',
+			'comments',
+			array(
+			     CActiveRecord::HAS_MANY,
+			     'Comment',
+			     'modelId',
+			     'condition' => 'modelName = :modelName',
+			     'params'    => array(
+				     'modelName' => 'modules_torrents_models_TorrentGroup'
+			     )
+			),
+			'application.modules.comments.models.*');
 
-
-		Yii::app()->pd->addRelations('BlogPost',
+		Yii::app()->pd->addRelations('modules\blogs\models\BlogPost',
 			'commentsCount',
 			array(
 			     CActiveRecord::HAS_ONE,
@@ -80,14 +91,14 @@ class CommentsModule extends CWebModule {
 			     'modelId',
 			     'condition' => 'modelName = :modelName',
 			     'params'    => array(
-				     'modelName' => 'BlogPost'
+				     'modelName' => 'modules_torrents_models_BlogPost'
 			     )
 			),
 			'application.modules.comments.models.*');
 	}
 
 	private static function _addBehaviors () {
-		Yii::app()->pd->registerBehavior('TorrentGroup',
+		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup',
 			array(
 			     'deleteComments' => array(
 				     'class' => 'application.modules.comments.behaviors.DeleteCommentsBehavior'

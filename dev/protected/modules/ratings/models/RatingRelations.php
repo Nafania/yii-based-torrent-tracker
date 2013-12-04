@@ -60,7 +60,7 @@ class RatingRelations extends EActiveRecord {
 			     array(
 				     'modelId',
 				     'exists',
-				     'className' => $this->modelName,
+				     'className' => self::classNameToNamespace($this->modelName),
 			     ),
 			     array(
 				     'modelName',
@@ -72,7 +72,7 @@ class RatingRelations extends EActiveRecord {
 						     ':uId'     => $this->uId,
 					     ),
 				     ),
-				     'message' => Yii::t('ratingsModule.common', 'You have already added rating for this action')
+				     'message' => Yii::t('ratingsModule.common', 'Вы уже добавляли рейтинг для этого действия')
 			     ),
 			     // The following rule is used by search().
 			     // Please remove those attributes that should not be searched.
@@ -109,11 +109,11 @@ class RatingRelations extends EActiveRecord {
 
 			$this->uId = Yii::app()->getUser()->getId();
 
-			$modelName = $this->modelName;
+			$modelName = self::classNameToNamespace($this->modelName);
 			if ( method_exists($modelName, 'getOwner') ) {
 				$owner = $modelName::model()->findByPk($this->modelId)->getOwner();
 				if ( $owner && $owner->getId() == $this->uId ) {
-					$this->addError('uid', Yii::t('commentsModule.common', 'You can not add yourself ratings'));
+					$this->addError('uid', Yii::t('commentsModule.common', 'Вы не можете добавлять рейтинги себе.'));
 					return false;
 				}
 			}

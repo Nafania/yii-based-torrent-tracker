@@ -2,9 +2,16 @@
 var io = require('socket.io')
     , redis = require('redis')
     , users = {}
-    , history = [];
+    , history = []
+    , maxHistoryLength = 20;
 
 io = io.listen(8001);
+io.configure(function () {
+    io.enable('browser client minification');  // send minified client
+    io.enable('browser client etag');          // apply etag caching logic based on version number
+    io.enable('browser client gzip');          // gzip the file
+    io.set('log level', 1);                    // reduce logging
+});
 
 var store = redis.createClient();
 
@@ -13,8 +20,11 @@ io.sockets.on('connection', function (client) {
     store.get('history', function (err, res) {
         history = JSON.parse(res);
         if (typeof history == 'object') {
-            for (key in history) {
-                io.sockets.emit('newMessage', history[key]);
+            var newHistory = history;
+            newHistory.slice(history.length, maxHistoryLength);
+
+            for (key in newHistory) {
+                io.sockets.emit('newMessage', newHistory[key]);
             }
         }
         else {

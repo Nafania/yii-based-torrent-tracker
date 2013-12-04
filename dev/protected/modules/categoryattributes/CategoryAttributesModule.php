@@ -76,7 +76,8 @@ class CategoryAttributesModule extends CWebModule {
 			     CActiveRecord::HAS_MANY,
 			     'Attribute',
 			     array('attrId' => 'id'),
-			     'through' => 'categoryattributes'
+			     'through' => 'categoryattributes',
+			     'index'   => 'id'
 			),
 			'application.modules.categoryattributes.models.*');
 	}

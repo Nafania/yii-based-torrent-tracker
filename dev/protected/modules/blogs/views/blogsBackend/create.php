@@ -46,14 +46,14 @@ $form = $this->beginWidget('CActiveForm',
                  </div>
              </div>
 
-	            <div class="row <?php if ( $model->getError('hided') ) {
+	            <div class="row <?php if ( $model->getError('hidden') ) {
               echo 'errors';
              } ?>">
-                 <div class="column span-4"><?php echo $form->labelEx($model, 'hided'); ?></div>
+                 <div class="column span-4"><?php echo $form->labelEx($model, 'hidden'); ?></div>
                  <div class="column span-16 span-flexible">
-                     <?php echo $form->checkBox($model, 'hided'); ?>
+                     <?php echo $form->checkBox($model, 'hidden'); ?>
                   <ul class="errorlist">
-                         <li><?php echo $form->error($model, 'hided'); ?></li>
+                         <li><?php echo $form->error($model, 'hidden'); ?></li>
                      </ul>
                  </div>
              </div>

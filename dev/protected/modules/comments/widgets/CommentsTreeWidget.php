@@ -12,13 +12,15 @@ class CommentsTreeWidget extends CWidget {
 		$cs->registerScript('commentModule',
 			'var commentsUrl = ' . CJavaScript::encode(Yii::app()->createUrl('/comments/default/loadAnswerBlock')) . ';',
 			CClientScript::POS_HEAD);
+		$cs->registerCssFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/source/jquery.fancybox.css');
+		$cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/source/jquery.fancybox.js');
 		Yii::app()->getComponent('bootstrap')->registerPackage('loading');
 	}
 
 	public function run () {
 		$comments = Comment::model()->findAllByAttributes(array(
-		                                                       'modelName' => get_class($this->model),
-		                                                       'modelId' => $this->model->getPrimaryKey()
+		                                                       'modelName' => $this->model->resolveClassName(),
+		                                                       'modelId'   => $this->model->getPrimaryKey()
 		                                                  ));
 		$comments = Comment::buildTree($comments);
 

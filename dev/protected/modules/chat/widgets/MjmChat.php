@@ -38,6 +38,8 @@ class MjmChat extends CWidget {
 				'url' => Yii::app()->createUrl(array_shift($profileUrl), $profileUrl),
 				'id' => Yii::app()->getUser()->getId(),
 				'avatar' => Yii::app()->getUser()->profile->getImageUrl(32,32),
+				'rating' => Yii::app()->getUser()->getRating(),
+				'ratingClass' => Yii::app()->getUser()->getRatingClass(),
 			)
 		);
 		$cs->registerScript('mjmChatConfig',
@@ -51,7 +53,11 @@ class MjmChat extends CWidget {
 		$cs->registerScriptFile(Yii::app()->getModule('chat')->getAssetsUrl() . '/javascript/livestamp.min.js');
 		$cs->registerCssFile(Yii::app()->getModule('chat')->getAssetsUrl() . '/css/mjmChat.css');
 
+		$showChat = Yii::app()->getRequest()->cookies['showChat']->value;
+
 		// Render view
-		$this->render('mjmChatView');
+		$this->render('mjmChatView', array(
+		                                  'showChat' => ( $showChat ? true : false ),
+		                             ));
 	}
 }

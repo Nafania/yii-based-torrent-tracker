@@ -15,7 +15,6 @@ $(function () {
             }
         });
     });
-
     // connect to socket
     if (typeof io !== 'undefined' && typeof eventsConfig != 'undefined') {
         var socketUrl = eventsConfig.host + ':' + eventsConfig.port;

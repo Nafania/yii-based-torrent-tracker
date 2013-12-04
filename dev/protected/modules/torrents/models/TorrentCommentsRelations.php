@@ -1,4 +1,8 @@
 <?php
+namespace modules\torrents\models;
+use CDbCriteria;
+use CActiveDataProvider;
+use CMap;
 
 /**
  * This is the model class for table "torrentCommentsRelations".
@@ -7,7 +11,7 @@
  * @property integer $commentId
  * @property integer $torrentId
  */
-class TorrentCommentsRelations extends EActiveRecord
+class TorrentCommentsRelations extends \EActiveRecord
 {
 	public $cacheTime = 3600;
 	/**

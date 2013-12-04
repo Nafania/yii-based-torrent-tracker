@@ -1,21 +1,29 @@
 <?php
+namespace modules\torrents\models;
+use CDbCriteria;
+use CActiveDataProvider;
+use CMap;
+use Yii;
+use modules\torrents\components AS tComponents;
+use modules\torrents\models AS models;
 
 /**
  * This is the model class for table "torrentGroups".
  *
  * The followings are the available columns in table 'torrentGroups':
- * @property integer       $id
- * @property integer       $title
- * @property integer       $ctime
- * @property string        $picture
- * @property integer       $mtime
- * @property Category      $category
- * @property integer       $uid
- * @property Torrent[]     torrents
- * @property string        description
+ * @property integer                               $id
+ * @property string                                $title
+ * @property integer                               $ctime
+ * @property string                                $picture
+ * @property integer                               $mtime
+ * @property integer                               $cId
+ * @property \Category                             $category
+ * @property integer                               $uid
+ * @property models\Torrent[]     torrents
+ * @property string                                description
  *
  */
-class TorrentGroup extends EActiveRecord implements ChangesInterface {
+class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 	private $eavAttributes;
 
 	public $cacheTime = 3600;
@@ -58,9 +66,14 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 				     'integerOnly' => true
 			     ),
 			     array(
-				     'picture, title',
+				     'title',
 				     'length',
 				     'max' => 255
+			     ),
+			     array(
+				     'picture',
+				     'required',
+				     'on' => 'insert'
 			     ),
 			     // The following rule is used by search().
 			     // Please remove those attributes that should not be searched.
@@ -68,6 +81,11 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 				     'id, title, ctime, picture, mtime',
 				     'safe',
 				     'on' => 'search'
+			     ),
+			     array(
+				     'id, title, ctime, picture, mtime, cId',
+				     'safe',
+				     'on' => 'adminSearch'
 			     ),
 			));
 	}
@@ -77,7 +95,7 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 			array(
 			     'torrents' => array(
 				     self::HAS_MANY,
-				     'Torrent',
+				     'modules\torrents\models\Torrent',
 				     'gId'
 			     ),
 			));
@@ -110,7 +128,7 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
 				     // Empty by default
 				     'attributesPrefix' => '',
-				     'preload'          => false,
+				     'preload'          => true,
 			     )
 			),
 			array(
@@ -120,10 +138,10 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 			),
 			array(
 			     'SlugBehavior' => array(
-				     'class'           => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
-				     'sourceAttribute' => 'title',
-				     'slugAttribute'   => 'slug',
-				     'mode'            => 'translit',
+				     'class'         => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
+				     'sourceMethod'  => 'getTitle',
+				     'slugAttribute' => 'slug',
+				     'mode'          => 'translit',
 			     ),
 			));
 	}
@@ -135,7 +153,8 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		return array(
 			'id'            => Yii::t('torrentsModule.common', 'Id'),
 			'title'         => Yii::t('torrentsModule.common', 'Название'),
-			'ctime'         => Yii::t('torrentsModule.common', 'Create time'),
+			'ctime'         => Yii::t('torrentsModule.common', 'Время создания'),
+			'cId'           => Yii::t('torrentsModule.common', 'Категория'),
 			'picture'       => Yii::t('torrentsModule.common', 'Изображение'),
 			'mtime'         => Yii::t('torrentsModule.common', 'Время'),
 			'rating'        => Yii::t('torrentsModule.common', 'Рейтинг'),
@@ -154,10 +173,11 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		$criteria = new CDbCriteria;
 
 		$criteria->compare('t.id', $this->id);
-		$criteria->compare('t.title', $this->title);
+		$criteria->compare('t.title', $this->title, true);
 		$criteria->compare('t.ctime', $this->ctime);
 		$criteria->compare('t.picture', $this->picture, true);
 		$criteria->compare('t.mtime', $this->mtime);
+		$criteria->compare('t.cId', $this->cId);
 		//$criteria->order = 'mtime DESC';
 
 		/*$sort = new CSort($this);
@@ -176,8 +196,9 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 			),
 		);*/
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
+		                                           'criteria'   => $criteria,
 		                                           //'sort'     => $sort
+		                                           'pagination' => array('pageVar' => 'page'),
 		                                      ));
 	}
 
@@ -192,6 +213,8 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 
 			return true;
 		}
+
+		return false;
 	}
 
 	public static function getSortColums () {
@@ -222,7 +245,7 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 		//TODO: get proper description and more fast
 		$attributes = $this->getEavAttributeKeys();
 		foreach ( $attributes AS $attr ) {
-			if ( $attr->type == Attribute::TYPE_TEXTAREA ) {
+			if ( $attr->type == \Attribute::TYPE_TEXTAREA ) {
 				$description = $this->getEavAttribute($attr->id);
 				$this->saveAttributes(array('description' => $description));
 				return $description;
@@ -240,11 +263,9 @@ class TorrentGroup extends EActiveRecord implements ChangesInterface {
 
 		$attrs = $this->getEavAttributes($ids);
 
-		$i = 0;
 		$return = array();
-		foreach ( $attrs AS $val ) {
-			$attribute = $attributes[$i];
-			++$i;
+		foreach ( $attrs AS $id => $val ) {
+			$attribute = $attributes[$id];
 			if ( !$val ) {
 				continue;
 			}

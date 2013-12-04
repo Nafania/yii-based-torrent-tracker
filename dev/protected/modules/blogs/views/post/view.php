@@ -9,49 +9,49 @@
     <div class="media-body">
 	    <p class="pull-right">
 	    <?php
-		    if ( Yii::app()->user->checkAccess('updatePostInOwnBlog',
+	    if ( Yii::app()->user->checkAccess('updatePostInOwnBlog',
 			    array('ownerId' => $blogPost->ownerId)) || Yii::app()->user->checkAccess('updatePostInBlog')
-		    ) {
-			    ?>
+	    ) {
+		    ?>
 
-			    <?php $this->widget('bootstrap.widgets.TbButton',
-				    array(
-				         'buttonType' => 'link',
-				         'type'       => 'primary',
-				         'label'      => Yii::t('blogsModule.common', 'Редактировать'),
-				         'url'        => array(
-					         '/blogs/post/update',
-					         'id' => $blogPost->getId()
-				         ),
-				    ));
-			    ?>
-		    <?php } ?>
-		    <?php
-		    if ( Yii::app()->user->checkAccess('deletePostInOwnBlog',
+		    <?php $this->widget('bootstrap.widgets.TbButton',
+			    array(
+			         'buttonType' => 'link',
+			         'type'       => 'primary',
+			         'label'      => Yii::t('blogsModule.common', 'Редактировать'),
+			         'url'        => array(
+				         '/blogs/post/update',
+				         'id' => $blogPost->getId()
+			         ),
+			    ));
+		    ?>
+	    <?php } ?>
+	    <?php
+	    if ( Yii::app()->user->checkAccess('deletePostInOwnBlog',
 			    array('ownerId' => $blogPost->ownerId)) || Yii::app()->user->checkAccess('deletePostInBlog')
-		    ) {
-			    ?>
-			    <?php $this->widget('bootstrap.widgets.TbButton',
-				    array(
-				         'buttonType'  => 'submitLink',
-				         'type'        => 'danger',
-				         'label'       => Yii::t('blogsModule.common', 'Удалить'),
-				         'url'         => array(
+	    ) {
+		    ?>
+		    <?php $this->widget('bootstrap.widgets.TbButton',
+			    array(
+			         'buttonType'  => 'submitLink',
+			         'type'        => 'danger',
+			         'label'       => Yii::t('blogsModule.common', 'Удалить'),
+			         'url'         => array(
+				         '/blogs/post/delete',
+				         'id' => $blogPost->getId()
+			         ),
+			         'htmlOptions' => array(
+				         'csrf' => true,
+				         'href' => array(
 					         '/blogs/post/delete',
 					         'id' => $blogPost->getId()
 				         ),
-				         'htmlOptions' => array(
-					         'csrf' => true,
-					         'href' => array(
-						         '/blogs/post/delete',
-						         'id' => $blogPost->getId()
-					         ),
-				         )
-				    ));
-			    ?>
-		    <?php } ?>
+			         )
+			    ));
+		    ?>
+	    <?php } ?>
 	    </p>
-	    <h2 class="media-heading"><?php echo CHtml::link($blogPost->getTitle(), $blogPost->getUrl()) ?></h2>
+	    <h1><?php echo $blogPost->getTitle() ?></h1>
 	    <?php echo $blogPost->getText(); ?>
 	    <hr />
 
@@ -69,11 +69,7 @@
 			    $tagsStr = '';
 			    foreach ( $tags AS $tag ) {
 				    $tagsStr .= ($tagsStr ? ', ' : '') . '<strong>' . CHtml::link($tag,
-					    array(
-					         '/blogs/default/view',
-					         'id'   => $blogPost->blog->getId(),
-					         'tags' => $tag
-					    )) . '</strong>';
+						    CMap::mergeArray($blogPost->blog->getUrl(), array('tags' => $tag))) . '</strong>';
 			    }
 			    echo ' | ' . $tagsStr;
 		    }
@@ -81,9 +77,9 @@
 		    |
 		    <a href="<?php echo Yii::app()->createUrl('/reports/default/create/',
 			    array(
-			         'modelName' => get_class($blogPost),
+			         'modelName' => $blogPost->resolveClassName(),
 			         'modelId'   => $blogPost->getId()
-			    )); ?>" data-action="report" data-toggle="tooltip" data-placement="top" data-original-title="<?php echo Yii::t('reportsModule.common',
+			    )); ?>" data-action="report" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('reportsModule.common',
 			    'Пожаловаться на запись в блоге'); ?>"><i class="icon-warning-sign"></i></a>
      </p>
 
