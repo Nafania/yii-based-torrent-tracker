@@ -9,9 +9,9 @@ class UserModule extends CWebModule {
 
 		// import the module-level models and components
 		$this->setImport(array(
-		                      'user.models.*',
-		                      'user.components.*',
-		                 ));
+			'user.models.*',
+			'user.components.*',
+		));
 
 	}
 
@@ -32,51 +32,52 @@ class UserModule extends CWebModule {
 	}
 
 	private static function _registerComponent () {
+		$services = @unserialize(Yii::app()->config->get('userModule.socialServices'));
+		$services = (is_array($services) ? $services : array());
+
 		Yii::app()->pd->registerApplicationComponents(array(
-		                                                   'user'  => array(
-			                                                   'class'           => 'application.modules.user.components.WebUser',
-			                                                   'allowAutoLogin'  => true,
-			                                                   'autoRenewCookie' => true,
-			                                                   'loginUrl'        => array('/user/default/login'),
-			                                                   'registerUrl'     => array('/user/default/register'),
-			                                                   //'loginRequiredAjaxResponse' => 'logged-out',
-			                                                   'autoUpdateFlash' => false,
-			                                                   // add this line to disable the flash counter
-			                                                   'admins'          => array('admin'),
-			                                                   // users with full access
+			'user'  => array(
+				'class'           => 'application.modules.user.components.WebUser',
+				'allowAutoLogin'  => true,
+				'autoRenewCookie' => true,
+				'loginUrl'        => array('/user/default/login'),
+				'registerUrl'     => array('/user/default/register'),
+				//'loginRequiredAjaxResponse' => 'logged-out',
+				'autoUpdateFlash' => false,
+				// add this line to disable the flash counter
+				'admins'          => array('admin'),
+				// users with full access
 
-		                                                   ),
-		                                                   'loid'  => array(
-			                                                   'class' => 'application.modules.user.extensions.lightopenid.loid',
-		                                                   ),
-		                                                   'eauth' => array(
-			                                                   'class'    => 'application.modules.user.extensions.eauth.EAuth',
-			                                                   'popup'    => true,
-			                                                   // Использовать всплывающее окно вместо перенаправления на сайт провайдера
-			                                                   'services' => array( // Вы можете настроить список провайдеров и переопределить их классы
-			                                                   ),
-
-		                                                   ),
-		                                              ));
+			),
+			'loid'  => array(
+				'class' => 'application.modules.user.extensions.lightopenid.loid',
+			),
+			'eauth' => array(
+				'class'    => 'application.modules.user.extensions.eauth.EAuth',
+				'popup'    => true,
+				// Использовать всплывающее окно вместо перенаправления на сайт провайдера
+				'services' => $services
+			),
+		));
 	}
 
 	protected static function _addUrlRules () {
 		Yii::app()->pd->addUrlRules(array(
-		                                 'user/<name>-<id>'                     => 'user/default/view',
-		                                 'user/<action:\w+>/*'                  => 'user/default/<action>',
-		                                 'user/<controller:\w+>/<action:\w+>/*' => 'user/<controller>/<action>',
-		                            ));
+			'user/<name>-<id>'                     => 'user/default/view',
+			'user/<action:\w+>/*'                  => 'user/default/<action>',
+			'user/<controller:\w+>/<action:\w+>/*' => 'user/<controller>/<action>',
+		));
 	}
 
 	private static function _setImport () {
 
 		Yii::app()->pd->setImport(array(
-		                               'application.modules.user.extensions.eoauth.*',
-		                               'application.modules.user.extensions.eoauth.lib.*',
-		                               'application.modules.user.extensions.lightopenid.*',
-		                               'application.modules.user.extensions.eauth.*',
-		                               'application.modules.user.extensions.eauth.services.*',
-		                               'application.modules.user.extensions.eauth.custom_services.*',
-		                          ));
+			'application.modules.user.extensions.eoauth.*',
+			'application.modules.user.extensions.eoauth.lib.*',
+			'application.modules.user.extensions.lightopenid.*',
+			'application.modules.user.extensions.eauth.*',
+			'application.modules.user.extensions.eauth.services.*',
+			'application.modules.user.extensions.eauth.custom_services.*',
+		));
 	}
 }

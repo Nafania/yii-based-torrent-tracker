@@ -8,13 +8,13 @@ class AnalyticsWidget extends CWidget {
 
 	public function init () {
 		if ( !$this->yaId ) {
-			$this->yaId = Yii::app()->getConfig()->get('analyticsWidget.yaId');
+			$this->yaId = Yii::app()->config->get('analyticsWidget.yaId');
 		}
 		if ( !$this->gaId ) {
-			$this->gaId = Yii::app()->getConfig()->get('analyticsWidget.gaId');
+			$this->gaId = Yii::app()->config->get('analyticsWidget.gaId');
 		}
 		if ( !$this->gaDomain ) {
-			$this->gaDomain = Yii::app()->getConfig()->get('analyticsWidget.gaDomain');
+			$this->gaDomain = Yii::app()->config->get('analyticsWidget.gaDomain');
 		}
 	}
 
