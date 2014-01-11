@@ -5,6 +5,7 @@ class DefaultController extends components\Controller {
 	public function filters () {
 		return array(
 			'ajaxOnly + suggest,socialDelete',
+			'postOnly + delete',
 			array('application.modules.auth.filters.AuthFilter -logout,socialLogin,login'),
 		);
 	}
@@ -391,6 +392,29 @@ class DefaultController extends components\Controller {
 			array(
 				'model' => $model
 			));
+	}
+
+	public function actionDelete () {
+		$model = $this->loadModel(Yii::app()->getUser()->getId());
+
+		$transaction = $model->getDbConnection()->beginTransaction();
+
+		try {
+			$model->delete();
+			$transaction->commit();
+
+			Yii::app()->getUser()->setFlash(User::FLASH_SUCCESS,
+				Yii::t('userModule.common', 'Ваш аккаунт успешно удален.'));
+		} catch ( CException $e ) {
+			$transaction->rollback();
+
+			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+
+			Yii::app()->getUser()->setFlash(User::FLASH_ERROR,
+				Yii::t('userModule.common',
+					'При удалении вашего аккаунта возникли ошибки, пожалуйста, попробуйте удалить его позднее.'));
+		}
+		$this->redirect(Yii::app()->homeUrl);
 	}
 
 	public function actionSuggest ( $term ) {

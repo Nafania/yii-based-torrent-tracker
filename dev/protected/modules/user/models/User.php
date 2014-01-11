@@ -167,7 +167,7 @@ class User extends EActiveRecord {
 				'match',
 				'pattern' => '/^([а-яa-z0-9-_ ])+$/iu',
 				'message' => Yii::t('userModule.common',
-					'Вы можете использовать буквы, цифры, пробел, тире и подчеркивание.'),
+						'Вы можете использовать буквы, цифры, пробел, тире и подчеркивание.'),
 			),
 		);
 	}
@@ -180,16 +180,16 @@ class User extends EActiveRecord {
 		// class name for the relations automatically generated below.
 		return CMap::mergeArray(parent::relations(),
 			array(
-			     'profile'        => array(
-				     self::HAS_ONE,
-				     'UserProfile',
-				     'uid'
-			     ),
-			     'socialAccounts' => array(
-				     self::HAS_MANY,
-				     'UserSocialAccount',
-				     'uId'
-			     ),
+				'profile'        => array(
+					self::HAS_ONE,
+					'UserProfile',
+					'uid'
+				),
+				'socialAccounts' => array(
+					self::HAS_MANY,
+					'UserSocialAccount',
+					'uId'
+				),
 			));
 	}
 
@@ -222,8 +222,8 @@ class User extends EActiveRecord {
 		$criteria->compare('email', $this->email, true);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 
@@ -238,7 +238,8 @@ class User extends EActiveRecord {
 			if ( !$this->_identity->authenticate() ) {
 				switch ( $this->_identity->errorCode ) {
 					case UserIdentity::ERROR_EMAIL_INVALID:
-						$this->addError('email', Yii::t('userModule.common', 'Указанный email не найден в базе данных'));
+						$this->addError('email',
+							Yii::t('userModule.common', 'Указанный email не найден в базе данных'));
 						break;
 					case UserIdentity::ERROR_USER_NOT_ACTIVE:
 						$this->addError('email', Yii::t('userModule.common', 'Этот аккаунт был отключен'));
@@ -322,12 +323,21 @@ class User extends EActiveRecord {
 		}
 	}
 
-	protected function beforeValidate() {
+	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
-			if ( $this->getId() != 1 && $this->getName() == 'admin') {
+			if ( $this->getId() != 1 && $this->getName() == 'admin' ) {
 				$this->addError('name', 'There is can be only one admin! You shall not pass!');
 				return false;
 			}
+			return true;
+		}
+		return false;
+	}
+
+	public function beforeDelete () {
+		if ( parent::beforeDelete() ) {
+			Yii::app()->getUser()->logout();
+
 			return true;
 		}
 		return false;
@@ -423,9 +433,9 @@ class User extends EActiveRecord {
 		$message = new YiiMailMessage;
 		$message->view = 'application.modules.user.views.mail.confirmEmail';
 		$message->setBody(array(
-		                       'model' => $this,
-		                       'code'  => $code
-		                  ),
+				'model' => $this,
+				'code'  => $code
+			),
 			'text/html');
 
 		$message->subject = Yii::t('userModule.common',

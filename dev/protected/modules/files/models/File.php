@@ -116,8 +116,8 @@ class File extends CActiveRecord {
 		$criteria->compare('modelId', $this->modelId);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 	protected function beforeSave () {
@@ -178,11 +178,24 @@ class File extends CActiveRecord {
 		}
 	}
 
+	/**
+	 * Delete file and file's directory if it contains only this file
+	 *
+	 * @param bool $file
+	 *
+	 * @return bool
+	 */
 	public function deleteFile ( $file = false ) {
 		if ( !$file ) {
 			$file = $this->getFilePath(true);
 		}
-		return unlink($file);
+		$dir = pathinfo($file, PATHINFO_DIRNAME);
+
+		if ( (count(scandir($dir)) == 3) || (count(scandir($dir)) == 2) ) {
+			return @unlink($file) && @rmdir($dir);
+		}
+
+		return @unlink($file);
 	}
 
 	public function getId () {
@@ -192,7 +205,7 @@ class File extends CActiveRecord {
 	public function getFilePath ( $full = false ) {
 		$md5 = md5($this->originalTitle);
 
-		$path = 'uploads/files/' . substr($md5, 0, 2) . '/';
+		$path = realpath(Yii::getPathOfAlias('application') . '/..') . '/uploads/files/' . substr($md5, 0, 2) . '/';
 		if ( !is_dir($path) ) {
 			mkdir($path, 0777, true);
 		}

@@ -18,6 +18,7 @@ class FilesModule extends CWebModule {
 		self::_registerComponent();
 		self::_addUrlRules();
 		self::_addModelRules();
+		self::_addCommandsPath();
 	}
 
 	private static function _registerComponent () {
@@ -143,5 +144,9 @@ class FilesModule extends CWebModule {
 			     'allowEmpty' => true
 			),
 			array('picture', 'unsafe'));*/
+	}
+
+	private static function _addCommandsPath () {
+		Yii::app()->pd->addCommandsPath('application.modules.files.commands');
 	}
 }

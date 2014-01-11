@@ -18,21 +18,21 @@ $cs->registerCssFile($url . '/css/auth.css');
 	<?php echo CHtml::image($profile->getImageUrl(150, 150),
 		$user->getName(),
 		array(
-		     'class' => 'img-polaroid',
-		     'style' => 'width:150px'
+			'class' => 'img-polaroid',
+			'style' => 'width:150px'
 		)); ?>
 	</div>
 
 	<div class="span10">
 		<?php $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 			array(
-			     'id'                     => 'settings-form',
-			     'enableClientValidation' => true,
-			     'enableAjaxValidation'   => true,
-			     'type'                   => 'horizontal',
-			     'htmlOptions'            => array(
-				     'enctype' => 'multipart/form-data'
-			     )
+				'id'                     => 'settings-form',
+				'enableClientValidation' => true,
+				'enableAjaxValidation'   => true,
+				'type'                   => 'horizontal',
+				'htmlOptions'            => array(
+					'enctype' => 'multipart/form-data'
+				)
 			)); ?>
 
 		<?php
@@ -42,10 +42,9 @@ $cs->registerCssFile($url . '/css/auth.css');
 		echo $form->passwordFieldRow($user,
 			'password',
 			array(
-			     'value'        => '',
-			     'autocomplete' => 'off'
+				'value'        => '',
+				'autocomplete' => 'off'
 			));
-
 		?>
 
 		<hr />
@@ -63,6 +62,14 @@ $cs->registerCssFile($url . '/css/auth.css');
 
 
 
+
+
+
+
+
+
+
+
 			<ul class="auth-services clear">
 		  <?php
 		  foreach ( $user->socialAccounts AS $account ) {
@@ -73,11 +80,11 @@ $cs->registerCssFile($url . '/css/auth.css');
 			  $html .= '<span class="auth-title">' . $account->name . '</span></span>';
 			  echo CHtml::link($html,
 				  array(
-				       '/user/default/socialDelete',
-				       'service' => $account->service
+					  '/user/default/socialDelete',
+					  'service' => $account->service
 				  ),
 				  array(
-				       'data-action' => 'social-delete',
+					  'data-action' => 'social-delete',
 				  ));
 			  echo '</li>';
 			  unset($socialServices[$account->service]);
@@ -95,8 +102,8 @@ $cs->registerCssFile($url . '/css/auth.css');
 
 			<?php $this->widget('application.modules.user.extensions.eauth.EAuthWidget',
 				array(
-				     'action'   => '/user/default/socialAdd',
-				     'services' => $socialServices
+					'action'   => '/user/default/socialAdd',
+					'services' => $socialServices
 				));
 		}
 		?>
@@ -104,18 +111,36 @@ $cs->registerCssFile($url . '/css/auth.css');
 		<div class="form-actions">
 				<?php $this->widget('bootstrap.widgets.TbButton',
 					array(
-					     'buttonType' => 'submit',
-					     'type'       => 'primary',
-					     'label'      => Yii::t('userModule.common', 'Сохранить'),
+						'buttonType' => 'submit',
+						'type'       => 'primary',
+						'label'      => Yii::t('userModule.common', 'Сохранить'),
 					));
+				?>
+
+				<?php
+				if ( Yii::app()->getUser()->checkAccess('user.default.delete') ) {
+					$this->widget('bootstrap.widgets.TbButton',
+						array(
+							'buttonType'  => 'link',
+							'type'        => 'danger',
+							'label'       => Yii::t('userModule.common', 'Удалить свой аккаунт'),
+							'htmlOptions' => array(
+								'submit'  => array('/user/default/delete'),
+								'class'   => 'pull-right',
+								'csrf'    => true,
+								'confirm' => Yii::t('userModule.common',
+										'Вы уверены? Ваш аккаунт и все данные, связанные с ним, будут удалены без возможности восстановления.')
+							)
+						));
+				}
 
 				if ( !$user->emailConfirmed ) {
 
 					$this->widget('bootstrap.widgets.TbButton',
 						array(
-						     'label' => Yii::t('userModule.common', 'Подтвердить email'),
-						     'type'  => 'link',
-						     'url'   => array('/user/default/confirmEmail'),
+							'label' => Yii::t('userModule.common', 'Подтвердить email'),
+							'type'  => 'link',
+							'url'   => array('/user/default/confirmEmail'),
 						));
 				}
 				?>
