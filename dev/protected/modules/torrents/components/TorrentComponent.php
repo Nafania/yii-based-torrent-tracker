@@ -1,5 +1,6 @@
 <?php
 namespace modules\torrents\components;
+use Exception;
 /**
  * Torrent
  *

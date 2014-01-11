@@ -35,6 +35,10 @@ $(function () {
                 //eventsMenu.parents('li').addClass('dropdown');
                 eventsMenu.append('<span class="badge badge-success">1</span><span class="caret"></span>');
             }
-        })
+        });
+
+        window.onbeforeunload = function () {
+            socket.disconnect();
+        }
     }
 });

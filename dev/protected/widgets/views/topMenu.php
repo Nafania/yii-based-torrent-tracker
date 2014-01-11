@@ -67,7 +67,7 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 		<div class="span5">
 		<?php
 		echo CHtml::label(Yii::t('common', 'Поисковая фраза'), 'search');
-		echo CHtml::textField('search', $searchVal, array('class' => 'input-large'));
+		echo CHtml::textField('search', $searchVal, array('class' => 'span11'));
 		?>
 		</div>
 
@@ -216,7 +216,7 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 			array(
 			     'buttonType'  => 'ajaxLink',
 			     'url'         => Yii::app()->createUrl('/savedsearches/default/create',
-				     array('modelName' => 'TorrentGroup')),
+				     array('modelName' => 'modules_torrents_models_TorrentGroup')),
 			     'type'        => 'link',
 			     'label'       => Yii::t('savedsearchesModule.common', 'Запомнить настройки'),
 

@@ -74,13 +74,38 @@ class DefaultController extends components\Controller {
 
 		$file = $this->renderPartial('sitemapXml',
 			array(
-			     'data' => $applicationStructure,
+				'data' => $applicationStructure,
 			),
 			true);
 
 		file_put_contents($cacheFile, $file);
 
 		echo $file;
+	}
+
+	public function actionRss ( $type ) {
+		$applicationStructure = Yii::app()->sitemap->getApplicationStructure();
+
+		foreach ( $applicationStructure AS $structureNode ) {
+			if ( $structureNode->getInstance()->getId() == $type ) {
+
+				if ( method_exists($structureNode->getInstance(), 'getRss') ) {
+
+					$models = $structureNode->getInstance()->getRss()->findAll(array(
+						'order' => 't.ctime DESC',
+						'limit' => 100
+					));
+
+					$this->renderPartial('application.modules.' . $type . '.views.default.rss',
+						array(
+							'models' => $models
+						));
+					Yii::app()->end();
+				}
+			}
+		}
+
+		throw new CHttpException(404);
 	}
 
 	private function _getData () {
@@ -113,26 +138,26 @@ class DefaultController extends components\Controller {
 		//TODO: move this to modules
 		$data = CMap::mergeArray($data,
 			array(
-			     array(
-				     'url'        => Yii::app()->createAbsoluteUrl('site/index'),
-				     'changefreq' => 'always',
-				     'priority'   => 1,
-			     ),
-			     array(
-				     'url'        => Yii::app()->createAbsoluteUrl('/torrents/default/index'),
-				     'changefreq' => 'always',
-				     'priority'   => 1,
-			     ),
-			     array(
-				     'url'        => Yii::app()->createAbsoluteUrl('/blogs/default/index'),
-				     'changefreq' => 'always',
-				     'priority'   => 1,
-			     ),
-			     array(
-				     'url'        => Yii::app()->createAbsoluteUrl('/groups/default/index'),
-				     'changefreq' => 'always',
-				     'priority'   => 1,
-			     ),
+				array(
+					'url'        => Yii::app()->createAbsoluteUrl('site/index'),
+					'changefreq' => 'always',
+					'priority'   => 1,
+				),
+				array(
+					'url'        => Yii::app()->createAbsoluteUrl('/torrents/default/index'),
+					'changefreq' => 'always',
+					'priority'   => 1,
+				),
+				array(
+					'url'        => Yii::app()->createAbsoluteUrl('/blogs/default/index'),
+					'changefreq' => 'always',
+					'priority'   => 1,
+				),
+				array(
+					'url'        => Yii::app()->createAbsoluteUrl('/groups/default/index'),
+					'changefreq' => 'always',
+					'priority'   => 1,
+				),
 			));
 		//CVarDumper::dump($applicationStructure, 5,true);
 		return $data;

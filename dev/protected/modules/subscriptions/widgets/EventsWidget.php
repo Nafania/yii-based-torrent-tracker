@@ -1,4 +1,5 @@
 <?php
+
 class EventsWidget extends CWidget {
 	public $cookieName = 'readedEvents';
 
@@ -22,7 +23,7 @@ class EventsWidget extends CWidget {
 					readedEvents = [];
 				}
 				readedEvents.push(elem.data('id'));
-				$.cookie(" . CJavaScript::encode($this->cookieName) . ", JSON.stringify(readedEvents));
+				$.cookie(" . CJavaScript::encode($this->cookieName) . ", JSON.stringify(readedEvents), {path: '/'});
 
 				var currentUrl = window.location.href.toString().split(window.location.host)[1].replace(/#.*$/, '');
                 if ( href.indexOf('#') != -1 && currentUrl == href.replace(/#.*$/, '') ) {
@@ -48,7 +49,7 @@ class EventsWidget extends CWidget {
 
 		$this->render('eventsWidget',
 			array(
-			     'eventItemsCount' => $eventItemsCount,
+				'eventItemsCount' => $eventItemsCount,
 			));
 	}
 
@@ -56,17 +57,19 @@ class EventsWidget extends CWidget {
 		$cookies = Yii::app()->getRequest()->cookies[$this->cookieName];
 		$ids = CJavaScript::jsonDecode($cookies);
 
-		$events = Event::model()->findAllByPk($ids);
-		foreach ( $events AS $event ) {
-			$event->unread = Event::EVENT_READED;
-			$event->save();
-		}
+		if ( $ids ) {
+			$events = Event::model()->findAllByPk($ids);
+			foreach ( $events AS $event ) {
+				$event->unread = Event::EVENT_READED;
+				$event->save();
+			}
 
-		if ( $cookies ) {
-			Yii::app()->getRequest()->cookies[$this->cookieName] = new CHttpCookie($this->cookieName, null, array(
-			                                                                                                     'expire' => time() - 1 * 60 * 60,
-			                                                                                                ));
-			unset(Yii::app()->getRequest()->cookies[$this->cookieName]);
+			if ( $cookies ) {
+				Yii::app()->getRequest()->cookies[$this->cookieName] = new CHttpCookie($this->cookieName, null, array(
+					'expire' => time() - 1 * 60 * 60,
+				));
+				unset(Yii::app()->getRequest()->cookies[$this->cookieName]);
+			}
 		}
 	}
 }

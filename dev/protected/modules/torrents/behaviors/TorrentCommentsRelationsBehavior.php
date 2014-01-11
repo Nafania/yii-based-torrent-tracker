@@ -69,7 +69,8 @@ class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 
 	public function afterSave ( $event ) {
 		parent::afterSave($event);
-		if ( !$this->getTorrentId() ) {
+
+		if ( !$this->getTorrentId() || !$this->getOwner()->getIsNewRecord() ) {
 			return false;
 		}
 		$connection = Yii::app()->getDb();

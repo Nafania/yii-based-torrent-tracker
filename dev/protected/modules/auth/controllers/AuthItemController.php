@@ -48,7 +48,7 @@ abstract class AuthItemController extends AuthController {
 				$am = Yii::app()->getAuthManager();
 
 				if ( ($item = $am->getAuthItem($model->name)) === null ) {
-					$item = $am->createAuthItem($model->name, $model->type, $model->description);
+					$item = $am->createAuthItem($model->name, $model->type, $model->description, $model->bizrule);
 					if ( $am instanceof CPhpAuthManager ) {
 						$am->save();
 					}
@@ -100,6 +100,7 @@ abstract class AuthItemController extends AuthController {
 			$model->attributes = $_POST['AuthItemForm'];
 			if ( $model->validate() ) {
 				$item->description = $model->description;
+				$item->bizRule = $model->bizrule;
 
 				$am->saveAuthItem($item);
 				if ( $am instanceof CPhpAuthManager ) {
@@ -113,6 +114,7 @@ abstract class AuthItemController extends AuthController {
 		$model->name = $name;
 		$model->description = $item->description;
 		$model->type = $item->type;
+		$model->bizrule = $item->bizRule;
 
 		$this->render('update',
 			array(

@@ -119,6 +119,13 @@ class SubscriptionsModule extends CWebModule {
 			     )
 			));
 
+		Yii::app()->pd->registerBehavior('GroupUser',
+			array(
+			     'groupUserNew' => array(
+				     'class' => 'application.modules.subscriptions.behaviors.GroupUserNew'
+			     )
+			));
+
 		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost',
 			array(
 			     'blogPostSubscription' => array(

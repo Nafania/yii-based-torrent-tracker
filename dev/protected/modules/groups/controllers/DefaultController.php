@@ -195,7 +195,7 @@ class DefaultController extends components\Controller {
 		$attributes = Yii::app()->getRequest()->getQuery('attributes', '');
 		$model->attributes = $attributes;
 
-		$dataProvider = $model->search();
+		$dataProvider = $model->visible()->search();
 
 		Ajax::renderAjax('index',
 			array(
@@ -248,7 +248,7 @@ class DefaultController extends components\Controller {
 	public function actionChangeMemberStatus ( $gId, $uId, $status = GroupUser::STATUS_NEW ) {
 		$group = $this->loadModel($gId);
 
-		if ( !Yii::app()->user->checkAccess('updateOwnGroup',
+		if ( !Yii::app()->user->checkAccess('updateMembersStatusInOwnGroup',
 				array('ownerId' => $group->ownerId)) && !Yii::app()->user->checkAccess('changeOwnStatus',
 				array('uId' => $uId)) && !Yii::app()->user->checkAccess('updateGroup')
 		) {
@@ -322,7 +322,7 @@ class DefaultController extends components\Controller {
 		$criteria->addCondition('groupUser.idGroup = :idGroup');
 		$criteria->addCondition('groupUser.status = :status');
 		$criteria->params[':idGroup'] = $id;
-		if ( Yii::app()->user->checkAccess('updateOwnGroup',
+		if ( Yii::app()->user->checkAccess('updateMembersStatusInOwnGroup',
 				array('ownerId' => $group->ownerId)) || Yii::app()->user->checkAccess('updateGroup')
 		) {
 			$criteria->params[':status'] = (int) $status;
@@ -434,6 +434,12 @@ class DefaultController extends components\Controller {
 	public function actionInvite ( $id ) {
 		$group = $this->loadModel($id);
 
+		if ( !Yii::app()->user->checkAccess('inviteInOwnGroup',
+				array('ownerId' => $group->ownerId)) && !Yii::app()->user->checkAccess('updateGroup')
+		) {
+			throw new CHttpException(403);
+		}
+
 		$groupUsers = array(new GroupUser('invite'));
 
 		if ( isset($_POST['inviteUsers']) ) {
@@ -485,6 +491,9 @@ class DefaultController extends components\Controller {
 				}
 			}
 		}
+
+		Yii::app()->getClientScript()->scriptMap['jquery.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['jquery.min.js'] = false;
 
 		Ajax::send(Ajax::AJAX_SUCCESS,
 			'ok',

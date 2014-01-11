@@ -27,7 +27,8 @@ class DefaultController extends components\Controller {
 			$User->attributes = $_POST['User'];
 			// validate user input and redirect to the previous page if valid
 			if ( $User->validate() && $User->login() ) {
-				Yii::app()->user->setFlash(User::FLASH_SUCCESS, Yii::t('userModule.common', 'Вы успешно вошли на сайт'));
+				Yii::app()->user->setFlash(User::FLASH_SUCCESS,
+					Yii::t('userModule.common', 'Вы успешно вошли на сайт'));
 				$this->redirect(Yii::app()->user->returnUrl);
 			}
 		}
@@ -89,7 +90,8 @@ class DefaultController extends components\Controller {
 
 				if ( $User->save() && $User->sendRestore() ) {
 					Yii::app()->user->setFlash(User::FLASH_SUCCESS,
-						Yii::t('userModule.common', 'Email с инструкциями по восстановлению пароля выслан на ваш email адрес.'));
+						Yii::t('userModule.common',
+							'Email с инструкциями по восстановлению пароля выслан на ваш email адрес.'));
 
 					$this->redirect(Yii::app()->user->returnUrl);
 				}
@@ -113,7 +115,7 @@ class DefaultController extends components\Controller {
 		if ( $User->save() && $User->sendReset() ) {
 			Yii::app()->user->setFlash(User::FLASH_SUCCESS,
 				Yii::t('userModule.common',
-					'Email с инструкциями по восстановлению пароля выслан на ваш email адрес.'));
+					'Новый пароль выслан на ваш email адрес.'));
 			$this->redirect(Yii::app()->homeUrl);
 		}
 
@@ -123,7 +125,8 @@ class DefaultController extends components\Controller {
 		$User = User::model()->findByPk(Yii::app()->getUser()->getId());
 
 		if ( $User->emailConfirmed ) {
-			Yii::app()->user->setFlash(User::FLASH_INFO, Yii::t('userModule.common', 'Ваш email адрес уже подтвержден.'));
+			Yii::app()->user->setFlash(User::FLASH_INFO,
+				Yii::t('userModule.common', 'Ваш email адрес уже подтвержден.'));
 			$this->redirect(array('/user/default/settings'));
 		}
 
@@ -140,7 +143,8 @@ class DefaultController extends components\Controller {
 			}
 			else {
 				Yii::app()->user->setFlash(User::FLASH_ERROR,
-					Yii::t('userModule.common', 'Неверный код подтверждения. Пожалуйста, повторите процедуру подтверждения email адреса.'));
+					Yii::t('userModule.common',
+						'Неверный код подтверждения. Пожалуйста, повторите процедуру подтверждения email адреса.'));
 				$this->redirect(array('/user/default/settings'));
 			}
 		}
@@ -166,7 +170,10 @@ class DefaultController extends components\Controller {
 
 		$services = Yii::app()->eauth->getServices();
 
-		$this->performAjaxValidation(array($User, $Profile));
+		$this->performAjaxValidation(array(
+			$User,
+			$Profile
+		));
 
 		if ( isset($_POST['User']) ) {
 			$User->attributes = $_POST['User'];
@@ -201,16 +208,19 @@ class DefaultController extends components\Controller {
 
 		$this->render('settings',
 			array(
-			     'user'    => $User,
-			     'profile' => $Profile,
-			     'socialServices' => $services
+				'user'           => $User,
+				'profile'        => $Profile,
+				'socialServices' => $services
 			));
 	}
 
 	public function actionSocialDelete () {
 		$service = Yii::app()->getRequest()->getParam('service', '');
 
-		$account = UserSocialAccount::model()->findByAttributes(array('uId' => Yii::app()->getUser()->getId(), 'service' => $service));
+		$account = UserSocialAccount::model()->findByAttributes(array(
+			'uId'     => Yii::app()->getUser()->getId(),
+			'service' => $service
+		));
 
 		if ( !$account ) {
 			throw new CHttpException(404);
@@ -220,7 +230,9 @@ class DefaultController extends components\Controller {
 				Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('userModule.common', 'Аккаунт социальной сети удален успешно.'));
 			}
 			else {
-				Ajax::send(Ajax::AJAX_ERROR, Yii::t('userModule.common', 'При удалении аккаунта социальной сети возникли ошибки, попробуйте удалить его позднее.'));
+				Ajax::send(Ajax::AJAX_ERROR,
+					Yii::t('userModule.common',
+						'При удалении аккаунта социальной сети возникли ошибки, попробуйте удалить его позднее.'));
 			}
 		}
 	}
@@ -293,12 +305,12 @@ class DefaultController extends components\Controller {
 
 						$userAttributes = array(
 							'name'  => $authIdentity->name,
-							'email' => $authIdentity->email,
+							'email' => (!empty($authIdentity->email) ? $authIdentity->email : ''),
 						);
 						$User = new User('socialLogin');
 						$Profile = new UserProfile('socialLogin');
 
-						$User->emailConfirmed = ($authIdentity->email ? 1 : 0);
+						$User->emailConfirmed = (!empty($authIdentity->email) ? 1 : 0);
 
 						$profileAttributes = array(
 							'picture' => (isset($authIdentity->avatar) ? $authIdentity->avatar : ''),
@@ -375,9 +387,10 @@ class DefaultController extends components\Controller {
 		$this->pageTitle = $title;
 		$this->breadcrumbs[] = $title;
 
-		$this->render('view', array(
-		                           'model' => $model
-		                      ));
+		$this->render('view',
+			array(
+				'model' => $model
+			));
 	}
 
 	public function actionSuggest ( $term ) {
@@ -391,14 +404,16 @@ class DefaultController extends components\Controller {
 
 		foreach ( $users AS $user ) {
 			$return[] = array(
-				'id' => $user->getId(),
+				'id'   => $user->getId(),
 				'text' => $user->getName(),
 			);
 		}
 
-		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', array(
-		                                          'users' => $return
-		                                     ));
+		Ajax::send(Ajax::AJAX_SUCCESS,
+			'ok',
+			array(
+				'users' => $return
+			));
 	}
 
 

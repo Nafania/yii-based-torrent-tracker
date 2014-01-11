@@ -39,27 +39,27 @@ class Report extends EActiveRecord {
 		// will receive user inputs.
 		return CMap::mergeArray(parent::rules(),
 			array(
-			     array(
-				     'modelName, modelId',
-				     'required'
-			     ),
-			     array(
-				     'modelId, state',
-				     'numerical',
-				     'integerOnly' => true
-			     ),
-			     array(
-				     'modelName',
-				     'length',
-				     'max' => 255
-			     ),
-			     // The following rule is used by search().
-			     // Please remove those attributes that should not be searched.
-			     array(
-				     'id, modelName, modelId,  state',
-				     'safe',
-				     'on' => 'search'
-			     ),
+				array(
+					'modelName, modelId',
+					'required'
+				),
+				array(
+					'modelId, state',
+					'numerical',
+					'integerOnly' => true
+				),
+				array(
+					'modelName',
+					'length',
+					'max' => 255
+				),
+				// The following rule is used by search().
+				// Please remove those attributes that should not be searched.
+				array(
+					'id, modelName, modelId,  state',
+					'safe',
+					'on' => 'search'
+				),
 			));
 	}
 
@@ -69,13 +69,14 @@ class Report extends EActiveRecord {
 	public function relations () {
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
-		return CMap::mergeArray(parent::relations(), array(
-		                                                  'contents' => array(
-			                                                  self::HAS_MANY,
-			                                                  'ReportContent',
-			                                                  'rId'
-		                                                  )
-		                                             ));
+		return CMap::mergeArray(parent::relations(),
+			array(
+				'contents' => array(
+					self::HAS_MANY,
+					'ReportContent',
+					'rId'
+				)
+			));
 	}
 
 	/**
@@ -89,10 +90,29 @@ class Report extends EActiveRecord {
 			'state'     => 'State',
 		);
 	}
+
 	public function stateLabels () {
 		return array(
-			self::REPORT_STATE_NEW     => Yii::t('reportsModule.common', 'Новая'),
+			self::REPORT_STATE_NEW => Yii::t('reportsModule.common', 'Новая'),
 		);
+	}
+
+
+	protected function beforeValidate () {
+		if ( parent::beforeValidate() ) {
+			$validator = CValidator::createValidator('exist',
+				$this,
+				'modelId',
+				array(
+				     'attributeName' => 'id',
+				     'className'     => self::classNameToNamespace($this->modelName),
+				     'allowEmpty'    => false,
+				));
+			$this->getValidatorList()->insertAt(0, $validator);
+
+			return true;
+		}
+		return false;
 	}
 
 
@@ -122,8 +142,8 @@ class Report extends EActiveRecord {
 		$criteria->compare('state', $this->state);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 	public function getId () {
@@ -132,14 +152,14 @@ class Report extends EActiveRecord {
 
 	public function getStateLabel () {
 		$labels = $this->stateLabels();
-		return ( isset($labels[$this->state]) ? $labels[$this->state] : null );
+		return (isset($labels[$this->state]) ? $labels[$this->state] : null);
 	}
 
 	public function getUrl () {
 		if ( $this->getIsNewRecord() ) {
 			return null;
 		}
-		$modelName = $this->modelName;
+		$modelName = $this->classNameToNamespace($this->modelName);
 		$model = $modelName::model()->findByPk($this->modelId);
 
 		if ( $model ) {

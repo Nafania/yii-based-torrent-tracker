@@ -4,41 +4,57 @@
             createUrl: '',
             getUrl: '',
             deleteUrl: '',
-            timeOut: 0
+            timeDiff: 60,
+            draftMessage: '',
+            notifyTime: 0
         }, options);
 
         var form = $(this), formId = form.attr('id'), formData = {}, formFields = [], needDraft = true, localData, savedData, savedLocalData, loaded = false, xhr = {};
 
         xhr[formId] = null;
 
+        /**
+         * save draft before window unload
+         * @param e
+         */
         window.onbeforeunload = function (e) {
             $.fn.saveDraft.save();
         }
 
-        form.find('[type="submit"]').click(function (e) {
-            //e.preventDefault();
+        /**
+         * on submit save draft and modify form action to not load draft after submit
+         */
+        form.submit(function (e) {
+            e.preventDefault();
+
             $.fn.saveDraft.save();
-            //form.submit();
+            var action = $(this).attr('action');
+            $(this).attr('action', action + '#draftLoaded=1');
+            this.submit();
         });
 
+        if ( document.location.href.indexOf('draftLoaded', 0) > 0 ) {
+            loaded = true;
+            needDraft = false;
+        }
 
+        /**
+         * collect inputs and set change event to save draft
+         */
         form.find(':input').each(function () {
             if ($(this).attr('name') != 'csrf') {
-                if ($(this).attr('type') == 'checkbox' && !$(this).attr('checked')) {
-                    needDraft = true;
-                }
-                else {
-                    if ($(this).val() == '') {
-                        needDraft = true;
-                    }
-                }
                 formFields.push($(this));
             }
             $(this).change(function () {
-                $.fn.saveDraft.save();
+                if (loaded) {
+                    $.fn.saveDraft.save();
+                }
             });
         });
 
+        /**
+         * if need draft load then get it
+         */
         if (needDraft) {
             $.ajax({
                 type: 'post',
@@ -50,21 +66,31 @@
                  */
                 suppressErrors: true,
                 success: function (data) {
-                    savedData = data.data.data;
                     savedLocalData = $.fn.saveDraft.getLocalData();
-                    if (data.data.deleted) {
-                        $.fn.saveDraft.deleteDraft();
-                    }
-                    else {
+
+                    if (Object.keys(data.data).length) {
                         /**
-                         * if server data more than 10 seconds older we use local data
+                         * we need to go deeper
                          */
-                        if (( savedLocalData.mtime - data.mtime ) > 10) {
-                            $.fn.saveDraft.putFormData(savedLocalData);
+                        savedData = data.data.data;
+
+                        if (data.data.deleted) {
+                            $.fn.saveDraft.deleteDraft();
                         }
                         else {
-                            $.fn.saveDraft.putFormData(savedData);
+                            /**
+                             * if server data more than settings.timeDiff seconds older we use local data
+                             */
+                            if (( savedLocalData.mtime - data.data.mtime ) > settings.timeDiff) {
+                                $.fn.saveDraft.putFormData(savedLocalData);
+                            }
+                            else {
+                                $.fn.saveDraft.putFormData(savedData);
+                            }
                         }
+                    }
+                    else {
+                        $.fn.saveDraft.putFormData(savedLocalData);
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -73,6 +99,9 @@
             });
         }
 
+        /**
+         * delete draft from server and local storage
+         */
         $.fn.saveDraft.deleteDraft = function () {
             $.ajax({
                 type: 'post',
@@ -88,6 +117,10 @@
             localStorage && localStorage.removeItem('draft' + formId);
         }
 
+        /**
+         * save draft
+         * @returns {boolean}
+         */
         $.fn.saveDraft.save = function () {
             if (!loaded) {
                 return true;
@@ -124,6 +157,10 @@
             localStorage && localStorage.setItem('draft' + formId, JSON.stringify(formData));
         }
 
+        /**
+         * get data from local storage if present
+         * @returns {*}
+         */
         $.fn.saveDraft.getLocalData = function () {
             try {
                 return localStorage && JSON.parse(localStorage.getItem('draft' + formId));
@@ -133,34 +170,65 @@
             }
         }
 
+        /**
+         * put data into form
+         * @param data
+         */
         $.fn.saveDraft.putFormData = function (data) {
-            form.find(':input').each(function () {
-                var elem = $(this);
-                $.each(data, function (key, val) {
-                    if (elem.attr('name') == key) {
-                        if (elem.attr('type') == 'checkbox') {
-                            elem.attr('checked', 'checked');
-                        }
-                        else if (elem.get(0).tagName.toLowerCase() == 'textarea') {
-                            elem.val(val);
-                            /**
-                             * костыль для imperavi
-                             */
-                            if (elem.redactor !== undefined) {
-                                elem.redactor('set', val);
-                            }
-                        }
-                        else {
-                            elem.val(val);
-                        }
-                        elem.trigger('change');
-                        return false;
-                    }
-                });
-            });
+            if ( !data || !data.length ) {
+                return false;
+            }
+            $('.top-right').notify({
+                message: { html: settings.draftMessage },
+                closable: true,
+                fadeOut: {
+                    enabled: true,
+                    delay: settings.notifyTime
+                },
+                type: 'success'
+            }).show();
 
-            loaded = true;
+            $(document).on('click', '[data-action="load-draft"]', function (e) {
+                e.preventDefault();
+
+                $('.top-right > .alert').remove();
+
+                form.find(':input').each(function () {
+                    var elem = $(this);
+                    $.each(data, function (key, val) {
+                        if (elem.attr('name') == key) {
+                            if (elem.attr('type') == 'checkbox') {
+                                elem.attr('checked', 'checked');
+                            }
+                            else if (elem.get(0).tagName.toLowerCase() == 'textarea') {
+                                elem.val(val);
+                                /**
+                                 * костыль для imperavi
+                                 */
+                                if (elem.redactor !== undefined) {
+                                    elem.redactor('set', val);
+                                }
+                            }
+                            else {
+                                elem.val(val);
+                            }
+                            elem.trigger('change');
+                            return false;
+                        }
+                    });
+                });
+
+                loaded = true;
+            });
         }
+
+        /**
+         * bind events
+         */
+        $(document).on('click', '[data-action="remove-draft-notify"]', function (e) {
+            e.preventDefault();
+            $('.top-right > .alert').remove();
+        });
     }
 }(jQuery));
 

@@ -41,7 +41,7 @@ class AddBlogSubscription extends CActiveRecordBehavior {
 		if ( $owner->modelName == 'Group' ) {
 			$group = Group::model()->findByPk($owner->modelId);
 			if ( $group ) {
-				$blog = Blog::model()->findByAttributes(array('groupId' => $group->getId()));
+				$blog = modules\blogs\models\Blog::model()->findByAttributes(array('groupId' => $group->getId()));
 
 				if ( $blog ) {
 					return $blog;

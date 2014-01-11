@@ -13,6 +13,7 @@
  * @property integer $blocked
  * @property integer $ctime
  * @property integer $rating
+ * @property integer $hidden
  */
 class Group extends EActiveRecord {
 	public $cacheTime = 3600;
@@ -22,6 +23,7 @@ class Group extends EActiveRecord {
 
 	const TYPE_OPENED = 0;
 	const TYPE_CLOSED = 1;
+	const TYPE_HIDDEN = 2;
 
 	/**
 	 * Returns the static model of the specified AR class.
@@ -90,73 +92,78 @@ class Group extends EActiveRecord {
 	public function relations () {
 		return CMap::mergeArray(parent::relations(),
 			array(
-			     'groupUsers'         => array(
-				     self::HAS_MANY,
-				     'GroupUser',
-				     'idGroup'
-			     ),
-			     'groupUsersCount'    => array(
-				     self::STAT,
-				     'GroupUser',
-				     'idGroup',
-				     'condition' => 'status = :status',
-				     'params'    => array(
-					     'status' => GroupUser::STATUS_APPROVED,
-				     ),
-			     ),
+				'groupUsers'         => array(
+					self::HAS_MANY,
+					'GroupUser',
+					'idGroup'
+				),
+				'groupUsersCount'    => array(
+					self::STAT,
+					'GroupUser',
+					'idGroup',
+					'condition' => 'status = :status',
+					'params'    => array(
+						'status' => GroupUser::STATUS_APPROVED,
+					),
+				),
 
-			     'declinedUsersCount' => array(
-				     self::STAT,
-				     'GroupUser',
-				     'idGroup',
-				     'condition' => 'status = :status',
-				     'params'    => array(
-					     'status' => GroupUser::STATUS_DECLINED,
-				     ),
-			     ),
+				'declinedUsersCount' => array(
+					self::STAT,
+					'GroupUser',
+					'idGroup',
+					'condition' => 'status = :status',
+					'params'    => array(
+						'status' => GroupUser::STATUS_DECLINED,
+					),
+				),
 
-			     'newUsersCount'      => array(
-				     self::STAT,
-				     'GroupUser',
-				     'idGroup',
-				     'condition' => 'status = :status',
-				     'params'    => array(
-					     'status' => GroupUser::STATUS_NEW,
-				     ),
-			     ),
+				'newUsersCount'      => array(
+					self::STAT,
+					'GroupUser',
+					'idGroup',
+					'condition' => 'status = :status',
+					'params'    => array(
+						'status' => GroupUser::STATUS_NEW,
+					),
+				),
 
-			     'invitedUsersCount'  => array(
-				     self::STAT,
-				     'GroupUser',
-				     'idGroup',
-				     'condition' => 'status = :status',
-				     'params'    => array(
-					     'status' => GroupUser::STATUS_INVITED,
-				     ),
-			     ),
+				'invitedUsersCount'  => array(
+					self::STAT,
+					'GroupUser',
+					'idGroup',
+					'condition' => 'status = :status',
+					'params'    => array(
+						'status' => GroupUser::STATUS_INVITED,
+					),
+				),
 			));
 	}
 
 	public function behaviors () {
 		return CMap::mergeArray(parent::behaviors(),
 			array(
-			     'SlugBehavior' => array(
-				     'class'           => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
-				     'sourceAttribute' => 'title',
-				     'slugAttribute'   => 'slug',
-				     'mode'            => 'translit',
-			     ),
+				'SlugBehavior' => array(
+					'class'           => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
+					'sourceAttribute' => 'title',
+					'slugAttribute'   => 'slug',
+					'mode'            => 'translit',
+				),
 			));
 	}
 
 	public function scopes () {
+		$alias = $this->getTableAlias();
+
 		return array(
-			'open'  => array(
-				'condition' => 't.type = ' . self::TYPE_OPENED
+			'open'    => array(
+				'condition' => $alias . '.type = ' . self::TYPE_OPENED
 			),
-			'close' => array(
-				'condition' => 't.type = ' . self::TYPE_CLOSED
+			'close'   => array(
+				'condition' => $alias . '.type = ' . self::TYPE_CLOSED
 			),
+			'visible' => array(
+				'condition' => $alias . '.type <> ' . self::TYPE_HIDDEN
+			)
 		);
 	}
 
@@ -205,8 +212,8 @@ class Group extends EActiveRecord {
 		 * подключаем таблицу рейтингов
 		 */
 		//if ( strpos($sort, 'rating') !== false ) {
-			$criteria->select .= ', r.rating AS rating';
-			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . $this->resolveClassName() . '\' AND r.modelId = t.id)';
+		$criteria->select .= ', r.rating AS rating';
+		$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . $this->resolveClassName() . '\' AND r.modelId = t.id)';
 		//}
 
 		$sort = new CSort($this);
@@ -214,16 +221,33 @@ class Group extends EActiveRecord {
 		$sort->attributes = array(
 			'*',
 			'rating' => array(
-				'asc'  => 'rating ASC',
-				'desc' => 'rating DESC',
+				'asc'     => 'rating ASC',
+				'desc'    => 'rating DESC',
 				'default' => 'desc',
 			),
 		);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                           'sort'     => $sort
-		                                      ));
+			'criteria' => $criteria,
+			'sort'     => $sort
+		));
+	}
+
+
+	public function afterFind () {
+		parent::afterFind();
+
+		if ( php_sapi_name() == 'cli' ) {
+			return true;
+		}
+
+		if ( $this->type == self::TYPE_HIDDEN ) {
+			if ( !\Group::checkIsJoinOrInvited($this) ) {
+				throw new \CHttpException(404);
+			}
+		}
+
+		return true;
 	}
 
 
@@ -269,6 +293,7 @@ class Group extends EActiveRecord {
 		return array(
 			self::TYPE_OPENED => Yii::t('GroupsModule.common', 'Открытая группа'),
 			self::TYPE_CLOSED => Yii::t('GroupsModule.common', 'Закрытая группа'),
+			self::TYPE_HIDDEN => Yii::t('GroupsModule.common', 'Скрытая группа'),
 		);
 	}
 
@@ -309,10 +334,22 @@ class Group extends EActiveRecord {
 		}
 
 		return GroupUser::model()->findByPk(array(
-		                                         'idGroup' => $model->getId(),
-		                                         'idUser'  => Yii::app()->getUser()->getId(),
-		                                         'status'  => GroupUser::STATUS_APPROVED,
-		                                    ));
+			'idGroup' => $model->getId(),
+			'idUser'  => Yii::app()->getUser()->getId(),
+			'status'  => GroupUser::STATUS_APPROVED,
+		));
+	}
+
+	public static function checkIsJoinOrInvited ( $model ) {
+		if ( Yii::app()->getUser()->getIsGuest() || !$model ) {
+			return false;
+		}
+
+		return GroupUser::model()->findByAttributes(array(
+			'idGroup' => $model->getId(),
+			'idUser'  => Yii::app()->getUser()->getId(),
+		),
+			'status = ' . GroupUser::STATUS_APPROVED . ' OR status = ' . GroupUser::STATUS_INVITED . ' OR status = ' . GroupUser::STATUS_INVITE_DECLINED);
 	}
 
 }

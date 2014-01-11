@@ -24,7 +24,7 @@ class SendEventsNotifyCommand extends CConsoleCommand {
 		$time = time() + $sessionExpireTime - 1 * 60 * 60; //время, которое пользователь отсутствует на сайте
 
 		$db = Yii::app()->getDb();
-		$sql = 'SELECT COUNT(*) AS count, u.id, u.email, u.name
+		/*$sql = 'SELECT COUNT(*) AS count, u.id, u.email, u.name
 		FROM {{events}} e, {{users}} u, {{sessions}} s
 		WHERE e.uId = u.id
 		AND u.emailConfirmed = 1
@@ -33,6 +33,14 @@ class SendEventsNotifyCommand extends CConsoleCommand {
 		AND e.notified = 0
 		AND u.id = s.uId
 		AND s.expire < :time
+		GROUP BY u.id';*/
+		$sql = 'SELECT COUNT(*) AS count, u.id, u.email, u.name
+		FROM {{events}} e, {{users}} u
+		WHERE e.uId = u.id
+		AND u.emailConfirmed = 1
+		AND e.unread = 1
+		AND u.active = 1
+		AND e.notified = 0
 		GROUP BY u.id';
 		$comm = $db->createCommand($sql);
 		$comm->bindValue(':time', $time);
@@ -55,6 +63,7 @@ class SendEventsNotifyCommand extends CConsoleCommand {
 			}
 		}
 
+		//$db->createCommand('UPDATE {{events}} e, {{users}} u SET e.notified = 1 WHERE e.uId = u.id AND u.emailConfirmed = 1 AND e.unread = 1 AND u.active = 1 AND e.notified = 0')->execute();
 		$db->createCommand('UPDATE {{events}} e, {{users}} u SET e.notified = 1 WHERE e.uId = u.id AND u.emailConfirmed = 1 AND e.unread = 1 AND u.active = 1 AND e.notified = 0')->execute();
 
 		return 0;

@@ -14,7 +14,7 @@
 	echo CHtml::link($img, $data->getUrl(), array('class' => 'pull-left'));
 	?>
 
-	<div class="media-body pull-left">
+	<div class="media-body">
         <h3 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h3>
 		<p><?php echo Yii::t('groupsModule.common',
 					'Участники группы:') . ' ' . CHtml::link(Yii::t('groupsModule.common',
@@ -29,12 +29,13 @@
 				array('{statusTitle}' => $data->getTypeLabel())) ?>
 
 		</p>
-        <p><?php echo StringHelper::cutStr($data->getDescription()); ?></p>
+        <p class="pull-left"><?php echo StringHelper::cutStr($data->getDescription()); ?></p>
+		<div class="pull-right">
+			<?php $this->widget('application.modules.groups.widgets.GroupOperations',
+				array(
+				     'group' => $data
+				)); ?>
+		</div>
     </div>
-	<div class="pull-right">
-		<?php $this->widget('application.modules.groups.widgets.GroupOperations',
-			array(
-			     'group' => $data
-			)); ?>
-	</div>
+
 </div>

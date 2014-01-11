@@ -1,8 +1,8 @@
 <?php
 /**
- * @var $this    DefaultController
- * @var $model   TorrentGroup
- * @var $torrent Torrent
+ * @var $this    modules\torrents\controllers\DefaultController
+ * @var $model   modules\torrents\models\TorrentGroup
+ * @var $torrent modules\torrents\models\Torrent
  */
 ?>
 <?php
@@ -17,23 +17,23 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 	<div class="row-fluid">
 	<div class="span3">
 	<?php
-	$img = CHtml::image($model->getImageUrl(290, 0), $model->getTitle());
+	$img = CHtml::image($model->getImageUrl(500, 0), $model->getTitle());
 	echo CHtml::link($img,
 		$model->getImageUrl(),
 		array(
-		     'class' => 'fancybox img-polaroid torrentImage',
-		     'rel'   => 'group'
+			'class' => 'fancybox img-polaroid torrentImage',
+			'rel'   => 'group'
 		));
 	?>
 	<?php
 	$this->widget('application.modules.torrents.widgets.TorrentGroupMenu',
 		array(
-		     'model' => $model
+			'model' => $model
 		));
 	?>
 	<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
 		array(
-		     'systemName' => 'underTorrentImage',
+			'systemName' => 'underTorrentImage',
 		))
 	?>
 	</div>
@@ -42,8 +42,8 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 
 		<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
 			array(
-			     'systemName' => 'topTorrentView',
-			     'model'      => $model
+				'systemName' => 'topTorrentView',
+				'model'      => $model
 			))
 		?>
 
@@ -58,8 +58,8 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 			<dt><?php echo Yii::t('categoryModule.common', 'Категория'); ?></dt>
 			<dd><?php echo CHtml::link($model->category->getTitle(),
 					array(
-					     '/torrents/default/index',
-					     'category[]' => $model->category->getTitle()
+						'/torrents/default/index',
+						'category[]' => $model->category->getTitle()
 					)); ?></dd>
 
 			<?php
@@ -72,20 +72,28 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 				foreach ( $model->getTags() AS $key => $tag ) {
 					$tags .= ($tags ? ', ' : '') . CHtml::link($tag,
 							array(
-							     '/torrents/default/index',
-							     'tags' => $tag
+								'/torrents/default/index',
+								'tags' => $tag
 							));
 				}
 				echo $tags . '</dd>';
 				}
 				?>
 
+				<?php $this->widget('application.modules.reviews.widgets.ReviewWidget',
+					array(
+						'categoryId' => $model->cId,
+						'attributes' => $model->getEavAttributeKeys(),
+						'model'      => $model,
+						'template'   => '<dt>{ratingTitle}</dt><dd>{ratingValue}</dd>'
+					)); ?>
+
 
 		<dt><?php echo Yii::t('ratingsModule.common', 'Рейтинг'); ?></dt>
 		<dd>
 			<?php $this->widget('application.modules.ratings.widgets.TorrentGroupRating',
 				array(
-				     'model' => $model,
+					'model' => $model,
 				)); ?>
 		</dd>
 
@@ -99,17 +107,17 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 	<div class="accordion-heading" id="torrent<?php echo $torrent->getId() ?>">
 	<?php echo CHtml::link('<i class="icon-download"></i>',
 		array(
-		     '/torrents/default/download',
-		     'id' => $torrent->getId()
+			'/torrents/default/download',
+			'id' => $torrent->getId()
 		),
 		array(
-		     'class'       => 'btn btn-mini',
-		     'data-toggle' => 'tooltip',
-		     'title'       => Yii::t('torrentsModule',
-			     'Скачать {torrentName}',
-			     array(
-			          '{torrentName}' => $torrent->getTitle()
-			     ))
+			'class'       => 'btn btn-mini',
+			'data-toggle' => 'tooltip',
+			'title'       => Yii::t('torrentsModule',
+					'Скачать {torrentName}',
+					array(
+						'{torrentName}' => $torrent->getTitle()
+					))
 		)) ?>
 
 		<?php if ( Yii::app()->getUser()->checkAccess('reports.default.create') ) { ?>
@@ -117,7 +125,7 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 			<a href="<?php echo Yii::app()->createUrl('/reports/default/create/'); ?>" data-model="<?php echo $torrent->resolveClassName(); ?>" data-id="<?php echo $torrent->getId(); ?>" data-action="report" class="btn btn-mini" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('reportsModule.common',
 				'Пожаловаться на {torrentName}',
 				array(
-				     '{torrentName}' => $torrent->getTitle()
+					'{torrentName}' => $torrent->getTitle()
 				)); ?>"><i class="icon-warning-sign"></i></a>
 
 		<?php } ?>
@@ -125,25 +133,27 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 		<a href="#" class="btn btn-mini" data-comments-for="<?php echo $torrent->getId() ?>" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 			'Смотреть комментарии только для {torrentName}',
 			array(
-			     '{torrentName}' => $torrent->getTitle()
+				'{torrentName}' => $torrent->getTitle()
 			)); ?>"><i class="icon-comment"></i></a>
 
 		<a href="<?php echo Yii::app()->createUrl('/torrents/default/fileList') ?>" class="btn btn-mini" data-action="fileList" data-id="<?php echo $torrent->getId(); ?>" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 			'Смотреть список файлов для {torrentName}',
 			array(
-			     '{torrentName}' => $torrent->getTitle()
+				'{torrentName}' => $torrent->getTitle()
 			)); ?>"><i class="icon-file"></i></a>
 
 		<?php
-		if ( Yii::app()->getUser()->checkAccess('torrentsUpdate') ) {
+		if ( Yii::app()->user->checkAccess('updateOwnTorrent',
+				array('model' => $torrent)) || Yii::app()->user->checkAccess('updateTorrent')
+		) {
 			?>
-			<a href="<?php echo Yii::app()->createUrl('/torrents/default/updateTorrent/',
+			<a href="<?php echo Yii::app()->createUrl('/torrents/default/updateTorrent',
 				array(
-				     'id' => $torrent->getId()
+					'id' => $torrent->getId()
 				)); ?>" class="btn btn-mini" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 				'Редактировать {torrentName}',
 				array(
-				     '{torrentName}' => $torrent->getTitle()
+					'{torrentName}' => $torrent->getTitle()
 				)); ?>"><i class="icon-edit"></i></a>
 		<?php
 		}
@@ -153,11 +163,11 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 				array('id' => $torrent->getId())) ?>" class="btn btn-mini torrentDelete" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('torrentsModule.common',
 				'Удалить торрент {torrentName}',
 				array(
-				     '{torrentName}' => $torrent->getTitle()
+					'{torrentName}' => $torrent->getTitle()
 				)); ?>"><i class="icon-trash"></i></a>
 		<?php } ?>
 
-		<a class="accordion-toggle" data-toggle="collapse" href="#collapse<?php echo $torrent->getId() ?>"><?php echo $torrent->getSeparateAttribute() ?></a>
+		<a class="accordion-toggle" data-toggle="collapse" href="#torrent<?php echo $torrent->getId() ?>" data-target="#collapse<?php echo $torrent->getId() ?>"><?php echo $torrent->getSeparateAttribute() ?></a>
 
 		<span class="divider-vertical">|</span>
 
@@ -170,7 +180,7 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 		<span><abbr title="<?php echo Yii::t('torrentsModule.common',
 				'Добавлено: {date}',
 				array(
-				     '{date}' => $torrent->getCtime('d.m.Y H:i')
+					'{date}' => $torrent->getCtime('d.m.Y H:i')
 				)) ?>"><?php echo TimeHelper::timeAgoInWords($torrent->getCtime()); ?></abbr></span>
 
 		<span class="divider-vertical">|</span>
@@ -188,6 +198,10 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
                 <div class="accordion-inner">
                     <dl class="dl-horizontal">
 	                    <?php
+	                    if ( $torrent->user && Yii::app()->getUser()->checkAccess('canViewTorrentOwner') ) {
+		                    echo '<dt>' . Yii::t('torrentsModule.common', 'Добавил') . '</dt>';
+		                    echo '<dd>' . CHtml::link($torrent->user->getName(), $torrent->user->getUrl()) . '</dd>';
+	                    }
 	                    foreach ( $torrent->getEavAttributesWithKeys() AS $name => $value ) {
 		                    echo '<dt>' . $name . '</dt>';
 		                    echo '<dd>' . $value . '</dd>';
@@ -205,16 +219,19 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 
 		<?php $this->widget('application.modules.comments.widgets.CommentsTreeWidget',
 			array(
-			     'model' => $model,
+				'model' => $model,
 			)); ?>
 
 		<?php $this->widget('application.modules.comments.widgets.AnswerWidget',
 			array(
-			     'model'    => $model,
-			     'torrents' => $model->torrents
+				'model'    => $model,
+				'torrents' => $model->torrents
 			)); ?>
 	</div>
 
 	</div>
-
+<?php $this->widget('application.modules.torrents.widgets.AdultsWarning',
+	array(
+		'model' => $model
+	)); ?>
 <?php $this->widget('application.modules.reports.widgets.ReportModal'); ?>

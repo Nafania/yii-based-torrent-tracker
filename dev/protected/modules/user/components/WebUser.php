@@ -15,6 +15,8 @@ class WebUser extends AuthWebUser {
 	public function init () {
 		parent::init();
 		$this->attachBehaviors($this->behaviors());
+
+		//var_dump($this->getState('lastLogin'));
 	}
 
 	public function behaviors () {
@@ -79,9 +81,9 @@ class WebUser extends AuthWebUser {
 		} catch ( CException $e ) {
 			$m = $this->getModel();
 			return call_user_func_array(array(
-			                                 $m,
-			                                 $name
-			                            ),
+					$m,
+					$name
+				),
 				$parameters);
 		}
 	}
@@ -104,15 +106,32 @@ class WebUser extends AuthWebUser {
 	}
 
 	private function _sendLoginRequired () {
-		Ajax::send(Ajax::AJAX_ERROR,
+		Ajax::send(Ajax::AJAX_WARNING,
 			Yii::t('userModule.common',
 				'Для выполнения данного действия вам необходимо войти на сайт. Кликните <a href="{url}">здесь</a>, чтобы войти на сайт.',
 				array(
-				     '{url}' => Yii::app()->createUrl('/user/default/login')
+					'{url}' => Yii::app()->createUrl('/user/default/login')
 				)));
 	}
 
-	public function setState ( $key, $value, $defaultValue = null ) {
+	protected function afterLogin ( $formCookie ) {
+		parent::afterLogin($formCookie);
+
+		$this->setState('lastLogin', time());
+	}
+
+	public function getLastVisitTime () {
+		$lastVisit = time();
+		if ( $this->hasState('lastLogin') ) {
+			$lastVisit = $this->getState('lastLogin');
+		}
+
+		$lastVisit = (Yii::app()->session['lastVisit'] ? Yii::app()->session['lastVisit'] : $lastVisit);
+
+		return $lastVisit;
+	}
+
+	/*public function setState ( $key, $value, $defaultValue = null ) {
 		$key = $this->getStateKeyPrefix() . $key;
 		if ( $value === $defaultValue ) {
 			unset(Yii::app()->session[$key]);
@@ -133,7 +152,7 @@ class WebUser extends AuthWebUser {
 	}
 
 	public function clearStates () {
-		$keys = array_keys(Yii::app()->session);
+		$keys = Yii::app()->session->getKeys();
 		$prefix = $this->getStateKeyPrefix();
 		$n = strlen($prefix);
 		foreach ( $keys as $key ) {
@@ -141,5 +160,5 @@ class WebUser extends AuthWebUser {
 				unset(Yii::app()->session[$key]);
 			}
 		}
-	}
+	}*/
 }

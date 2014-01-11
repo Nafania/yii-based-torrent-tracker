@@ -8,27 +8,42 @@ class EventController extends components\Controller {
 	public function filters () {
 		return CMap::mergeArray(parent::filters(),
 			array(
-			     'ajaxOnly + getList, read',
+				'ajaxOnly + getList, read',
 			));
 	}
 
 	public function actionRead () {
 		$id = Yii::app()->getRequest()->getParam('id', 0);
-		$event = $this->loadModel($id);
-		$event->unread = Event::EVENT_READED;
-		$event->save();
+
+		if ( $id == 'all' ) {
+			$events = Event::model()->unreaded()->forCurrentUser()->findAll();
+			foreach ( $events AS $event ) {
+				$event->unread = Event::EVENT_READED;
+				$event->save();
+			}
+		}
+		else {
+			$event = $this->loadModel($id);
+			$event->unread = Event::EVENT_READED;
+			$event->save();
+		}
 	}
 
 	public function actionGetList () {
 		$events = Event::model()->unreaded()->forCurrentUser()->findAll();
 
-		$view = $this->renderPartial('list', array(
-		                                  'events' => $events
-		                             ), true, false);
+		$view = $this->renderPartial('list',
+			array(
+				'events' => $events
+			),
+			true,
+			false);
 
-		Ajax::send(Ajax::AJAX_SUCCESS, 'ok', array(
-		                                          'view' => $view
-		                                     ));
+		Ajax::send(Ajax::AJAX_SUCCESS,
+			'ok',
+			array(
+				'view' => $view
+			));
 	}
 
 

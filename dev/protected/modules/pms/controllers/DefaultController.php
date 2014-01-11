@@ -20,14 +20,16 @@ class DefaultController extends components\Controller {
 		return true;
 	}
 
-	public function actionCreate () {
+	public function actionCreate ( $uId = 0 ) {
 		$title = Yii::t('pmsModule.common', 'Создание личного сообщения');
 		$this->breadcrumbs[] = $title;
 		$this->pageTitle = $title;
 
 		$model = new PrivateMessage();
-		$usersData = array();
 		$models = array();
+
+		$usersData = $this->getUsersData($uId);
+		$model->receiverUid = $uId;
 
 		// Uncomment the following line if AJAX validation is needed
 		$this->performAjaxValidation($model);

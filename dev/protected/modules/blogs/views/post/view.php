@@ -10,7 +10,7 @@
 	    <p class="pull-right">
 	    <?php
 	    if ( Yii::app()->user->checkAccess('updatePostInOwnBlog',
-			    array('ownerId' => $blogPost->ownerId)) || Yii::app()->user->checkAccess('updatePostInBlog')
+			    array('ownerId' => $blogPost->blog->ownerId)) || Yii::app()->user->checkAccess('updatePostInBlog')
 	    ) {
 		    ?>
 

@@ -1,6 +1,6 @@
 /*
-	Redactor v9.1.2
-	Updated: Aug 27, 2013
+	Redactor v9.1.9
+	Updated: Dec 12, 2013
 
 	http://imperavi.com/redactor/
 
@@ -13,7 +13,6 @@
 (function($)
 {
 	var uuid = 0;
-	var rtePaste = false;
 
 	"use strict";
 
@@ -72,7 +71,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.1.2';
+	$.Redactor.VERSION = '9.1.9';
 	$.Redactor.opts = {
 
 			// settings
@@ -94,12 +93,14 @@
 			pastePlainText: false,
 			removeEmptyTags: true,
 			templateVars: false,
+			xhtml: false,
 
 			visual: true,
 			focus: false,
 			tabindex: false,
 			autoresize: true,
 			minHeight: false,
+			maxHeight: false,
 			shortcuts: true,
 
 			autosave: false, // false or url
@@ -107,15 +108,19 @@
 
 			plugins: false, // array
 
-			linkAnchor: false,
-			linkEmail: false,
+			linkAnchor: true,
+			linkEmail: true,
 			linkProtocol: 'http://',
 			linkNofollow: false,
+			linkSize: 50,
 
+			imageFloatMargin: '10px',
 			imageGetJson: false, // url (ex. /folder/images.json ) or false
 
 			imageUpload: false, // url
+			imageUploadParam: 'file', // input name
 			fileUpload: false, // url
+			fileUploadParam: 'file', // input name
 			clipboardUpload: true, // or false
 			clipboardUploadUrl: false, // url
 			dragUpload: true, // false
@@ -126,9 +131,11 @@
 			uploadFields: false,
 
 			observeImages: true,
+			observeLinks: true,
 
 			modalOverlay: true,
 
+			tabSpaces: false, // true or number of spaces
 			tabFocus: true,
 
 			air: false,
@@ -278,8 +285,7 @@
 	// Functionality
 	Redactor.fn = $.Redactor.prototype = {
 
-		keyCode:
-		{
+		keyCode: {
 			BACKSPACE: 8,
 			DELETE: 46,
 			DOWN: 40,
@@ -295,7 +301,7 @@
 		// Initialization
 		init: function(el, options)
 		{
-
+			this.rtePaste = false;
 			this.$element = this.$source = $(el);
 			this.uuid = uuid++;
 
@@ -341,7 +347,18 @@
 			// setup formatting permissions
 			if (this.opts.linebreaks === false)
 			{
-				if (this.opts.allowedTags !== false && $.inArray('p', this.opts.allowedTags) === '-1') this.opts.allowedTags.push('p');
+				if (this.opts.allowedTags !== false)
+				{
+					var arrSearch = ['strong', 'em', 'del'];
+					var arrAdd = ['b', 'i', 'strike'];
+
+					if ($.inArray('p', this.opts.allowedTags) === '-1') this.opts.allowedTags.push('p');
+
+					for (i in arrSearch)
+					{
+						if ($.inArray(arrSearch[i], this.opts.allowedTags) != '-1') this.opts.allowedTags.push(arrAdd[i]);
+					}
+				}
 
 				if (this.opts.deniedTags !== false)
 				{
@@ -363,7 +380,7 @@
 			this.buildStart();
 
 		},
-		initToolbar: function(lang)
+		toolbarInit: function(lang)
 		{
 			return {
 				html:
@@ -654,6 +671,7 @@
 			clearInterval(this.autosaveInterval);
 
 			$(window).off('.redactor');
+			this.$source.off('redactor-textarea');
 			this.$element.off('.redactor').removeData('redactor');
 
 			var html = this.get();
@@ -677,7 +695,7 @@
 
 			if (this.opts.air)
 			{
-				$('.redactor_air').remove();
+				$('#redactor_air_' + this.uuid).remove();
 			}
 		},
 
@@ -700,9 +718,8 @@
 		},
 		getToolbar: function()
 		{
-			return this.$toolbar;
+			return (this.$toolbar) ? this.$toolbar : false;
 		},
-
 
 		// CODE GET & SET
 		get: function()
@@ -720,28 +737,39 @@
 		set: function(html, strip, placeholderRemove)
 		{
 			html = html.toString();
+			html = html.replace(/\$/g, '&#36;');
 
 			if (this.opts.fullpage) this.setCodeIframe(html);
 			else this.setEditor(html, strip);
 
+			if (html == '') placeholderRemove = false;
 			if (placeholderRemove !== false) this.placeholderRemove();
 		},
 		setEditor: function(html, strip)
 		{
+
 			if (strip !== false)
 			{
 				html = this.cleanSavePreCode(html);
+
 				html = this.cleanStripTags(html);
 				html = this.cleanConvertProtected(html);
-				html = this.cleanConvertInlineTags(html);
+				html = this.cleanConvertInlineTags(html, true);
 
-				if (this.opts.linebreaks === false) html = this.cleanConverters(html);
+				if (this.opts.linebreaks === false)	html = this.cleanConverters(html);
 				else html = html.replace(/<p(.*?)>([\w\W]*?)<\/p>/gi, '$2<br>');
 			}
+
+			// $ fix
+			html = html.replace(/&amp;#36;/g, '$');
 
 			html = this.cleanEmpty(html);
 
 			this.$editor.html(html);
+
+			// set no editable
+			this.setNonEditable();
+			this.setSpansVerified();
 			this.sync();
 		},
 		setCodeIframe: function(html)
@@ -763,6 +791,9 @@
 				this.$editor = this.$frame.contents().find('body').attr({ 'contenteditable': true, 'dir': this.opts.direction });
 			}
 
+			// set no editable
+			this.setNonEditable();
+			this.setSpansVerified();
 			this.sync();
 
 		},
@@ -774,7 +805,40 @@
 
 			// set code
 			this.$editor.html(html);
+
+			// set no editable
+			this.setNonEditable();
+			this.setSpansVerified();
 			this.sync();
+		},
+		setSpansVerified: function()
+		{
+			var spans = this.$editor.find('span');
+			var replacementTag = 'inline';
+
+			$.each(spans, function() {
+				var outer = this.outerHTML;
+
+				// Replace opening tag
+				var regex = new RegExp('<' + this.tagName, 'gi');
+				var newTag = outer.replace(regex, '<' + replacementTag);
+
+				// Replace closing tag
+				regex = new RegExp('</' + this.tagName, 'gi');
+				newTag = newTag.replace(regex, '</' + replacementTag);
+
+				$(this).replaceWith(newTag);
+			});
+
+		},
+		setSpansVerifiedHtml: function(html)
+		{
+			html = html.replace(/<span(.*?)>/, '<inline$1>');
+			return html.replace(/<\/span>/, '</inline>');
+		},
+		setNonEditable: function()
+		{
+			this.$editor.find('.noneditable').attr('contenteditable', false);
 		},
 
 		// SYNC
@@ -788,7 +852,7 @@
 			else html = this.$editor.html();
 
 			html = this.syncClean(html);
-			html = this.cleanRemoveSpaces(html);
+			//html = this.cleanRemoveSpaces(html);
 			html = this.cleanRemoveEmptyTags(html);
 
 			// fix second level up ul, ol
@@ -796,7 +860,16 @@
 
 			if ($.trim(html) === '<br>') html = '';
 
-			if (html !== '' && this.opts.tidyHtml) html = this.cleanHtml(html);
+			// xhtml
+			if (this.opts.xhtml)
+			{
+				var xhtmlTags = ['br', 'hr', 'img', 'link', 'input', 'meta'];
+				$.each(xhtmlTags, function(i,s)
+				{
+					html = html.replace(new RegExp('<' + s + '(.*?[^\/$]?)>', 'gi'), '<' + s + '$1 />');
+				});
+
+			}
 
 			// before callback
 			html = this.callback('syncBefore', false, html);
@@ -824,7 +897,7 @@
 			// remove space
 			html = html.replace(/&#x200b;/gi, '');
 			html = html.replace(/&#8203;/gi, '');
-			html = html.replace(/&nbsp;/gi, ' ');
+			html = html.replace(/<\/a>&nbsp;/gi, '<\/a> ');
 
 			// link nofollow
 			if (this.opts.linkNofollow)
@@ -837,6 +910,9 @@
 			html = html.replace('<!--?php', '<?php');
 			html = html.replace('?-->', '?>');
 
+			// revert no editable
+			html = html.replace(/<(.*?)class="noeditable"(.*?) contenteditable="false"(.*?)>/gi, '<$1class="noeditable"$2$3>');
+
 			html = html.replace(/ data-tagblock=""/gi, '');
 			html = html.replace(/<br\s?\/?>\n?<\/(P|H[1-6]|LI|ADDRESS|SECTION|HEADER|FOOTER|ASIDE|ARTICLE)>/gi, '</$1>');
 
@@ -845,17 +921,21 @@
 			html = html.replace(/<span(.*?)id="redactor-image-resizer"(.*?)>(.*?)<\/span>/i, '');
 			html = html.replace(/<span(.*?)id="redactor-image-editter"(.*?)>(.*?)<\/span>/i, '');
 
+			// remove font
+			html = html.replace(/<font(.*?)>([\w\W]*?)<\/font>/gi, '$2');
+
 			// remove spans
-			html = html.replace(/<span\s*?>([\w\W]*?)<\/span>/gi, '$1');
-			html = html.replace(/<span(.*?)data-redactor="verified"(.*?)>([\w\W]*?)<\/span>/gi, '<span$1$2>$3</span>');
-			html = html.replace(/<span(.*?)data-redactor-inlineMethods=""(.*?)>([\w\W]*?)<\/span>/gi, '<span$1$2>$3</span>' );
-			html = html.replace(/<span\s*?>([\w\W]*?)<\/span>/gi, '$1');
-			html = html.replace(/<span\s*?id="selection-marker(.*?)"(.*?)>([\w\W]*?)<\/span>/gi, '');
-			html = html.replace(/<span\s*?>([\w\W]*?)<\/span>/gi, '$1');
+			html = html.replace(/<span(.*?)>([\w\W]*?)<\/span>/gi, '$2');
+			html = html.replace(/<inline>/gi, '<span>');
+			html = html.replace(/<inline /gi, '<span ');
+			html = html.replace(/<\/inline>/gi, '</span>');
+			html = html.replace(/<span(.*?)class="redactor_placeholder"(.*?)>([\w\W]*?)<\/span>/gi, '');
 			html = html.replace(/<span>([\w\W]*?)<\/span>/gi, '$1');
 
-			// amp fix
-			html = html.replace(/;amp;/gi, ';');
+			// fixes
+			html = html.replace(/&amp;/gi, '&');
+			html = html.replace(/™/gi, '&trade;');
+			html = html.replace(/©/gi, '&copy;');
 
 
 			html = this.cleanReConvertProtected(html);
@@ -966,6 +1046,11 @@
 			// options
 			if (this.opts.tabindex) $source.attr('tabindex', this.opts.tabindex);
 			if (this.opts.minHeight) $source.css('min-height', this.opts.minHeight + 'px');
+			if (this.opts.maxHeight)
+			{
+				this.opts.autoresize = false;
+				this.sourceHeight = this.opts.maxHeight;
+			}
 			if (this.opts.wym) this.$editor.addClass('redactor_editor_wym');
 			if (!this.opts.autoresize) $source.css('height', this.sourceHeight);
 		},
@@ -976,7 +1061,7 @@
 			// load toolbar
 			if (this.opts.toolbar)
 			{
-				this.opts.toolbar = this.initToolbar(this.opts.curLang);
+				this.opts.toolbar = this.toolbarInit(this.opts.curLang);
 				this.toolbarBuild();
 			}
 
@@ -1023,7 +1108,9 @@
 		},
 		buildBindKeyboard: function()
 		{
-			if (this.opts.dragUpload)
+			this.dblEnter = 0;
+
+			if (this.opts.dragUpload && this.opts.imageUpload !== false)
 			{
 				this.$editor.on('drop.redactor', $.proxy(this.buildEventDrop, this));
 			}
@@ -1032,37 +1119,42 @@
 			this.$editor.on('keydown.redactor', $.proxy(this.buildEventKeydown, this));
 			this.$editor.on('keyup.redactor', $.proxy(this.buildEventKeyup, this));
 
+			// textarea callback
+			if ($.isFunction(this.opts.textareaKeydownCallback))
+			{
+				this.$source.on('keydown.redactor-textarea', $.proxy(this.opts.textareaKeydownCallback, this));
+			}
+
 			// focus callback
 			if ($.isFunction(this.opts.focusCallback))
 			{
 				this.$editor.on('focus.redactor', $.proxy(this.opts.focusCallback, this));
 			}
 
+			var clickedElement;
+			$(document).mousedown(function(e) {
+				clickedElement = $(e.target);
+			});
+
 			// blur callback
-			this.$editor.on('blur.redactor', $.proxy(function()
+			this.$editor.on('blur.redactor', $.proxy(function(e)
 			{
-				this.selectall = false;
+				if (!$(clickedElement).hasClass('redactor_toolbar') && $(clickedElement).parents('.redactor_toolbar').size() == 0)
+				{
+					this.selectall = false;
+					if ($.isFunction(this.opts.blurCallback)) this.callback('blur', e);
+				}
 			}, this));
-			if ($.isFunction(this.opts.blurCallback))
-			{
-				this.$editor.on('blur.redactor', $.proxy(this.opts.blurCallback, this));
-			}
 
 		},
 		buildEventDrop: function(e)
 		{
 			e = e.originalEvent || e;
 
-			if (window.FormData === undefined)
-			{
-				return true;
-			}
+			if (window.FormData === undefined || !e.dataTransfer) return true;
 
 		    var length = e.dataTransfer.files.length;
-		    if (length == 0)
-		    {
-		        return true;
-		    }
+		    if (length == 0) return true;
 
 		    e.preventDefault();
 
@@ -1074,56 +1166,18 @@
 	        }
 
 			this.bufferSet();
-		    var $img = $('<img>');
 
 			var progress = $('<div id="redactor-progress-drag" class="redactor-progress redactor-progress-striped"><div id="redactor-progress-bar" class="redactor-progress-bar" style="width: 100%;"></div></div>');
 			$(document.body).append(progress);
 
-			var fd = new FormData();
-			fd.append('file', file);
-
-			$.ajax({
-				url: this.opts.imageUpload,
-				dataType: 'html',
-				data: fd,
-				cache: false,
-				contentType: false,
-				processData: false,
-				type: 'POST',
-				success: $.proxy(function(data)
-				{
-					progress.fadeOut('slow', function()
-					{
-						$(this).remove();
-					});
-
-					var json = $.parseJSON(data);
-
-					$img.attr('src', json.filelink).attr('id', 'drag-image-marker');
-
-					this.insertNodeToCaretPositionFromPoint(e, $img[0]);
-
-					var image = $(this.$editor.find('img#drag-image-marker'));
-
-					if (image.length) image.removeAttr('id');
-					else image = false;
-
-					this.sync();
-					this.observeImages();
-
-					// upload callback
-					if (image)
-					{
-						this.callback('imageUpload', image, json);
-					}
-
-				}, this),
-				error: $.proxy(function(json)
-				{
-					this.callback('imageUploadError', json);
-
-				}, this)
-			});
+			if (this.opts.s3 === false)
+			{
+				this.dragUploadAjax(this.opts.imageUpload, file, true, progress, e, this.opts.imageUploadParam);
+			}
+			else
+			{
+				this.s3uploadFile(file);
+			}
 
 		},
 		buildEventPaste: function(e)
@@ -1145,13 +1199,13 @@
 
 			if (this.opts.cleanup)
 			{
-				rtePaste = true;
+				this.rtePaste = true;
 
 				this.selectionSave();
 
 				if (!this.selectall)
 				{
-					if (this.opts.autoresize === true )
+					if (this.opts.autoresize === true && this.fullscreen !== true)
 					{
 						this.$editor.height(this.$editor.height());
 						this.saveScroll = this.document.body.scrollTop;
@@ -1174,7 +1228,7 @@
 					var html = this.getFragmentHtml(pastedFrag);
 					this.pasteClean(html);
 
-					if (this.opts.autoresize === true) this.$editor.css('height', 'auto');
+					if (this.opts.autoresize === true && this.fullscreen !== true) this.$editor.css('height', 'auto');
 
 				}, this), 1);
 			}
@@ -1183,6 +1237,8 @@
 		{
 			var event = e.originalEvent || e;
 			this.clipboardFilePaste = false;
+
+			if (typeof(event.clipboardData) === 'undefined') return false;
 			if (event.clipboardData.items)
 			{
 				var file = event.clipboardData.items[0].getAsFile();
@@ -1204,7 +1260,7 @@
 		},
 		buildEventKeydown: function(e)
 		{
-			if (rtePaste) return false;
+			if (this.rtePaste) return false;
 
 			var key = e.which;
 			var ctrl = e.ctrlKey || e.metaKey;
@@ -1227,8 +1283,17 @@
 			// down
 			if (key === this.keyCode.DOWN)
 			{
-				if (parent && $(parent).get(0).tagName === 'BLOCKQUOTE') this.insertAfterLastElement(parent);
-				if (current && $(current).get(0).tagName === 'BLOCKQUOTE') this.insertAfterLastElement(current);
+				if (parent && $(parent)[0].tagName === 'BLOCKQUOTE') this.insertAfterLastElement(parent);
+				if (current && $(current)[0].tagName === 'BLOCKQUOTE') this.insertAfterLastElement(current);
+
+				if (parent && $(parent)[0].tagName === 'P' && $(parent).parent()[0].tagName == 'BLOCKQUOTE')
+				{
+					this.insertAfterLastElement(parent, $(parent).parent()[0]);
+				}
+				if (current && $(current)[0].tagName === 'P' && parent && $(parent)[0].tagName == 'BLOCKQUOTE')
+				{
+					this.insertAfterLastElement(current, parent);
+				}
 			}
 
 			// shortcuts setup
@@ -1259,7 +1324,7 @@
 			if (key == this.keyCode.ENTER && !e.shiftKey && !e.ctrlKey && !e.metaKey )
 			{
 				// In ie, opera in the tables are created paragraphs, fix it.
-				if (parent.nodeType == 1 && (parent.tagName == 'TD' || parent.tagName == 'TH'))
+				if (this.browser('msie') && (parent.nodeType == 1 && (parent.tagName == 'TD' || parent.tagName == 'TH')))
 				{
 					e.preventDefault();
 					this.bufferSet();
@@ -1268,22 +1333,49 @@
 					return false;
 				}
 
-				// pre
-				if (pre === true)
+				// blockquote exit
+				if (block && (block.tagName == 'BLOCKQUOTE' || $(block).parent()[0].tagName == 'BLOCKQUOTE'))
 				{
-					e.preventDefault();
-					this.bufferSet();
-					var html = $(current).parent().text();
-					this.insertNode(document.createTextNode('\n'));
-					if (html.search(/\s$/) == -1)
+					if (this.isEndOfElement())
 					{
-						this.insertNode(document.createTextNode('\n'));
-					}
+						if (this.dblEnter == 1)
+						{
+							var element;
+							var last;
+							if (block.tagName == 'BLOCKQUOTE')
+							{
+								last = 'br';
+								element = block;
+							}
+							else
+							{
+								last = 'p';
+								element = $(block).parent()[0];
+							}
 
-					this.sync();
-					this.callback('enter', e);
-					return false;
+							e.preventDefault();
+							this.insertingAfterLastElement(element);
+							this.dblEnter = 0;
+
+							if (last == 'p')
+							{
+								$(block).parent().find('p').last().remove();
+							}
+							else
+							{
+								var tmp = $.trim($(block).html());
+								$(block).html(tmp.replace(/<br\s?\/?>$/i, ''));
+							}
+
+							return;
+						}
+						else this.dblEnter++;
+					}
+					else this.dblEnter++;
 				}
+
+				// pre
+				if (pre === true) return this.buildEventKeydownPre(e, current);
 				else
 				{
 					if (!this.opts.linebreaks)
@@ -1363,49 +1455,75 @@
 			}
 
 			// tab
-			if (key === this.keyCode.TAB && this.opts.shortcuts )
-			{
-				if (!this.opts.tabFocus) return true;
-				if (this.isEmpty(this.get())) return true;
-
-				e.preventDefault();
-
-				if (pre === true && !e.shiftKey)
-				{
-					this.bufferSet();
-					this.insertNode(document.createTextNode('\t'));
-					this.sync();
-					return false;
-				}
-				else
-				{
-					if (!e.shiftKey) this.indentingIndent();
-					else this.indentingOutdent();
-				}
-
-				return false;
-			}
+			if (key === this.keyCode.TAB && this.opts.shortcuts) return this.buildEventKeydownTab(e, pre);
 
 			// delete zero-width space before the removing
-			if (key === this.keyCode.BACKSPACE)
+			if (key === this.keyCode.BACKSPACE) this.buildEventKeydownBackspace(current);
+
+		},
+		buildEventKeydownPre: function(e, current)
+		{
+			e.preventDefault();
+			this.bufferSet();
+			var html = $(current).parent().text();
+			this.insertNode(document.createTextNode('\n'));
+			if (html.search(/\s$/) == -1)
 			{
-				if (typeof current.tagName !== 'undefined' && /^(H[1-6])$/i.test(current.tagName))
-				{
-					var node;
-					if (this.opts.linebreaks === false) node = $('<p>' + this.opts.invisibleSpace + '</p>');
-					else node = $('<br>' + this.opts.invisibleSpace);
+				this.insertNode(document.createTextNode('\n'));
+			}
 
-					$(current).replaceWith(node);
-					this.selectionStart(node);
-				}
+			this.sync();
+			this.callback('enter', e);
+			return false;
+		},
+		buildEventKeydownTab: function(e, pre)
+		{
+			if (!this.opts.tabFocus) return true;
+			if (this.isEmpty(this.get()) && this.opts.tabSpaces === false) return true;
 
-				if (typeof current.nodeValue !== 'undefined' && current.nodeValue !== null)
+			e.preventDefault();
+
+			if (pre === true && !e.shiftKey)
+			{
+				this.bufferSet();
+				this.insertNode(document.createTextNode('\t'));
+				this.sync();
+				return false;
+
+			}
+			else if (this.opts.tabSpaces !== false)
+			{
+				this.bufferSet();
+				this.insertNode(document.createTextNode(Array(this.opts.tabSpaces + 1).join('\u00a0')));
+				this.sync();
+				return false;
+			}
+			else
+			{
+				if (!e.shiftKey) this.indentingIndent();
+				else this.indentingOutdent();
+			}
+
+			return false;
+		},
+		buildEventKeydownBackspace: function(current)
+		{
+			if (typeof current.tagName !== 'undefined' && /^(H[1-6])$/i.test(current.tagName))
+			{
+				var node;
+				if (this.opts.linebreaks === false) node = $('<p>' + this.opts.invisibleSpace + '</p>');
+				else node = $('<br>' + this.opts.invisibleSpace);
+
+				$(current).replaceWith(node);
+				this.selectionStart(node);
+			}
+
+			if (typeof current.nodeValue !== 'undefined' && current.nodeValue !== null)
+			{
+				//var value = $.trim(current.nodeValue.replace(/[^\u0000-\u1C7F]/g, ''));
+				if (current.remove && current.nodeType === 3 && current.nodeValue.match(/[^/\u200B]/g) == null)
 				{
-					var value = $.trim(current.nodeValue.replace(/[^\u0000-\u1C7F]/g, ''));
-					if (current.remove && current.nodeType === 3 && current.nodeValue.charCodeAt(0) == 8203 && value == '')
-					{
-						current.remove();
-					}
+					current.remove();
 				}
 			}
 		},
@@ -1419,7 +1537,7 @@
 		},
 		buildEventKeyup: function(e)
 		{
-			if (rtePaste) return false;
+			if (this.rtePaste) return false;
 
 			var key = e.which;
 			var parent = this.getParent();
@@ -1441,22 +1559,27 @@
 			// convert links
 			if ((this.opts.convertLinks || this.opts.convertImageLinks || this.opts.convertVideoLinks) && key === this.keyCode.ENTER)
 			{
-				this.formatLinkify(this.opts.linkProtocol, this.opts.convertLinks, this.opts.convertImageLinks, this.opts.convertVideoLinks);
-
-				if (this.opts.convertImageLinks)
-				{
-					this.observeImages();
-				}
+				this.buildEventKeyupConverters();
 			}
 
 			// if empty
-			if (this.opts.linebreaks === false && (key === this.keyCode.DELETE || key === this.keyCode.BACKSPACE))
+			if (key === this.keyCode.DELETE || key === this.keyCode.BACKSPACE)
 			{
 				return this.formatEmpty(e);
 			}
 
 			this.callback('keyup', e);
 			this.sync();
+		},
+		buildEventKeyupConverters: function()
+		{
+			this.formatLinkify(this.opts.linkProtocol, this.opts.convertLinks, this.opts.convertImageLinks, this.opts.convertVideoLinks, this.opts.linkSize);
+
+			setTimeout($.proxy(function()
+			{
+				if (this.opts.convertImageLinks) this.observeImages();
+				if (this.opts.observeLinks) this.observeLinks();
+			}, this), 5);
 		},
 		buildPlugins: function()
 		{
@@ -1602,6 +1725,10 @@
 				// place the cursor inside emptyHtml
 				this.selectionStart(this.$editor.children()[0]);
 			}
+			else
+			{
+				this.focus();
+			}
 
 			this.sync();
 		},
@@ -1683,88 +1810,94 @@
 			sel.addRange(range);
 		},
 
-
 		// TOGGLE
 		toggle: function(direct)
 		{
-			var html;
-			if (this.opts.visual)
-			{
-				if (direct !== false) this.selectionSave();
+			if (this.opts.visual) this.toggleCode(direct);
+			else this.toggleVisual();
+		},
+		toggleVisual: function()
+		{
+			var html = this.$source.hide().val();
 
-				var height = null;
-				if (this.opts.iframe)
-				{
-					height = this.$frame.height();
-					if (this.opts.fullpage) this.$editor.removeAttr('contenteditable');
-					this.$frame.hide();
-				}
+			if (typeof this.modified !== 'undefined')
+			{
+				this.modified = this.cleanRemoveSpaces(this.modified, false) !== this.cleanRemoveSpaces(html, false);
+			}
+
+			if (this.modified)
+			{
+				// don't remove the iframe even if cleared all.
+				if (this.opts.fullpage && html === '') this.setFullpageOnInit(html);
 				else
 				{
-					height = this.$editor.innerHeight();
-					this.$editor.hide();
+					this.set(html);
+					if (this.opts.fullpage) this.buildBindKeyboard();
 				}
+			}
 
-				html = this.$source.val();
-				this.modified = html;
+			if (this.opts.iframe) this.$frame.show();
+			else this.$editor.show();
 
-				this.$source.height(height).show().focus();
+			if (this.opts.fullpage) this.$editor.attr('contenteditable', true );
 
-				// textarea indenting
-				this.$source.on('keydown.redactor-textarea', function (e)
-				{
-					if (e.keyCode === 9)
-					{
-						var $el = $(this);
-						var start = $el.get(0).selectionStart;
-						$el.val($el.val().substring(0, start) + "\t" + $el.val().substring($el.get(0).selectionEnd));
-						$el.get(0).selectionStart = $el.get(0).selectionEnd = start + 1;
-						return false;
-					}
-				});
+			this.$source.off('keydown.redactor-textarea-indenting');
 
-				this.buttonInactiveVisual();
-				this.buttonActive('html');
-				this.opts.visual = false;
+			this.$editor.focus();
+			this.selectionRestore();
 
+			this.observeStart();
+			this.buttonActiveVisual();
+			this.buttonInactive('html');
+			this.opts.visual = true;
+		},
+		toggleCode: function(direct)
+		{
+			if (direct !== false) this.selectionSave();
+
+			var height = null;
+			if (this.opts.iframe)
+			{
+				height = this.$frame.height();
+				if (this.opts.fullpage) this.$editor.removeAttr('contenteditable');
+				this.$frame.hide();
 			}
 			else
 			{
-				html = this.$source.hide().val();
+				height = this.$editor.innerHeight();
+				this.$editor.hide();
+			}
 
-				if (typeof this.modified !== 'undefined')
-				{
-					this.modified = this.cleanRemoveSpaces(this.modified, false) !== this.cleanRemoveSpaces(html, false);
-				}
+			var html = this.$source.val();
 
-				if (this.modified)
-				{
-					// don't remove the iframe even if cleared all.
-					if (this.opts.fullpage && html === '') this.setFullpageOnInit(html);
-					else
-					{
-						this.set(html);
-						if (this.opts.fullpage) this.buildBindKeyboard();
-					}
-				}
+			// tidy html
+			if (html !== '' && this.opts.tidyHtml)
+			{
+				this.$source.val(this.cleanHtml(html));
+			}
 
-				if (this.opts.iframe) this.$frame.show();
-				else this.$editor.show();
+			this.modified = html;
 
-				if (this.opts.fullpage ) this.$editor.attr('contenteditable', true );
+			this.$source.height(height).show().focus();
 
-				this.$source.off('keydown.redactor-textarea');
+			// textarea indenting
+			this.$source.on('keydown.redactor-textarea-indenting', this.textareaIndenting);
 
-				this.$editor.focus();
-				this.selectionRestore();
-
-				this.observeStart();
-				this.buttonActiveVisual();
-				this.buttonInactive('html');
-				this.opts.visual = true;
+			this.buttonInactiveVisual();
+			this.buttonActive('html');
+			this.opts.visual = false;
+		},
+		textareaIndenting: function(e)
+		{
+			if (e.keyCode === 9)
+			{
+				var $el = $(this);
+				var start = $el.get(0).selectionStart;
+				$el.val($el.val().substring(0, start) + "\t" + $el.val().substring($el.get(0).selectionEnd));
+				$el.get(0).selectionStart = $el.get(0).selectionEnd = start + 1;
+				return false;
 			}
 		},
-
 
 		// AUTOSAVE
 		autosave: function()
@@ -1930,7 +2063,6 @@
 				var text = this.getSelectionText();
 
 				if (e.type === 'mouseup' && text != '') this.airShow(e);
-
 				if (e.type === 'keyup' && e.shiftKey && text != '')
 				{
 					var $focusElem = $(this.getElement(this.getSelection().focusNode)), offset = $focusElem.offset();
@@ -2091,21 +2223,23 @@
 					keyPosition = $button.offset();
 				}
 
+				// fix right placement
+				var dropdownWidth = $dropdown.width();
+				if ((keyPosition.left + dropdownWidth) > $(document).width())
+				{
+					keyPosition.left -= dropdownWidth;
+				}
+
 				var left = keyPosition.left + 'px';
 				var btnHeight = 29;
 
-				if (this.opts.air)
-				{
-					$dropdown.css({ position: 'absolute', left: left, top: btnHeight + 'px' }).show();
-				}
-				else if (this.opts.toolbarFixed && this.toolbarFixed)
-				{
-					$dropdown.css({ position: 'fixed', left: left, top: btnHeight + 'px' }).show();
-				}
-				else
-				{
-					$dropdown.css({ position: 'absolute', left: left, top: keyPosition.top + btnHeight + 'px' }).show();
-				}
+				var position = 'absolute';
+				var top = btnHeight + 'px';
+
+				if (this.opts.toolbarFixed && this.toolbarFixed) position = 'fixed';
+				else if (!this.opts.air) top = keyPosition.top + btnHeight + 'px';
+
+				$dropdown.css({ position: position, left: left, top: top }).show();
 			}
 
 
@@ -2119,6 +2253,7 @@
 			this.$editor.one('click', hdlHideDropDown);
 
 			e.stopPropagation();
+			this.$editor.focus();
 		},
 		dropdownHideAll: function()
 		{
@@ -2137,7 +2272,7 @@
 		// BUTTONS
 		buttonBuild: function(btnName, btnObject)
 		{
-			var $button = $('<a href="javascript:;" title="' + btnObject.title + '" class="redactor_btn redactor_btn_' + btnName + '"></a>');
+			var $button = $('<a href="javascript:;" title="' + btnObject.title + '" tabindex="-1" class="redactor_btn redactor_btn_' + btnName + '"></a>');
 
 			$button.on('click', $.proxy(function(e)
 			{
@@ -2361,14 +2496,47 @@
 		},
 
 		// EXEC
+		execPasteFrag: function(html)
+		{
+			var sel = this.getSelection();
+			if (sel.getRangeAt && sel.rangeCount)
+			{
+            	range = sel.getRangeAt(0);
+				range.deleteContents();
+
+				var el = document.createElement("div");
+				el.innerHTML = html;
+				var frag = document.createDocumentFragment(), node, lastNode;
+				while ((node = el.firstChild))
+				{
+	                lastNode = frag.appendChild(node);
+				}
+
+				var firstNode = frag.firstChild;
+				range.insertNode(frag);
+
+				if (lastNode)
+				{
+	                range = range.cloneRange();
+	                range.setStartAfter(lastNode);
+                    range.collapse(true);
+	                sel.removeAllRanges();
+	                sel.addRange(range);
+				}
+			}
+		},
 		exec: function(cmd, param, sync)
 		{
 			if (cmd === 'formatblock' && this.browser('msie')) param = '<' + param + '>';
 
 			if (cmd === 'inserthtml' && this.browser('msie'))
 			{
-				this.$editor.focus();
-				this.document.selection.createRange().pasteHTML(param);
+				if (!this.isIe11())
+				{
+					this.$editor.focus();
+					this.document.selection.createRange().pasteHTML(param);
+				}
+				else this.execPasteFrag(param);
 			}
 			else
 			{
@@ -2393,128 +2561,144 @@
 				return;
 			}
 
-			// stop formatting pre
-			if (this.currentOrParentIs('PRE') && !this.opts.formattingPre)
+			// Stop formatting pre
+			if (this.currentOrParentIs('PRE') && !this.opts.formattingPre) return false;
+
+			// Lists
+			if (cmd === 'insertunorderedlist' || cmd === 'insertorderedlist') return this.execLists(cmd, param);
+
+			// Unlink
+			if (cmd === 'unlink') return this.execUnlink(cmd, param);
+
+			// Usual exec
+			this.exec(cmd, param, sync);
+
+			// Line
+			if (cmd === 'inserthorizontalrule') this.$editor.find('hr').removeAttr('id');
+
+		},
+		execUnlink: function(cmd, param)
+		{
+			this.bufferSet();
+
+			var link = this.currentOrParentIs('A');
+			if (link)
 			{
-				return false;
-			}
-
-			if (cmd === 'insertunorderedlist' || cmd === 'insertorderedlist')
-			{
-				this.bufferSet();
-
-				var parent = this.getParent();
-				var $list = $(parent).closest('ol, ul');
-				var remove = false;
-
-				if ($list.length)
-				{
-					remove = true;
-					var listTag = $list[0].tagName;
-				 	if ((cmd === 'insertunorderedlist' && listTag === 'OL')
-				 	|| (cmd === 'insertorderedlist' && listTag === 'UL'))
-				 	{
-					 	remove = false;
-					}
-				}
-
-				this.selectionSave();
-
-				// remove lists
-				if (remove)
-				{
-					var nodes = this.getNodes();
-					var elems = this.getBlocks(nodes);
-
-					if (typeof nodes[0] != 'undefined' && nodes.length > 1 && nodes[0].nodeType == 3)
-					{
-						// fix the adding the first li to the array
-						elems.unshift(this.getBlock());
-					}
-
-					var data = '', replaced = '';
-					$.each(elems, $.proxy(function(i,s)
-					{
-						if (s.tagName == 'LI')
-						{
-							var $s = $(s);
-							var cloned = $s.clone();
-							cloned.find('ul', 'ol').remove();
-
-							if (this.opts.linebreaks === false) data += this.outerHtml($('<p>').append(cloned.contents()));
-							else data += cloned.html() + '<br>';
-
-							if (i == 0)
-							{
-								$s.addClass('redactor-replaced').empty();
-								replaced = this.outerHtml($s);
-							}
-							else $s.remove();
-						}
-
-					}, this));
-
-					html = this.$editor.html().replace(replaced, '</' + listTag + '>' + data + '<' + listTag + '>');
-
-					this.$editor.html(html);
-					this.$editor.find(listTag + ':empty').remove();
-
-				}
-
-				// insert lists
-				else
-				{
-					this.document.execCommand(cmd);
-
-					var parent = this.getParent();
-					var $list = $(parent).closest('ol, ul');
-
-					if ($list.length)
-					{
-						if ((this.browser('msie') || this.browser('mozilla')) && parent.tagName !== 'LI')
-						{
-							$(parent).replaceWith($(parent).html());
-						}
-
-						var $listParent = $list.parent();
-						if (this.isParentRedactor($listParent) && this.nodeTestBlocks($listParent[0]))
-						{
-							$listParent.replaceWith($listParent.contents());
-						}
-					}
-
-					if (this.browser('mozilla')) this.$editor.focus();
-
-				}
-
-				this.selectionRestore();
+				$(link).replaceWith($(link).text());
 
 				this.sync();
 				this.callback('execCommand', cmd, param);
 				return;
 			}
+		},
+		execLists: function(cmd, param)
+		{
+			this.bufferSet();
 
-			if (cmd === 'unlink')
+			var parent = this.getParent();
+			var $list = $(parent).closest('ol, ul');
+			var remove = false;
+
+			if ($list.length)
 			{
-				this.bufferSet();
-
-				var link = this.currentOrParentIs('A');
-				if (link)
-				{
-					$(link).replaceWith($(link).text());
-
-					this.sync();
-					this.callback('execCommand', cmd, param);
-					return;
+				remove = true;
+				var listTag = $list[0].tagName;
+			 	if ((cmd === 'insertunorderedlist' && listTag === 'OL')
+			 	|| (cmd === 'insertorderedlist' && listTag === 'UL'))
+			 	{
+				 	remove = false;
 				}
 			}
 
-			this.exec(cmd, param, sync);
+			this.selectionSave();
 
-			if (cmd === 'inserthorizontalrule')
+			// remove lists
+			if (remove)
 			{
-				this.$editor.find('hr').removeAttr('id');
+				var nodes = this.getNodes();
+				var elems = this.getBlocks(nodes);
+
+				if (typeof nodes[0] != 'undefined' && nodes.length > 1 && nodes[0].nodeType == 3)
+				{
+					// fix the adding the first li to the array
+					elems.unshift(this.getBlock());
+				}
+
+				var data = '', replaced = '';
+				$.each(elems, $.proxy(function(i,s)
+				{
+					if (s.tagName == 'LI')
+					{
+						var $s = $(s);
+						var cloned = $s.clone();
+						cloned.find('ul', 'ol').remove();
+
+						if (this.opts.linebreaks === false) data += this.outerHtml($('<p>').append(cloned.contents()));
+						else data += cloned.html() + '<br>';
+
+						if (i == 0)
+						{
+							$s.addClass('redactor-replaced').empty();
+							replaced = this.outerHtml($s);
+						}
+						else $s.remove();
+					}
+
+				}, this));
+
+				html = this.$editor.html().replace(replaced, '</' + listTag + '>' + data + '<' + listTag + '>');
+
+				this.$editor.html(html);
+				this.$editor.find(listTag + ':empty').remove();
+
 			}
+
+			// insert lists
+			else
+			{
+				var firstParent = this.getParent();
+
+				this.document.execCommand(cmd);
+
+				var parent = this.getParent();
+				var $list = $(parent).closest('ol, ul');
+
+				if (firstParent && firstParent.tagName == 'TD')
+				{
+					$list.wrapAll('<td>');
+				}
+
+				if ($list.length)
+				{
+					// focus fix
+					var li = $list.children().first();
+					if ($.trim($(li).text()) == '')
+					{
+						var marker = $('<span id="selection-marker-1"></span>');
+						$(li).prepend(marker);
+					}
+
+					if ((this.browser('msie') || this.browser('mozilla')) && parent.tagName !== 'LI')
+					{
+						$(parent).replaceWith($(parent).html());
+					}
+
+					var $listParent = $list.parent();
+					if (this.isParentRedactor($listParent) && this.nodeTestBlocks($listParent[0]))
+					{
+						$listParent.replaceWith($listParent.contents());
+					}
+				}
+
+				if (this.browser('mozilla')) this.$editor.focus();
+			}
+
+			this.selectionRestore();
+			$(marker).remove();
+
+			this.sync();
+			this.callback('execCommand', cmd, param);
+			return;
 		},
 
 		// INDENTING
@@ -2535,7 +2719,6 @@
 				var block = this.getBlock();
 
 				this.selectionSave();
-
 
 				if (block && block.tagName == 'LI')
 				{
@@ -2661,6 +2844,8 @@
 				this.selectionRestore();
 			}
 
+			this.sync();
+
 		},
 		insideOutdent: function (li, index, elems)
 		{
@@ -2686,6 +2871,82 @@
 					}
 				}
 			}
+		},
+
+		// ALIGNMENT
+		alignmentLeft: function()
+		{
+			this.alignmentSet('', 'JustifyLeft');
+		},
+		alignmentRight: function()
+		{
+			this.alignmentSet('right', 'JustifyRight');
+		},
+		alignmentCenter: function()
+		{
+			this.alignmentSet('center', 'JustifyCenter');
+		},
+		alignmentJustify: function()
+		{
+			this.alignmentSet('justify', 'JustifyFull');
+		},
+		alignmentSet: function(type, cmd)
+		{
+			this.bufferSet();
+
+			if (this.oldIE())
+			{
+				this.document.execCommand(cmd, false, false);
+				return true;
+			}
+
+			this.selectionSave();
+
+			var block = this.getBlock();
+			if (!block && this.opts.linebreaks)
+			{
+				// one element
+				this.exec('formatBlock', 'blockquote');
+				var newblock = this.getBlock();
+				var block = $('<div data-tagblock="">').html($(newblock).html());
+				$(newblock).replaceWith(block);
+
+				$(block).css('text-align', type);
+				this.removeEmptyAttr(block, 'style');
+
+				if (type == '' && typeof($(block).data('tagblock')) !== 'undefined')
+				{
+					$(block).replaceWith($(block).html());
+				}
+			}
+			else
+			{
+				var elements = this.getBlocks();
+				$.each(elements, $.proxy(function(i, elem)
+				{
+					var $el = false;
+
+					if ($.inArray(elem.tagName, this.opts.alignmentTags) !== -1)
+					{
+						$el = $(elem);
+					}
+					else
+					{
+						$el = $(elem).closest(this.opts.alignmentTags.toString().toLowerCase(), this.$editor[0]);
+					}
+
+					if ($el)
+					{
+						$el.css('text-align', type);
+						this.removeEmptyAttr($el, 'style');
+					}
+
+				}, this));
+			}
+
+			this.selectionRestore();
+
+			this.sync();
 		},
 
 		// CLEAN
@@ -2826,9 +3087,10 @@
 
 			html = html + "\n";
 
+
 			var safes = [];
 			var matches = html.match(/<(table|div|pre|object)(.*?)>([\w\W]*?)<\/(table|div|pre|object)>/gi);
-			if (matches === null) matches = [];
+			if (!matches) matches = [];
 
 			var commentsMatches = html.match(/<!--([\w\W]*?)-->/gi);
 			if (commentsMatches) matches = $.merge(matches, commentsMatches);
@@ -2836,10 +3098,7 @@
 			if (this.opts.phpTags)
 			{
 				var phpMatches = html.match(/<section(.*?)rel="redactor-php-tag">([\w\W]*?)<\/section>/gi);
-				if (phpMatches)
-				{
-					matches = $.merge(matches, phpMatches);
-				}
+				if (phpMatches) matches = $.merge(matches, phpMatches);
 			}
 
 			if (matches)
@@ -2875,22 +3134,16 @@
                 {
 					if (htmls[i].search('{replace') == -1)
 					{
-						html += '<p>' +  htmls[i].replace(/^\n+|\n+$/g, "") + "</p>";
+						htmls[i] = htmls[i].replace(/<p>\n\t<\/p>/gi, '');
+						htmls[i] = htmls[i].replace(/<p><\/p>/gi, '');
+
+						if (htmls[i] != '')
+						{
+							html += '<p>' +  htmls[i].replace(/^\n+|\n+$/g, "") + "</p>";
+						}
 					}
 					else html += htmls[i];
 				}
-			}
-
-			// blockquote
-			if (html.search(/<blockquote/gi) !== -1)
-			{
-				$.each(html.match(/<blockquote(.*?)>([\w\W]*?)<\/blockquote>/gi), function(i,s)
-				{
-					var str = '';
-					str = s.replace('<p>', '');
-					str = str.replace('</p>', '<br>');
-					html = html.replace(s, str);
-				});
 			}
 
 			html = R('<p>\s*</p>', 'gi', '');
@@ -2913,7 +3166,7 @@
 			html = R('</dt><p>', 'gi', '</dt>');
 			html = R('</dd><p>', 'gi', '</dd>');
 			html = R('<br></p></blockquote>', 'gi', '</blockquote>');
-			html = R('<p>    </p>', 'gi', '');
+			html = R('<p>\t*</p>', 'gi', '');
 
 			// restore safes
 			$.each(safes, function(i,s)
@@ -2923,7 +3176,7 @@
 
 			return $.trim(html);
 		},
-		cleanConvertInlineTags: function(html)
+		cleanConvertInlineTags: function(html, set)
 		{
 			var boldTag = 'strong';
 			if (this.opts.boldTag === 'b') boldTag = 'b';
@@ -2941,11 +3194,13 @@
 			if (this.opts.italicTag === 'em') html = html.replace(/<i>([\w\W]*?)<\/i>/gi, '<em>$1</em>');
 			else html = html.replace(/<em>([\w\W]*?)<\/em>/gi, '<i>$1</i>');
 
-			html = html.replace(/<strike>([\w\W]*?)<\/strike>/gi, '<del>$1</del>');
-
-			if (!/<span(.*?)data-redactor="verified"(.*?)>([\w\W]*?)<\/span>/gi.test(html))
+			if (set !== true)
 			{
-				html = html.replace(/<span(.*?)(?!data-redactor="verified")(.*?)>([\w\W]*?)<\/span>/gi, '<span$1 data-redactor="verified"$2>$3</span>');
+				html = html.replace(/<strike>([\w\W]*?)<\/strike>/gi, '<del>$1</del>');
+			}
+			else
+			{
+				html = html.replace(/<del>([\w\W]*?)<\/del>/gi, '<strike>$1</strike>');
 			}
 
 			return html;
@@ -2981,7 +3236,11 @@
 					var arr = s.match(/<(pre|code)(.*?)>([\w\W]*?)<\/(pre|code)>/i);
 
 					arr[3] = arr[3].replace(/&nbsp;/g, ' ');
+
 					if (encode !== false) arr[3] = this.cleanEncodeEntities(arr[3]);
+
+					// $ fix
+					arr[3] = arr[3].replace(/\$/g, '&#36;');
 
 					html = html.replace(s, '<' + arr[1] + arr[2] + '>' + arr[3] + '</' + arr[1] + '>');
 
@@ -2993,26 +3252,21 @@
 		cleanEncodeEntities: function(str)
 		{
 			str = String(str).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-			return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 		},
 		cleanUnverified: function()
 		{
 			// label, abbr, mark, meter, code, q, dfn, ins, time, kbd, var
-
 			var $elem = this.$editor.find('li, img, a, b, strong, sub, sup, i, em, u, small, strike, del, span, cite');
 
-			$elem.not('[data-redactor="verified"]').filter('[style*="font-size"][style*="line-height"]')
-			.css('font-size', '')
-			.css('line-height', '');
-
-			$elem.not('[data-redactor="verified"]').filter('[style*="background-color: transparent;"][style*="line-height"]')
+			$elem.filter('[style*="background-color: transparent;"][style*="line-height"]')
 			.css('background-color', '')
 			.css('line-height', '');
 
-			$elem.not('[data-redactor="verified"]').filter('[style*="background-color: transparent;"]')
+			$elem.filter('[style*="background-color: transparent;"]')
 			.css('background-color', '');
 
-			$elem.not('[data-redactor="verified"]').css('line-height', '');
+			$elem.css('line-height', '');
 
 			$.each($elem, $.proxy(function(i,s)
 			{
@@ -3204,97 +3458,33 @@
 			return out;
 		},
 
-		// ALIGNMENT
-		alignmentLeft: function()
-		{
-			this.alignmentSet('', 'JustifyLeft');
-		},
-		alignmentRight: function()
-		{
-			this.alignmentSet('right', 'JustifyRight');
-		},
-		alignmentCenter: function()
-		{
-			this.alignmentSet('center', 'JustifyCenter');
-		},
-		alignmentJustify: function()
-		{
-			this.alignmentSet('justify', 'JustifyFull');
-		},
-		alignmentSet: function(type, cmd)
-		{
-			this.bufferSet();
-
-			if (this.oldIE())
-			{
-				this.document.execCommand(cmd, false, false);
-				return true;
-			}
-
-			this.selectionSave();
-
-			var block = this.getBlock();
-			if (!block && this.opts.linebreaks)
-			{
-				// one element
-				this.exec('formatBlock', 'blockquote');
-				var newblock = this.getBlock();
-				var block = $('<div data-tagblock="">').html($(newblock).html());
-				$(newblock).replaceWith(block);
-
-				$(block).css('text-align', type);
-				this.removeEmptyAttr(block, 'style');
-
-				if (type == '' && typeof($(block).data('tagblock')) !== 'undefined')
-				{
-					$(block).replaceWith($(block).html());
-				}
-			}
-			else
-			{
-				var elements = this.getBlocks();
-				$.each(elements, $.proxy(function(i, elem)
-				{
-					var $el = false;
-
-					if ($.inArray(elem.tagName, this.opts.alignmentTags) !== -1)
-					{
-						$el = $(elem);
-					}
-					else
-					{
-						$el = $(elem).closest(this.opts.alignmentTags.toString().toLowerCase(), this.$editor[0]);
-					}
-
-					if ($el)
-					{
-						$el.css('text-align', type);
-						this.removeEmptyAttr($el, 'style');
-					}
-
-				}, this));
-			}
-
-			this.selectionRestore();
-
-			this.sync();
-		},
-
 		// FORMAT
 		formatEmpty: function(e)
 		{
 			var html = $.trim(this.$editor.html());
 
-			html = html.replace(/<br\s?\/?>/i, '');
-			var thtml = html.replace(/<p>\s?<\/p>/gi, '');
-
-			if (html === '' || thtml === '')
+			if (this.opts.linebreaks)
 			{
-				e.preventDefault();
+				if (html == '')
+				{
+					e.preventDefault();
+					this.$editor.html('');
+					this.focus();
+				}
+			}
+			else
+			{
+				html = html.replace(/<br\s?\/?>/i, '');
+				var thtml = html.replace(/<p>\s?<\/p>/gi, '');
 
-				var node = $(this.opts.emptyHtml).get(0);
-				this.$editor.html(node);
-				this.focus();
+				if (html === '' || thtml === '')
+				{
+					e.preventDefault();
+
+					var node = $(this.opts.emptyHtml).get(0);
+					this.$editor.html(node);
+					this.focus();
+				}
 			}
 
 			this.sync();
@@ -3310,7 +3500,29 @@
 			{
 				if (node.tagName !== 'LI')
 				{
-					this.formatBlock(tag, node);
+					var parent = $(node).parent();
+
+					if (tag === 'p')
+					{
+						if ((node.tagName === 'P'
+						&& parent.size() != 0
+						&& parent[0].tagName === 'BLOCKQUOTE')
+						||
+						node.tagName === 'BLOCKQUOTE')
+						{
+							this.formatQuote();
+							return;
+						}
+						else if (this.opts.linebreaks) return;
+						else
+						{
+							this.formatBlock(tag, node);
+						}
+					}
+					else
+					{
+						this.formatBlock(tag, node);
+					}
 				}
 
 			}, this));
@@ -3350,8 +3562,15 @@
 			}
 			else
 			{
+				var parent = this.getParent();
+
 				var node = $('<' + tag + '>').append(contents);
 				$(block).replaceWith(node);
+
+				if (parent && parent.tagName == 'TD')
+				{
+					$(node).wrapAll('<td>');
+				}
 			}
 		},
 		formatChangeTag: function(fromElement, toTagName, save)
@@ -3371,18 +3590,80 @@
 		{
 			this.bufferSet();
 
+			// paragraphy
 			if (this.opts.linebreaks === false)
 			{
 				this.selectionSave();
 
 				var blocks = this.getBlocks();
+
+				var blockquote = false;
+				var blocksLen = blocks.length;
 				if (blocks)
 				{
+					var data = '';
+					var replaced = '';
+					var replace = false;
+					var paragraphsOnly = true;
+
+					$.each(blocks, function(i,s)
+					{
+						if (s.tagName !== 'P') paragraphsOnly = false;
+					});
+
 					$.each(blocks, $.proxy(function(i,s)
 					{
 						if (s.tagName === 'BLOCKQUOTE')
 						{
 							this.formatBlock('p', s, false);
+						}
+						else if (s.tagName === 'P')
+						{
+							blockquote = $(s).parent();
+							// from blockquote
+							if (blockquote[0].tagName == 'BLOCKQUOTE')
+							{
+								var count = $(blockquote).children('p').size();
+
+								// one
+								if (count == 1)
+								{
+									$(blockquote).replaceWith(s);
+								}
+								// all
+								else if (count == blocksLen)
+								{
+									replace = 'blockquote';
+									data += this.outerHtml(s);
+								}
+								// some
+								else
+								{
+									replace = 'html';
+									data += this.outerHtml(s);
+
+									if (i == 0)
+									{
+										$(s).addClass('redactor-replaced').empty();
+										replaced = this.outerHtml(s);
+									}
+									else $(s).remove();
+								}
+							}
+							// to blockquote
+							else
+							{
+								if (paragraphsOnly === false || blocks.length == 1)
+								{
+									this.formatBlock('blockquote', s, false);
+								}
+								else
+								{
+									replace = 'paragraphs';
+									data += this.outerHtml(s);
+								}
+							}
+
 						}
 						else if (s.tagName !== 'LI')
 						{
@@ -3390,6 +3671,29 @@
 						}
 
 					}, this));
+
+					if (replace)
+					{
+						if (replace == 'paragraphs')
+						{
+							$(blocks[0]).replaceWith('<blockquote>' + data + '</blockquote>');
+							$(blocks).remove();
+						}
+						else if (replace == 'blockquote')
+						{
+							$(blockquote).replaceWith(data);
+						}
+						else if (replace == 'html')
+						{
+							var html = this.$editor.html().replace(replaced, '</blockquote>' + data + '<blockquote>');
+
+							this.$editor.html(html);
+							this.$editor.find('blockquote').each(function()
+							{
+								if ($.trim($(this).html()) == '') $(this).remove();
+							})
+						}
+					}
 				}
 
 				this.selectionRestore();
@@ -3402,9 +3706,34 @@
 				{
 					this.selectionSave();
 
-					$(block).replaceWith($(block).html() + '<br>');
+					var html = $.trim($(block).html());
+					var selection = $.trim(this.getSelectionHtml());
+
+					html = html.replace(/<span(.*?)id="selection-marker(.*?)<\/span>/gi, '');
+
+					if (html == selection)
+					{
+						$(block).replaceWith($(block).html() + '<br>');
+					}
+					else
+					{
+						// replace
+						this.inlineFormat('tmp');
+						var tmp = this.$editor.find('tmp');
+						tmp.empty();
+
+						var newhtml = this.$editor.html().replace('<tmp></tmp>', '</blockquote><span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>' + selection + '<blockquote>');
+
+						this.$editor.html(newhtml);
+						tmp.remove();
+						this.$editor.find('blockquote').each(function()
+						{
+							if ($.trim($(this).html()) == '') $(this).remove();
+						})
+					}
 
 					this.selectionRestore();
+					this.$editor.find('span#selection-marker-1').attr('id', false);
 				}
 				else
 				{
@@ -3439,8 +3768,7 @@
 			this.sync();
 		},
 
-
-		// BLOCK CLASS AND STYLE
+		// BLOCK
 		blockRemoveAttr: function(attr, value)
 		{
 			var nodes = this.getBlocks();
@@ -3486,7 +3814,7 @@
 			this.sync();
 		},
 
-		// INLINE CLASS AND STYLE
+		// INLINE
 		inlineRemoveClass: function(className)
 		{
 			this.selectionSave();
@@ -3553,7 +3881,7 @@
 			var range = this.getRange()
 			var el = this.getElement();
 
-			if (range.collapsed || range.startContainer === range.endContainer && el)
+			if ((range.collapsed || range.startContainer === range.endContainer) && el && !this.nodeTestBlocks(el))
 			{
 				$(el)[type](attr, value);
 			}
@@ -3567,26 +3895,31 @@
 					this.inlineSetMethods(type, s, attr, value);
 
 				}, this));
+
 			}
 
 			this.selectionRestore();
-
 			this.sync();
 		},
 		inlineSetMethods: function(type, s, attr, value)
 		{
 			var parent = $(s).parent(), el;
 
-			if (parent && parent[0].tagName === 'SPAN' && parent[0].attributes.length != 0)
+			var selectionHtml = this.getSelectionText();
+			var parentHtml = $(parent).text();
+			var selected = selectionHtml == parentHtml;
+
+			if (selected && parent && parent[0].tagName === 'INLINE' && parent[0].attributes.length != 0)
 			{
 				el = parent;
 				$(s).replaceWith($(s).html());
 			}
 			else
 			{
-				el = $('<span data-redactor="verified" data-redactor-inlineMethods>').append($(s).contents());
+				el = $('<inline>').append($(s).contents());
 				$(s).replaceWith(el);
 			}
+
 
 			$(el)[type](attr, value);
 
@@ -3608,9 +3941,13 @@
 
 			$.each(nodes, $.proxy(function(i, node)
 			{
-				if (!collapsed && node.tagName !== 'SPAN')
+				if (!collapsed && node.tagName !== 'INLINE')
 				{
-					if (node.parentNode.tagName === 'SPAN' && !$(node.parentNode).hasClass('redactor_editor'))
+					var selectionHtml = this.getSelectionText();
+					var parentHtml = $(node).parent().text();
+					var selected = selectionHtml == parentHtml;
+
+					if (selected && node.parentNode.tagName === 'INLINE' && !$(node.parentNode).hasClass('redactor_editor'))
 					{
 						node = node.parentNode;
 					}
@@ -3622,7 +3959,7 @@
 		},
 		inlineUnwrapSpan: function()
 		{
-			var $spans = this.$editor.find('span[data-redactor-inlineMethods]');
+			var $spans = this.$editor.find('inline');
 
 			$.each($spans, $.proxy(function(i, span)
 			{
@@ -3716,18 +4053,22 @@
 				html = '<p>' + html + '</p>';
 			}
 
-			// in the quote, we can insert text or links only
-/*
-			if (currBlock.tagName == 'BLOCKQUOTE' && html.indexOf('<a') === -1)
-			{
-				this.insertText(html);
-			}
-			else
-*/
+			html = this.setSpansVerifiedHtml(html);
+
 			if ($html.contents().length > 1 && currBlock
-					|| $html.contents().is('p, :header, ul, ol, div, table, blockquote, pre, address, section, header, footer, aside, article'))
+			|| $html.contents().is('p, :header, ul, ol, li, div, table, td, blockquote, pre, address, section, header, footer, aside, article'))
 			{
-				if (this.browser('msie')) this.document.selection.createRange().pasteHTML(html);
+				if (this.browser('msie'))
+				{
+					if (!this.isIe11())
+					{
+						this.document.selection.createRange().pasteHTML(html);
+					}
+					else
+					{
+						this.execPasteFrag(html);
+					}
+				}
 				else this.document.execCommand('inserthtml', false, html);
 			}
 			else this.insertHtmlAdvanced(html, false);
@@ -3744,10 +4085,15 @@
 
 			this.observeStart();
 
+			// set no editable
+			this.setNonEditable();
+
 			if (sync !== false) this.sync();
 		},
 		insertHtmlAdvanced: function(html, sync)
 		{
+			html = this.setSpansVerifiedHtml(html);
+
 			var sel = this.getSelection();
 
 			if (sel.getRangeAt && sel.rangeCount)
@@ -3781,6 +4127,26 @@
 			}
 
 		},
+		insertBeforeCursor: function(html)
+		{
+			html = this.setSpansVerifiedHtml(html);
+
+			var node = $(html);
+
+			var space = document.createElement("span");
+			space.innerHTML = "\u200B";
+
+			var range = this.getRange();
+			range.insertNode(space);
+			range.insertNode(node[0]);
+			range.collapse(false);
+
+			var sel = this.getSelection();
+			sel.removeAllRanges();
+			sel.addRange(range);
+
+			this.sync();
+		},
 		insertText: function(html)
 		{
 			var $html = $($.parseHTML(html));
@@ -3789,7 +4155,7 @@
 
 			this.$editor.focus();
 
-			if (this.browser('msie')) this.document.selection.createRange().pasteHTML(html);
+			if (this.browser('msie') && !this.isIe11()) this.document.selection.createRange().pasteHTML(html);
 			else this.document.execCommand('inserthtml', false, html);
 
 			this.sync();
@@ -3797,6 +4163,23 @@
 		insertNode: function(node)
 		{
 			node = node[0] || node;
+
+			if (node.tagName == 'SPAN')
+			{
+				var replacementTag = 'inline';
+
+			    var outer = node.outerHTML;
+
+			    // Replace opening tag
+			    var regex = new RegExp('<' + node.tagName, 'i');
+			    var newTag = outer.replace(regex, '<' + replacementTag);
+
+			    // Replace closing tag
+			    regex = new RegExp('</' + node.tagName, 'i');
+			    newTag = newTag.replace(regex, '</' + replacementTag);
+			    node = $(newTag)[0];
+			}
+
 			var sel = this.getSelection();
 			if (sel.getRangeAt && sel.rangeCount)
 			{
@@ -3838,29 +4221,48 @@
 			}
 
 		},
-		insertAfterLastElement: function(element)
+		insertAfterLastElement: function(element, parent)
 		{
+			if (typeof(parent) != 'undefined') element = parent;
+
 			if (this.isEndOfElement())
 			{
-
-				if ($($.trim(this.$editor.html())).get(0) != $.trim(element)
-				&& this.$editor.contents().last()[0] !== element) return false;
-
-				this.bufferSet();
-
-				if (this.opts.linebreaks === false)
+				if (this.opts.linebreaks)
 				{
-					var node = $(this.opts.emptyHtml);
-					$(element).after(node);
-					this.selectionStart(node);
+					var contents = $('<div>').append($.trim(this.$editor.html())).contents();
+					if (this.outerHtml(contents.last()[0]) != this.outerHtml(element))
+					{
+						return false;
+					}
 				}
 				else
 				{
-					var node = $('<span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>', this.document)[0];
-					$(element).after(node);
-					$(node).after(this.opts.invisibleSpace);
-					this.selectionRestore();
+					if (this.$editor.contents().last()[0] !== element)
+					{
+						return false;
+					}
 				}
+
+				this.insertingAfterLastElement(element);
+			}
+		},
+		insertingAfterLastElement: function(element)
+		{
+			this.bufferSet();
+
+			if (this.opts.linebreaks === false)
+			{
+				var node = $(this.opts.emptyHtml);
+				$(element).after(node);
+				this.selectionStart(node);
+			}
+			else
+			{
+				var node = $('<span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>', this.document)[0];
+				$(element).after(node);
+				$(node).after(this.opts.invisibleSpace);
+				this.selectionRestore();
+				this.$editor.find('span#selection-marker-1').removeAttr('id');
 			}
 		},
 		insertLineBreak: function()
@@ -3888,6 +4290,16 @@
 		{
 			html = this.callback('pasteBefore', false, html);
 
+			// ie10 fix paste links
+			if (this.browser('msie'))
+			{
+				var tmp = $.trim(html);
+				if (tmp.search(/^<a(.*?)>(.*?)<\/a>$/i) == 0)
+				{
+					html = html.replace(/^<a(.*?)>(.*?)<\/a>$/i, "$2");
+				}
+			}
+
 			if (this.opts.pastePlainText)
 			{
 				var tmp = this.document.createElement('div');
@@ -3897,10 +4309,12 @@
 				tmp.innerHTML = html;
 				html = tmp.textContent || tmp.innerText;
 
+				html = $.trim(html);
 				html = html.replace('\n', '<br>');
 				html = this.cleanParagraphy(html);
 
 				this.pasteInsert(html);
+				return false;
 			}
 
 			// clean up pre
@@ -3912,8 +4326,13 @@
 			}
 
 			// ms word list
-			html = html.replace(/<p(.*?)class="MsoListParagraphCxSpFirst"([\w\W]*?)<\/p>/gi, '<ul><p$2</p>');
-			html = html.replace(/<p(.*?)class="MsoListParagraphCxSpLast"([\w\W]*?)<\/p>/gi, '<p$2</p></ul>');
+			html = html.replace(/<p(.*?)class="MsoListParagraphCxSpFirst"([\w\W]*?)<\/p>/gi, '<ul><li$2</li>');
+			html = html.replace(/<p(.*?)class="MsoListParagraphCxSpMiddle"([\w\W]*?)<\/p>/gi, '<li$2</li>');
+			html = html.replace(/<p(.*?)class="MsoListParagraphCxSpLast"([\w\W]*?)<\/p>/gi, '<li$2</li></ul>');
+			// one line
+			html = html.replace(/<p(.*?)class="MsoListParagraph"([\w\W]*?)<\/p>/gi, '<ul><li$2</li></ul>');
+			// remove ms word's bullet
+			html = html.replace(/·/g, '');
 
 			// remove comments and php tags
 			html = html.replace(/<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi, '');
@@ -3933,6 +4352,8 @@
 			html = html.replace(/<td><\/td>/gi, '[td]');
 			html = html.replace(/<td>&nbsp;<\/td>/gi, '[td]');
 			html = html.replace(/<td><br><\/td>/gi, '[td]');
+			html = html.replace(/<td(.*?)colspan="(.*?)"(.*?)>([\w\W]*?)<\/td>/gi, '[td colspan="$2"]$4[/td]');
+			html = html.replace(/<td(.*?)rowspan="(.*?)"(.*?)>([\w\W]*?)<\/td>/gi, '[td rowspan="$2"]$4[/td]');
 			html = html.replace(/<a(.*?)href="(.*?)"(.*?)>([\w\W]*?)<\/a>/gi, '[a href="$2"]$4[/a]');
 			html = html.replace(/<iframe(.*?)>([\w\W]*?)<\/iframe>/gi, '[iframe$1]$2[/iframe]');
 			html = html.replace(/<video(.*?)>([\w\W]*?)<\/video>/gi, '[video$1]$2[/video]');
@@ -3940,7 +4361,6 @@
 			html = html.replace(/<embed(.*?)>([\w\W]*?)<\/embed>/gi, '[embed$1]$2[/embed]');
 			html = html.replace(/<object(.*?)>([\w\W]*?)<\/object>/gi, '[object$1]$2[/object]');
 			html = html.replace(/<param(.*?)>/gi, '[param$1]');
-			html = html.replace(/<img(.*?)style="(.*?)"(.*?)>/gi, '[img$1$3]');
 			html = html.replace(/<img(.*?)>/gi, '[img$1]');
 
 			// remove classes
@@ -3951,10 +4371,11 @@
 
 			// remove empty
 			html = html.replace(/<[^\/>][^>]*>(\s*|\t*|\n*|&nbsp;|<br>)<\/[^>]+>/gi, '');
-
 			html = html.replace(/<div>\s*?\t*?\n*?(<ul>|<ol>|<p>)/gi, '$1');
 
 			// revert
+			html = html.replace(/\[td colspan="(.*?)"\]([\w\W]*?)\[\/td\]/gi, '<td colspan="$1">$2</td>');
+			html = html.replace(/\[td rowspan="(.*?)"\]([\w\W]*?)\[\/td\]/gi, '<td rowspan="$1">$2</td>');
 			html = html.replace(/\[td\]/gi, '<td>&nbsp;</td>');
 			html = html.replace(/\[a href="(.*?)"\]([\w\W]*?)\[\/a\]/gi, '<a href="$1">$2</a>');
 			html = html.replace(/\[iframe(.*?)\]([\w\W]*?)\[\/iframe\]/gi, '<iframe$1>$2</iframe>');
@@ -3981,7 +4402,6 @@
 			{
 				html = this.cleanParagraphy(html);
 			}
-
 
 			// remove span
 			html = html.replace(/<span(.*?)>([\w\W]*?)<\/span>/gi, '$2');
@@ -4010,6 +4430,13 @@
 			// remove safari local images
 			html = html.replace(/<img src="webkit-fake-url\:\/\/(.*?)"(.*?)>/gi, '');
 
+			// remove p in td
+			html = html.replace(/<td(.*?)>(\s*|\t*|\n*)<p>([\w\W]*?)<\/p>(\s*|\t*|\n*)<\/td>/gi, '<td$1>$3</td>');
+
+			// remove divs
+			html = html.replace(/<div(.*?)>([\w\W]*?)<\/div>/gi, '$2');
+			html = html.replace(/<div(.*?)>([\w\W]*?)<\/div>/gi, '$2');
+
 			// FF specific
 			this.pasteClipboardMozilla = false;
 			if (this.browser('mozilla'))
@@ -4035,7 +4462,7 @@
 				}
 			}
 
-			// bullets
+			// bullets again
 			html = html.replace(/<p>•([\w\W]*?)<\/p>/gi, '<li>$1</li>');
 
 			// ie inserts a blank font tags when pasting
@@ -4044,6 +4471,12 @@
 				html = html.replace(/<font>([\w\W]*?)<\/font>/gi, '$1');
 			}
 
+			// ms word lists breakline
+			html = html.replace(/<p>\n?<li>/gi, '<li>');
+			if (this.browser('msie') && !this.isIe11())
+			{
+				html = html.replace(/\n/g, '');
+			}
 
 			this.pasteInsert(html);
 
@@ -4073,7 +4506,7 @@
 			this.selectall = false;
 			setTimeout($.proxy(function()
 			{
-				rtePaste = false;
+				this.rtePaste = false;
 
 				// FF specific
 				if (this.browser('mozilla'))
@@ -4087,10 +4520,9 @@
 
 			}, this), 100);
 
-			if (this.opts.autoresize) $(this.document.body).scrollTop(this.saveScroll);
+			if (this.opts.autoresize && this.fullscreen !== true) $(this.document.body).scrollTop(this.saveScroll);
 			else this.$editor.scrollTop(this.saveScroll);
 		},
-
 		pasteClipboardUploadMozilla: function()
 		{
 			var imgs = this.$editor.find('img[data-mozilla-paste-image]');
@@ -4107,7 +4539,7 @@
 				},
 				$.proxy(function(data)
 				{
-					var json = $.parseJSON(data);
+					var json = (typeof data === 'string' ? $.parseJSON(data) : data);
 		        	$s.attr('src', json.filelink);
 		        	$s.removeAttr('data-mozilla-paste-image');
 
@@ -4135,7 +4567,7 @@
 				},
 				$.proxy(function(data)
 				{
-					var json = $.parseJSON(data);
+					var json = (typeof data === 'string' ? $.parseJSON(data) : data);
 
 					var html = '<img src="' + json.filelink + '" id="clipboard-image-marker" />';
 					this.execCommand('inserthtml', html, false);
@@ -4209,16 +4641,26 @@
 			setTimeout($.proxy(this.observeStart, this), 4);
 		},
 
-
 		// OBSERVE
 		observeStart: function()
 		{
 			this.observeImages();
-			this.observeTables();
+
+			if (this.opts.observeLinks) this.observeLinks();
 		},
-		observeTables: function()
+		observeLinks: function()
 		{
-			this.$editor.find('table').on('click', $.proxy(this.tableObserver, this));
+			this.$editor.find('a').on('click', $.proxy(this.linkObserver, this));
+			this.$editor.on('click.redactor', $.proxy(function(e)
+			{
+				this.linkObserverTooltipClose(e);
+
+			}, this));
+			$(document).on('click.redactor', $.proxy(function(e)
+			{
+				this.linkObserverTooltipClose(e);
+
+			}, this));
 		},
 		observeImages: function()
 		{
@@ -4231,7 +4673,62 @@
 
 			}, this));
 		},
+		linkObserver: function(e)
+		{
+			var $link = $(e.target);
+			var pos = $link.offset();
+			if (this.opts.iframe)
+			{
+				var posFrame = this.$frame.offset();
+				pos.top = posFrame.top + (pos.top - $(this.document).scrollTop());
+				pos.left += posFrame.left;
+			}
 
+			var tooltip = $('<span class="redactor-link-tooltip"></span>');
+
+			var href = $link.attr('href');
+			if (href.length > 24) href = href.substring(0,24) + '...';
+
+			var aLink = $('<a href="' + $link.attr('href') + '" target="_blank">' + href + '</a>').on('click', $.proxy(function(e)
+			{
+				this.linkObserverTooltipClose(false);
+			}, this));
+
+			var aEdit = $('<a href="#">' + this.opts.curLang.edit + '</a>').on('click', $.proxy(function(e)
+			{
+				e.preventDefault();
+				this.linkShow();
+				this.linkObserverTooltipClose(false);
+
+			}, this));
+
+			var aUnlink = $('<a href="#">' + this.opts.curLang.unlink + '</a>').on('click', $.proxy(function(e)
+			{
+				e.preventDefault();
+				this.execCommand('unlink');
+				this.linkObserverTooltipClose(false);
+
+			}, this));
+
+
+			tooltip.append(aLink);
+			tooltip.append(' | ');
+			tooltip.append(aEdit);
+			tooltip.append(' | ');
+			tooltip.append(aUnlink);
+			tooltip.css({
+				top: (pos.top + 20) + 'px',
+				left: pos.left + 'px'
+			});
+
+			$('.redactor-link-tooltip').remove();
+			$('body').append(tooltip);
+		},
+		linkObserverTooltipClose: function(e)
+		{
+			if (e !== false && e.target.tagName == 'A') return false;
+			$('.redactor-link-tooltip').remove();
+		},
 
 		// SELECTION
 		getSelection: function()
@@ -4249,7 +4746,7 @@
 			{
 				if (this.document.getSelection)
 				{
-					var sel = this.document.getSelection();
+					var sel = this.getSelection();
 					if (sel.getRangeAt && sel.rangeCount) return sel.getRangeAt(0);
 				}
 
@@ -4401,6 +4898,210 @@
 			return textNodes;
 		},
 
+		// GET ELEMENTS
+		getCurrent: function()
+		{
+			var el = false;
+			var sel = this.getSelection();
+
+			if (sel && sel.rangeCount > 0) el = sel.getRangeAt(0).startContainer;
+
+			return this.isParentRedactor(el);
+		},
+		getParent: function(elem)
+		{
+			elem = elem || this.getCurrent();
+			if (elem) return this.isParentRedactor( $( elem ).parent()[0] );
+			else return false;
+		},
+		getBlock: function(node)
+		{
+			if (typeof node === 'undefined') node = this.getCurrent();
+
+			while (node)
+			{
+				if (this.nodeTestBlocks(node))
+				{
+					if ($(node).hasClass('redactor_editor')) return false;
+					return node;
+				}
+
+				node = node.parentNode;
+			}
+
+			return false;
+		},
+		getBlocks: function(nodes)
+		{
+			var newnodes = [];
+			if (typeof nodes == 'undefined')
+			{
+				var range = this.getRange();
+				if (range && range.collapsed === true) return [this.getBlock()];
+				var nodes = this.getNodes(range);
+			}
+
+			$.each(nodes, $.proxy(function(i,node)
+			{
+				if (this.opts.iframe === false && $(node).parents('div.redactor_editor').size() == 0) return false;
+				if (this.nodeTestBlocks(node)) newnodes.push(node);
+
+			}, this));
+
+			if (newnodes.length === 0) newnodes = [this.getBlock()];
+
+			return newnodes;
+		},
+		nodeTestBlocks: function(node)
+		{
+			return node.nodeType == 1 && this.rTestBlock.test(node.nodeName);
+		},
+		tagTestBlock: function(tag)
+		{
+			return this.rTestBlock.test(tag);
+		},
+		getNodes: function(range, tag)
+		{
+			if (typeof range == 'undefined' || range == false) var range = this.getRange();
+			if (range && range.collapsed === true)
+			{
+				if (typeof tag === 'undefined' && this.tagTestBlock(tag))
+				{
+					var block = this.getBlock();
+					if (block.tagName == tag) return [block];
+					else return [];
+				}
+				else
+				{
+					return [this.getCurrent()];
+				}
+			}
+
+			var nodes = [], finalnodes = [];
+
+			var sel = this.document.getSelection();
+			if (!sel.isCollapsed) nodes = this.getRangeSelectedNodes(sel.getRangeAt(0));
+
+			$.each(nodes, $.proxy(function(i,node)
+			{
+				if (this.opts.iframe === false && $(node).parents('div.redactor_editor').size() == 0) return false;
+
+				if (typeof tag === 'undefined')
+				{
+					if ($.trim(node.textContent) != '')
+					{
+						finalnodes.push(node);
+					}
+				}
+				else if (node.tagName == tag)
+				{
+					finalnodes.push(node);
+				}
+
+			}, this));
+
+			if (finalnodes.length == 0)
+			{
+				if (typeof tag === 'undefined' && this.tagTestBlock(tag))
+				{
+					var block = this.getBlock();
+					if (block.tagName == tag) return finalnodes.push(block);
+					else return [];
+				}
+				else
+				{
+					finalnodes.push(this.getCurrent());
+				}
+			}
+
+			// last element filtering
+			var last = finalnodes[finalnodes.length-1];
+			if (this.nodeTestBlocks(last))
+			{
+				finalnodes = finalnodes.slice(0, -1);
+			}
+
+			return finalnodes;
+		},
+		getElement: function(node)
+		{
+			if (!node) node = this.getCurrent();
+			while (node)
+			{
+				if (node.nodeType == 1)
+				{
+					if ($(node).hasClass('redactor_editor')) return false;
+					return node;
+				}
+
+				node = node.parentNode;
+			}
+
+			return false;
+		},
+		getRangeSelectedNodes: function(range)
+		{
+			range = range || this.getRange();
+			var node = range.startContainer;
+			var endNode = range.endContainer;
+
+			if (node == endNode) return [node];
+
+			var rangeNodes = [];
+			while (node && node != endNode)
+			{
+				rangeNodes.push(node = this.nextNode(node));
+			}
+
+			node = range.startContainer;
+			while (node && node != range.commonAncestorContainer)
+			{
+				rangeNodes.unshift(node);
+				node = node.parentNode;
+			}
+
+			return rangeNodes;
+		},
+		nextNode: function(node)
+		{
+			if (node.hasChildNodes()) return node.firstChild;
+			else
+			{
+				while (node && !node.nextSibling)
+				{
+					node = node.parentNode;
+				}
+
+				if (!node) return null;
+				return node.nextSibling;
+			}
+		},
+
+		// GET SELECTION HTML OR TEXT
+		getSelectionText: function()
+		{
+			return this.getSelection().toString();
+		},
+		getSelectionHtml: function()
+		{
+			var html = '';
+
+			var sel = this.getSelection();
+			if (sel.rangeCount)
+			{
+				var container = this.document.createElement( "div" );
+				var len = sel.rangeCount;
+				for (var i = 0; i < len; ++i)
+				{
+					container.appendChild(sel.getRangeAt(i).cloneContents());
+				}
+
+				html = container.innerHTML;
+			}
+
+			return this.syncClean(html);
+		},
+
 		// SAVE & RESTORE
 		selectionSave: function()
 		{
@@ -4511,242 +5212,6 @@
 				rangy.removeMarkers(this.savedSel);
 			}
 		},
-		// GET ELEMENTS
-		getCurrent: function()
-		{
-			var el = false;
-			var sel = this.getSelection();
-
-			if (sel.rangeCount > 0) el = sel.getRangeAt(0).startContainer;
-
-			return this.isParentRedactor(el);
-		},
-		getParent: function(elem)
-		{
-			elem = elem || this.getCurrent();
-			if (elem) return this.isParentRedactor( $( elem ).parent()[0] );
-			else return false;
-		},
-		getBlock: function(node)
-		{
-			if (typeof node === 'undefined') node = this.getCurrent();
-
-			while (node)
-			{
-				if (this.nodeTestBlocks(node))
-				{
-					if ($(node).hasClass('redactor_editor')) return false;
-					return node;
-				}
-
-				node = node.parentNode;
-			}
-
-			return false;
-		},
-		getBlocks: function(nodes)
-		{
-			var newnodes = [];
-			if (typeof nodes == 'undefined')
-			{
-				var range = this.getRange();
-				if (range && range.collapsed === true) return [this.getBlock()];
-				var nodes = this.getNodes(range);
-			}
-
-			$.each(nodes, $.proxy(function(i,node)
-			{
-				if (this.opts.iframe === false && $(node).parents('div.redactor_editor').size() == 0) return false;
-				if (this.nodeTestBlocks(node)) newnodes.push(node);
-
-			}, this));
-
-			if (newnodes.length === 0) newnodes = [this.getBlock()];
-
-			return newnodes;
-		},
-		nodeTestBlocks: function(node)
-		{
-			return node.nodeType == 1 && this.rTestBlock.test(node.nodeName);
-		},
-		tagTestBlock: function(tag)
-		{
-			return this.rTestBlock.test(tag);
-		},
-		getSelectedNodes: function(range)
-		{
-			if (typeof range == 'undefined' || range == false) var range = this.getRange()
-			if (range && range.collapsed === true)
-			{
-				return [this.getCurrent()];
-			}
-
-		    var sel = this.getSelection();
-		    try {
-		    	var frag = sel.getRangeAt(0).cloneContents();
-		    }
-		    catch(e)
-		    {
-		    	return(false);
-		    }
-
-		    var tempspan = this.document.createElement("span");
-		    tempspan.appendChild(frag);
-
-		    window.selnodes = tempspan.childNodes;
-
-			var len = selnodes.length;
-		    var output = [];
-		    for(var i = 0, u = len; i<u; i++)
-		    {
-		        output.push(selnodes[i]);
-			}
-
-			if (output.length == 0) output.push(this.getCurrent());
-
-		    return output;
-		},
-		getNodes: function(range, tag)
-		{
-			if (this.opts.linebreaks)
-			{
-				return this.getSelectedNodes(range);
-			}
-
-
-			if (typeof range == 'undefined' || range == false) var range = this.getRange();
-			if (range && range.collapsed === true)
-			{
-				if (typeof tag === 'undefined' && this.tagTestBlock(tag))
-				{
-					var block = this.getBlock();
-					if (block.tagName == tag) return [block];
-					else return [];
-				}
-				else
-				{
-					return [this.getCurrent()];
-				}
-			}
-
-			var nodes = [], finalnodes = [];
-
-			var sel = this.document.getSelection();
-			if (!sel.isCollapsed) nodes = this.getRangeSelectedNodes(sel.getRangeAt(0));
-
-			$.each(nodes, $.proxy(function(i,node)
-			{
-				if (this.opts.iframe === false && $(node).parents('div.redactor_editor').size() == 0) return false;
-
-				if (typeof tag === 'undefined')
-				{
-					if ($.trim(node.textContent) != '')
-					{
-						finalnodes.push(node);
-					}
-				}
-				else if (node.tagName == tag)
-				{
-					finalnodes.push(node);
-				}
-
-			}, this));
-
-			if (finalnodes.length == 0)
-			{
-				if (typeof tag === 'undefined' && this.tagTestBlock(tag))
-				{
-					var block = this.getBlock();
-					if (block.tagName == tag) return finalnodes.push(block);
-					else return [];
-				}
-				else
-				{
-					finalnodes.push(this.getCurrent());
-				}
-			}
-
-			return finalnodes;
-		},
-		getElement: function(node)
-		{
-			if (!node) node = this.getCurrent();
-			while (node)
-			{
-				if (node.nodeType == 1)
-				{
-					if ($(node).hasClass('redactor_editor')) return false;
-					return node;
-				}
-
-				node = node.parentNode;
-			}
-
-			return false;
-		},
-		getRangeSelectedNodes: function(range)
-		{
-			range = range || this.getRange();
-			var node = range.startContainer;
-			var endNode = range.endContainer;
-
-			if (node == endNode) return [node];
-
-			var rangeNodes = [];
-			while (node && node != endNode)
-			{
-				rangeNodes.push(node = this.nextNode(node));
-			}
-
-			node = range.startContainer;
-			while (node && node != range.commonAncestorContainer)
-			{
-				rangeNodes.unshift( node );
-				node = node.parentNode;
-			}
-
-			return rangeNodes;
-		},
-		nextNode: function(node)
-		{
-			if (node.hasChildNodes()) return node.firstChild;
-			else
-			{
-				while (node && !node.nextSibling)
-				{
-					node = node.parentNode;
-				}
-
-				if (!node) return null;
-				return node.nextSibling;
-			}
-		},
-
-
-		// GET SELECTION HTML OR TEXT
-		getSelectionText: function()
-		{
-			return this.getSelection().toString();
-		},
-		getSelectionHtml: function()
-		{
-			var html = '';
-
-			var sel = this.getSelection();
-			if (sel.rangeCount)
-			{
-				var container = this.document.createElement( "div" );
-				var len = sel.rangeCount;
-				for (var i = 0; i < len; ++i)
-				{
-					container.appendChild(sel.getRangeAt(i).cloneContents());
-				}
-
-				html = container.innerHTML;
-			}
-
-			return this.syncClean(html);
-		},
 
 		// TABLE
 		tableShow: function()
@@ -4798,20 +5263,13 @@
 			this.selectionRestore();
 
 			var current = this.getBlock() || this.getCurrent();
-			if (current)
-			{
-				$(current).after(html)
-			}
-			else
-			{
-				this.insertHtmlAdvanced(html, false);
 
-			}
+			if (current && current.tagName != 'BODY') $(current).after(html)
+			else this.insertHtmlAdvanced(html, false);
 
 			this.selectionRestore();
 
 			var table = this.$editor.find('#table' + tableId);
-			this.tableObserver(table);
 			this.buttonActiveObserver();
 
 			table.find('span#selection-marker-1').remove();
@@ -4819,92 +5277,98 @@
 
 			this.sync();
 		},
-		tableObserver: function(e)
-		{
-			this.$table = $(e.target || e).closest('table');
-
-			this.$tbody = $(e.target).closest('tbody');
-			this.$thead = this.$table.find('thead');
-
-			this.$current_td = $(e.target || this.$table.find('td').first());
-			this.$current_tr = $(e.target || this.$table.find('tr').first()).closest('tr');
-		},
 		tableDeleteTable: function()
 		{
+			var $table = $(this.getParent()).closest('table');
+			if (!this.isParentRedactor($table)) return false;
+			if ($table.size() == 0) return false;
+
 			this.bufferSet();
 
-			if (!this.$table) return;
-
-			this.$table.remove();
-			this.$table = false;
+			$table.remove();
 			this.sync();
-
 		},
 		tableDeleteRow: function()
 		{
+			var $table = $(this.getParent()).closest('table');
+			if (!this.isParentRedactor($table)) return false;
+			if ($table.size() == 0) return false;
+
 			this.bufferSet();
 
-			if (!this.$current_tr) return;
-
-			// Set the focus correctly
-			var $focusTR = this.$current_tr.prev().length ? this.$current_tr.prev() : this.$current_tr.next();
-			if ($focusTR.length)
+			var $current_tr =  $(this.getParent()).closest('tr');
+			var $focus_tr = $current_tr.prev().length ? $current_tr.prev() : $current_tr.next();
+			if ($focus_tr.length)
 			{
-				var $focusTD = $focusTR.children('td' ).first();
-				if ($focusTD.length)
+				var $focus_td = $focus_tr.children('td' ).first();
+				if ($focus_td.length)
 				{
-					$focusTD.prepend('<span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>');
-					this.selectionRestore();
+					$focus_td.prepend('<span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>');
 				}
 			}
 
-			this.$current_tr.remove();
+			$current_tr.remove();
+			this.selectionRestore();
 			this.sync();
 		},
 		tableDeleteColumn: function()
 		{
+			var $table = $(this.getParent()).closest('table');
+			if (!this.isParentRedactor($table)) return false;
+			if ($table.size() == 0) return false;
+
 			this.bufferSet();
-			var index = this.$current_td.get(0).cellIndex;
+
+			var $current_td =  $(this.getParent()).closest('td');
+			var index = $current_td.get(0).cellIndex;
 
 			// Set the focus correctly
-			this.$table.find('tr').each($.proxy(function(i, elem)
+			$table.find('tr').each($.proxy(function(i, elem)
 			{
 				var focusIndex = index - 1 < 0 ? index + 1 : index - 1;
 				if (i === 0)
 				{
 					$(elem).find('td').eq(focusIndex).prepend('<span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>');
-					this.selectionRestore();
 				}
 
 				$(elem).find('td').eq(index).remove();
 
 			}, this));
 
+			this.selectionRestore();
 			this.sync();
 		},
 		tableAddHead: function()
 		{
+			var $table = $(this.getParent()).closest('table');
+			if (!this.isParentRedactor($table)) return false;
+			if ($table.size() == 0) return false;
+
 			this.bufferSet();
 
-			if (this.$table.find('thead').size() !== 0) this.tableDeleteHead();
+			if ($table.find('thead').size() !== 0) this.tableDeleteHead();
 			else
 			{
-				var tr = this.$table.find('tr').first().clone();
-				tr.find('td').html( this.opts.invisibleSpace );
-				this.$thead = $('<thead></thead>');
-				this.$thead.append(tr);
-				this.$table.prepend(this.$thead);
+				var tr = $table.find('tr').first().clone();
+				tr.find('td').html(this.opts.invisibleSpace);
+				$thead = $('<thead></thead>');
+				$thead.append(tr);
+				$table.prepend($thead);
 
 				this.sync();
 			}
 		},
 		tableDeleteHead: function()
 		{
+			var $table = $(this.getParent()).closest('table');
+			if (!this.isParentRedactor($table)) return false;
+			var $thead = $table.find('thead');
+
+			if ($thead.size() == 0) return false;
+
 			this.bufferSet();
 
-			$(this.$thead).remove();
-			this.$thead = false;
-
+			$thead.remove();
 			this.sync();
 		},
 		tableAddRowAbove: function()
@@ -4925,29 +5389,41 @@
 		},
 		tableAddRow: function(type)
 		{
+			var $table = $(this.getParent()).closest('table');
+			if (!this.isParentRedactor($table)) return false;
+			if ($table.size() == 0) return false;
+
 			this.bufferSet();
 
-			var new_tr = this.$current_tr.clone();
+			var $current_tr = $(this.getParent()).closest('tr');
+			var new_tr = $current_tr.clone();
 			new_tr.find('td').html(this.opts.invisibleSpace);
 
-			if (type === 'after') this.$current_tr.after(new_tr);
-			else this.$current_tr.before(new_tr);
+			if (type === 'after') $current_tr.after(new_tr);
+			else $current_tr.before(new_tr);
 
 			this.sync();
 		},
 		tableAddColumn: function (type)
 		{
+			var $table = $(this.getParent()).closest('table');
+			if (!this.isParentRedactor($table)) return false;
+			if ($table.size() == 0) return false;
+
 			this.bufferSet();
 
 			var index = 0;
 
-			this.$current_tr.find('td').each($.proxy(function(i, elem)
+			var $current_tr = $(this.getParent()).closest('tr');
+			var $current_td =  $(this.getParent()).closest('td');
+
+			$current_tr.find('td').each($.proxy(function(i, elem)
 			{
-				if ($(elem)[0] === this.$current_td[0]) index = i;
+				if ($(elem)[0] === $current_td[0]) index = i;
 
 			}, this));
 
-			this.$table.find('tr').each($.proxy(function(i, elem)
+			$table.find('tr').each($.proxy(function(i, elem)
 			{
 				var $current = $(elem).find('td').eq(index);
 
@@ -5144,9 +5620,23 @@
 				}
 				else
 				{
-					this.exec('inserthtml', a);
+					var $a = $(a).addClass('redactor-added-link');
+					this.exec('inserthtml', this.outerHtml($a), false);
+					this.$editor.find('a.redactor-added-link').removeAttr('style').removeClass('redactor-added-link').each(function()
+					{
+						if (this.className == '') $(this).removeAttr('class');
+					});
+					this.sync();
 				}
 			}
+
+			// link tooltip
+			setTimeout($.proxy(function()
+			{
+
+				if (this.opts.observeLinks) this.observeLinks();
+
+			}, this), 5);
 
 			this.modalClose();
 		},
@@ -5178,7 +5668,8 @@
 						{
 							this.callback('fileUploadError', json);
 
-						}, this)
+						}, this),
+						uploadParam: this.opts.fileUploadParam
 					});
 				}
 
@@ -5321,7 +5812,8 @@
 								{
 									this.callback('imageUploadError', json);
 
-								}, this)
+								}, this),
+								uploadParam: this.opts.imageUploadParam
 							});
 						}
 					}
@@ -5415,7 +5907,7 @@
 
 			}, this);
 
-			this.modalInit(this.opts.curLang.image, this.opts.modal_image_edit, 380, callback);
+			this.modalInit(this.opts.curLang.edit, this.opts.modal_image_edit, 380, callback);
 
 		},
 		imageRemove: function(el)
@@ -5446,14 +5938,17 @@
 
 			if (floating === 'left')
 			{
-				$el.css({ 'float': 'left', 'margin': '0 10px 10px 0' });
+				this.imageMargin = '0 ' + this.opts.imageFloatMargin + ' ' + this.opts.imageFloatMargin + ' 0';
+				$el.css({ 'float': 'left', 'margin': this.imageMargin });
 			}
 			else if (floating === 'right')
 			{
-				$el.css({ 'float': 'right', 'margin': '0 0 10px 10px' });
+				this.imageMargin = '0 0 ' + this.opts.imageFloatMargin + ' ' + this.opts.imageFloatMargin + '';
+				$el.css({ 'float': 'right', 'margin': this.imageMargin });
 			}
 			else
 			{
+				this.imageMargin = '0px';
 				var imageBox = $el.closest('#redactor-image-box');
 				if (imageBox.size() != 0) imageBox.css({ 'float': '', 'margin': '' });
 				$el.css({ 'float': '', 'margin': '' });
@@ -5521,11 +6016,12 @@
 
 			this.$editor.find('#redactor-image-editter, #redactor-image-resizer').remove();
 
-			var margin = imageBox.css('margin');
-			if (margin != '0px')
+
+			if (this.imageMargin != '0px')
 			{
-				imageBox.find('img').css('margin', margin);
+				imageBox.find('img').css('margin', this.imageMargin);
 				imageBox.css('margin', '');
+				this.imageMargin = '0px';
 			}
 
 			imageBox.find('img').css('opacity', '');
@@ -5648,6 +6144,7 @@
 
 					if (this.keyCode.BACKSPACE == key || this.keyCode.DELETE == key)
 					{
+						this.bufferSet();
 						this.imageResizeHide(false);
 						this.imageRemove($image);
 					}
@@ -5672,10 +6169,10 @@
 			});
 			imageBox.attr('contenteditable', false);
 
-			var margin = $image.css('margin');
-			if (margin != '0px')
+			this.imageMargin = $image[0].style.margin;
+			if (this.imageMargin != '0px')
 			{
-				imageBox.css('margin', margin);
+				imageBox.css('margin', this.imageMargin);
 				$image.css('margin', '');
 			}
 
@@ -5729,7 +6226,8 @@
 		{
 			var img = '<img id="image-marker" src="' + $(e.target).attr('rel') + '" alt="' + $(e.target).attr('title') + '" />';
 
-			if (this.opts.paragraphy) img = '<p>' + img + '</p>';
+			var parent = this.getParent();
+			if (this.opts.paragraphy && $(parent).closest('li').size() == 0) img = '<p>' + img + '</p>';
 
 			this.imageInsert(img, true);
 		},
@@ -5761,7 +6259,12 @@
 				if (link !== true)
 				{
 					html = '<img id="image-marker" src="' + json.filelink + '" />';
-					if (this.opts.paragraphy) html = '<p>' + html + '</p>';
+
+					var parent = this.getParent();
+					if (this.opts.paragraphy && $(parent).closest('li').size() == 0)
+					{
+						html = '<p>' + html + '</p>';
+					}
 				}
 				else
 				{
@@ -5799,7 +6302,7 @@
 						+ '<label>' + this.opts.curLang.filename + '</label>'
 						+ '<input type="text" id="redactor_filename" class="redactor_input" />'
 						+ '<div style="margin-top: 7px;">'
-							+ '<input type="file" id="redactor_file" name="file" />'
+							+ '<input type="file" id="redactor_file" name="' + this.opts.fileUploadParam + '" />'
 						+ '</div>'
 					+ '</form>'
 				+ '</section>',
@@ -5819,9 +6322,9 @@
 					+ '</select>'
 				+ '</section>'
 				+ '<footer>'
-					+ '<button id="redactor_image_delete_btn" class="redactor_modal_btn">' + this.opts.curLang._delete + '</button>&nbsp;&nbsp;&nbsp;'
+					+ '<button id="redactor_image_delete_btn" class="redactor_modal_btn redactor_modal_delete_btn">' + this.opts.curLang._delete + '</button>&nbsp;&nbsp;&nbsp;'
 					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-					+ '<input type="button" name="save" class="redactor_modal_btn" id="redactorSaveBtn" value="' + this.opts.curLang.save + '" />'
+					+ '<input type="button" name="save" class="redactor_modal_btn redactor_modal_action_btn" id="redactorSaveBtn" value="' + this.opts.curLang.save + '" />'
 				+ '</footer>',
 
 				modal_image: String()
@@ -5836,7 +6339,7 @@
 					+ '</div>'
 					+ '<form id="redactorInsertImageForm" method="post" action="" enctype="multipart/form-data">'
 						+ '<div id="redactor_tab1" class="redactor_tab">'
-							+ '<input type="file" id="redactor_file" name="file" />'
+							+ '<input type="file" id="redactor_file" name="' + this.opts.imageUploadParam + '" />'
 						+ '</div>'
 						+ '<div id="redactor_tab2" class="redactor_tab" style="display: none;">'
 							+ '<div id="redactor_image_box"></div>'
@@ -5849,7 +6352,7 @@
 				+ '</section>'
 				+ '<footer>'
 					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-					+ '<input type="button" name="upload" class="redactor_modal_btn" id="redactor_upload_btn" value="' + this.opts.curLang.insert + '" />'
+					+ '<input type="button" name="upload" class="redactor_modal_btn redactor_modal_action_btn" id="redactor_upload_btn" value="' + this.opts.curLang.insert + '" />'
 				+ '</footer>',
 
 				modal_link: String()
@@ -5884,7 +6387,7 @@
 				+ '</section>'
 				+ '<footer>'
 					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-					+ '<input type="button" class="redactor_modal_btn" id="redactor_insert_link_btn" value="' + this.opts.curLang.insert + '" />'
+					+ '<input type="button" class="redactor_modal_btn redactor_modal_action_btn" id="redactor_insert_link_btn" value="' + this.opts.curLang.insert + '" />'
 				+ '</footer>',
 
 				modal_table: String()
@@ -5896,7 +6399,7 @@
 				+ '</section>'
 				+ '<footer>'
 					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-					+ '<input type="button" name="upload" class="redactor_modal_btn" id="redactor_insert_table_btn" value="' + this.opts.curLang.insert + '" />'
+					+ '<input type="button" name="upload" class="redactor_modal_btn redactor_modal_action_btn" id="redactor_insert_table_btn" value="' + this.opts.curLang.insert + '" />'
 				+ '</footer>',
 
 				modal_video: String()
@@ -5908,7 +6411,7 @@
 				+ '</section>'
 				+ '<footer>'
 					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-					+ '<input type="button" class="redactor_modal_btn" id="redactor_insert_video_btn" value="' + this.opts.curLang.insert + '" />'
+					+ '<input type="button" class="redactor_modal_btn redactor_modal_action_btn" id="redactor_insert_video_btn" value="' + this.opts.curLang.insert + '" />'
 				+ '</footer>'
 
 			});
@@ -6006,7 +6509,14 @@
 			$redactorModal.find('.redactor_btn_modal_close').on('click', $.proxy(this.modalClose, this));
 
 			// save scroll
-			if (this.opts.autoresize === true) this.saveModalScroll = this.document.body.scrollTop;
+			if (this.opts.autoresize === true)
+			{
+				this.saveModalScroll = this.document.body.scrollTop;
+			}
+			else
+			{
+				this.saveModalScroll = this.$editor.scrollTop();
+			}
 
 			if (this.isMobile() === false)
 			{
@@ -6079,7 +6589,14 @@
 				this.selectionRestore();
 
 				// restore scroll
-				if (this.opts.autoresize && this.saveModalScroll) $(this.document.body).scrollTop(this.saveModalScroll);
+				if (this.opts.autoresize && this.saveModalScroll)
+				{
+					$(this.document.body).scrollTop(this.saveModalScroll);
+				}
+				else if (this.opts.autoresize === false && this.saveModalScroll)
+				{
+					this.$editor.scrollTop(this.saveModalScroll);
+				}
 
 			}, this));
 
@@ -6097,7 +6614,6 @@
 			$('#redactor_tabs').find('a').removeClass('redactor_tabs_act').eq(num - 1).addClass('redactor_tabs_act');
 			$('#redactor_tab' + num).show();
 		},
-
 
 		// S3
 		s3handleFileSelect: function(e)
@@ -6119,10 +6635,14 @@
 		s3executeOnSignedUrl: function(file, callback)
 		{
 			var xhr = new XMLHttpRequest();
-			xhr.open('GET', this.opts.s3 + '?name=' + file.name + '&type=' + file.type, true);
+
+			var mark = '?';
+			if (this.opts.s3.search(/\?/) != '-1') mark = '&';
+
+			xhr.open('GET', this.opts.s3 + mark + 'name=' + file.name + '&type=' + file.type, true);
 
 			// Hack to pass bytes through unprocessed.
-			xhr.overrideMimeType('text/plain; charset=x-user-defined');
+			if (xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=x-user-defined');
 
 			xhr.onreadystatechange = function(e)
 			{
@@ -6173,7 +6693,7 @@
 					{
 						//setProgress(100, 'Upload completed.');
 
-						$('#redactor-progress').hide();
+						$('#redactor-progress, #redactor-progress-drag').hide();
 
 						var s3image = url.split('?');
 
@@ -6233,7 +6753,6 @@
 				xhr.send(file);
 			}
 		},
-
 
 		// UPLOAD
 		uploadInit: function(el, options)
@@ -6406,7 +6925,8 @@
 				preview: false,
 				uploadFields: false,
 				text: this.opts.curLang.drop_file_here,
-				atext: this.opts.curLang.or_choose
+				atext: this.opts.curLang.or_choose,
+				uploadParam: false
 			}, options);
 
 			if (window.FormData === undefined) return false;
@@ -6441,23 +6961,38 @@
 
 				this.dropareabox.removeClass('hover').addClass('drop');
 
-				//this.handleFileSelect(e);
-				this.draguploadUpload(e.dataTransfer.files[0]);
+				this.dragUploadAjax(this.draguploadOptions.url, e.dataTransfer.files[0], false, false, false, this.draguploadOptions.uploadParam);
 
 			}, this );
 		},
-		draguploadUpload: function(file)
+		dragUploadAjax: function(url, file, directupload, progress, e, uploadParam)
 		{
-			var xhr = jQuery.ajaxSettings.xhr();
 
-			if (xhr.upload)
+
+			if (!directupload)
 			{
-				xhr.upload.addEventListener('progress', $.proxy(this.uploadProgress, this), false);
+				var xhr = $.ajaxSettings.xhr();
+				if (xhr.upload)
+				{
+					xhr.upload.addEventListener('progress', $.proxy(this.uploadProgress, this), false);
+				}
+
+				$.ajaxSetup({
+				  xhr: function () { return xhr; }
+				});
 			}
 
-			var provider = function () { return xhr; };
-
 			var fd = new FormData();
+
+			// append file data
+			if (uploadParam !== false)
+			{
+				fd.append(uploadParam, file);
+			}
+			else
+			{
+				fd.append('file', file);
+			}
 
 			// append hidden fields
 			if (this.opts.uploadFields !== false && typeof this.opts.uploadFields === 'object')
@@ -6470,15 +7005,10 @@
 				}, this));
 			}
 
-
-			// append file data
-			fd.append('file', file);
-
 			$.ajax({
-				url: this.draguploadOptions.url,
+				url: url,
 				dataType: 'html',
 				data: fd,
-				xhr: provider,
 				cache: false,
 				contentType: false,
 				processData: false,
@@ -6488,21 +7018,48 @@
 					data = data.replace(/^\[/, '');
 					data = data.replace(/\]$/, '');
 
-					var json = $.parseJSON(data);
+					var json = (typeof data === 'string' ? $.parseJSON(data) : data);
 
-					if (typeof json.error == 'undefined')
+					if (directupload)
 					{
-						this.draguploadOptions.success(json);
+						progress.fadeOut('slow', function()
+						{
+							$(this).remove();
+						});
+
+					    var $img = $('<img>');
+						$img.attr('src', json.filelink).attr('id', 'drag-image-marker');
+
+						this.insertNodeToCaretPositionFromPoint(e, $img[0]);
+
+						var image = $(this.$editor.find('img#drag-image-marker'));
+						if (image.length) image.removeAttr('id');
+						else image = false;
+
+						this.sync();
+						this.observeImages();
+
+						// upload callback
+						if (image) this.callback('imageUpload', image, json);
+
+						// error callback
+						if (typeof json.error !== 'undefined') this.callback('imageUploadError', json);
 					}
 					else
 					{
-						this.draguploadOptions.error(this, json);
-						this.draguploadOptions.success(false);
+						if (typeof json.error == 'undefined')
+						{
+							this.draguploadOptions.success(json);
+						}
+						else
+						{
+							this.draguploadOptions.error(this, json);
+							this.draguploadOptions.success(false);
+						}
 					}
 
 				}, this)
 			});
-
 		},
 		draguploadOndrag: function()
 		{
@@ -6519,7 +7076,6 @@
 			var percent = e.loaded ? parseInt(e.loaded / e.total * 100, 10) : e;
 			this.dropareabox.text('Loading ' + percent + '% ' + (text || ''));
 		},
-
 
 		// UTILS
 		isMobile: function()
@@ -6548,20 +7104,30 @@
 
 			return html == '';
 		},
+		isIe11: function()
+		{
+			return !!navigator.userAgent.match(/Trident\/7\./);
+		},
 		browser: function(browser)
 		{
 			var ua = navigator.userAgent.toLowerCase();
-			var match = /(chrome)[ \/]([\w.]+)/.exec(ua)
-					|| /(webkit)[ \/]([\w.]+)/.exec(ua)
-					|| /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua)
-					|| /(msie) ([\w.]+)/.exec(ua)
-					|| ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua)
-					|| [];
+			var match = /(opr)[\/]([\w.]+)/.exec( ua ) ||
+            /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+            /(webkit)[ \/]([\w.]+).*(safari)[ \/]([\w.]+)/.exec(ua) ||
+            /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+            /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+            /(msie) ([\w.]+)/.exec( ua ) ||
+            ua.indexOf("trident") >= 0 && /(rv)(?::| )([\w.]+)/.exec( ua ) ||
+            ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+            [];
 
 			if (browser == 'version') return match[2];
 			if (browser == 'webkit') return (match[1] == 'chrome' || match[1] == 'webkit');
+			if (match[1] == 'rv') return browser == 'msie';
+			if (match[1] == 'opr') return browser == 'webkit';
 
-			return match[1] == browser;
+			return browser == match[1];
+
 		},
 		oldIE: function()
 		{
@@ -6643,18 +7209,20 @@
 
 			return array;
 		}
+
 	};
 
 	// constructor
 	Redactor.prototype.init.prototype = Redactor.prototype;
 
 	// LINKIFY
-	$.Redactor.fn.formatLinkify = function(protocol, convertLinks, convertImageLinks, convertVideoLinks)
+	$.Redactor.fn.formatLinkify = function(protocol, convertLinks, convertImageLinks, convertVideoLinks, linkSize)
 	{
 		var url1 = /(^|&lt;|\s)(www\..+?\..+?)(\s|&gt;|$)/g,
 			url2 = /(^|&lt;|\s)(((https?|ftp):\/\/|mailto:).+?)(\s|&gt;|$)/g,
 			urlImage = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi,
-			urlYoutube = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+			urlYoutube = /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig,
+			urlVimeo = /https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/;
 
 		var childNodes = (this.$editor ? this.$editor.get(0) : this).childNodes, i = childNodes.length;
 		while (i--)
@@ -6664,35 +7232,52 @@
 			{
 				var html = n.nodeValue;
 
-				// youtube
-				if (convertVideoLinks && html && html.match(urlYoutube))
+				// youtube & vimeo
+				if (convertVideoLinks && html)
 				{
-					html = html.replace(urlYoutube, '<iframe width="560" height="315" src="//www.youtube.com/embed/$2" frameborder="0" allowfullscreen></iframe>');
-					$(n).after(html).remove();
+					var iframeStart = '<iframe width="500" height="281" src="',
+						iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
+
+					if (html.match(urlYoutube))
+					{
+						html = html.replace(urlYoutube, iframeStart + '//www.youtube.com/embed/$1' + iframeEnd);
+						$(n).after(html).remove();
+					}
+					else if (html.match(urlVimeo))
+					{
+						html = html.replace(urlVimeo, iframeStart + '//player.vimeo.com/video/$2' + iframeEnd);
+						$(n).after(html).remove();
+					}
 				}
 
 				// image
-				else if (convertImageLinks && html && html.match(urlImage))
+				if (convertImageLinks && html && html.match(urlImage))
 				{
 					html = html.replace(urlImage, '<img src="$1">');
+
 					$(n).after(html).remove();
 				}
 
 				// link
-				else if (convertLinks && html && (html.match(url1) || html.match(url2)))
+				if (convertLinks && html && (html.match(url1) || html.match(url2)))
 				{
+					var href = (html.match(url1) || html.match(url2));
+					href = href[0];
+					if (href.length > linkSize) href = href.substring(0, linkSize) + '...';
+
 					html = html.replace(/&/g, '&amp;')
 					.replace(/</g, '&lt;')
 					.replace(/>/g, '&gt;')
-					.replace(url1, '$1<a href="' + protocol + '$2">$2</a>$3')
-					.replace(url2, '$1<a href="$2">$2</a>$5');
+					.replace(url1, '$1<a href="' + protocol + '$2">' + $.trim(href) + '</a>$3')
+					.replace(url2, '$1<a href="$2">' + $.trim(href) + '</a>$5');
+
 
 					$(n).after(html).remove();
 				}
 			}
 			else if (n.nodeType === 1 && !/^(a|button|textarea)$/i.test(n.tagName))
 			{
-				$.Redactor.fn.formatLinkify.call(n, protocol, convertLinks, convertImageLinks, convertVideoLinks);
+				$.Redactor.fn.formatLinkify.call(n, protocol, convertLinks, convertImageLinks, convertVideoLinks, linkSize);
 			}
 		}
 	};

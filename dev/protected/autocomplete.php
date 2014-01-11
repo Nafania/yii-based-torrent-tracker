@@ -1,11 +1,13 @@
 <?php
+
 /**
- * @property WebUser            $user
- * @property CClientScript      $clientScript
- * @property CHttpRequest       $request
- * @property PluginsDispatcher  $pd
- * @property CMessageSource     $messages
- * @property EConfig            $config
+ * @property WebUser                   $user
+ * @property CClientScript             $clientScript
+ * @property CHttpRequest              $request
+ * @property PluginsDispatcher         $pd
+ * @property CMessageSource            $messages
+ * @property EConfig                   $config
+ * @property EDbHttpSession            $session
  *
  * @method CClientScript getClientScript()
  * @method CHttpRequest getRequest()

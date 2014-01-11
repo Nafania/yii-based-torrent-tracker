@@ -1,6 +1,9 @@
 <?php
+
 class TorrentGroupRating extends CWidget {
 	public $model;
+	public $onlyBar = false;
+
 	private $_rating;
 
 	public function run () {
@@ -15,9 +18,9 @@ class TorrentGroupRating extends CWidget {
 		$positiveRating = $negativeRating = 0;
 
 		$ratings = RatingRelations::model()->findAllByAttributes(array(
-		                                                              'modelName' => $modelName,
-		                                                              'modelId'   => $modelId,
-		                                                         ));
+			'modelName' => $modelName,
+			'modelId'   => $modelId,
+		));
 		foreach ( $ratings AS $rating ) {
 			if ( $rating->state == RatingRelations::RATING_STATE_PLUS ) {
 				$positiveRating += $rating->rating;
@@ -37,13 +40,14 @@ class TorrentGroupRating extends CWidget {
 
 		$this->render('torrentGroupRating',
 			array(
-			     'modelName'        => $modelName,
-			     'modelId'          => $modelId,
-			     'rating'           => $this->_rating,
-			     'positiveRating'   => $positiveRating,
-			     'negativeRating'   => $negativeRating,
-			     'positivePercents' => $positivePercents,
-			     'negativePercents' => $negativePercents,
+				'modelName'        => $modelName,
+				'modelId'          => $modelId,
+				'rating'           => $this->_rating,
+				'positiveRating'   => $positiveRating,
+				'negativeRating'   => $negativeRating,
+				'positivePercents' => $positivePercents,
+				'negativePercents' => $negativePercents,
+				'onlyBar'          => $this->onlyBar,
 			));
 	}
 

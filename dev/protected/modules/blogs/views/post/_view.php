@@ -1,6 +1,6 @@
 <?php
 /**
- * @var $data BlogPost
+ * @var $data modules\blogs\models\BlogPost
  */
 ?>
 
@@ -11,13 +11,10 @@
 	    <?php echo StringHelper::cutStr($data->getText(),
 		    500,
 		    '<p>' . CHtml::link(Yii::t('blogsModule.common', 'Читать далее...'),
-			    array(
-			         '/blogs/post/view',
-			         'id' => $data->getId()
-			    )) . '</p>'); ?>
+			    $data->getUrl()) . '</p>'); ?>
 	    <p>
 		    <?php
-		    if ( $commentsCount = $data->commentsCount ) {
+		    if ( $commentsCount = $data->commentsCount->count ) {
 			    echo CHtml::link('<i class="icon-comment"></i> ' . $commentsCount,
 					    CMap::mergeArray($data->getUrl(), array('#' => 'comments'))) . ', ';
 		    }
@@ -34,11 +31,7 @@
 			    $tagsStr = '';
 			    foreach ( $tags AS $tag ) {
 				    $tagsStr .= ($tagsStr ? ', ' : '') . '<strong>' . CHtml::link($tag,
-						    array(
-						         '/blogs/default/view',
-						         'id' => $data->blog->getId(),
-						         'tags' => $tag
-						    )) . '</strong>';
+						    CMap::mergeArray($data->blog->getUrl(), array('tags' => $tag))) . '</strong>';
 			    }
 			    echo ' | ' . $tagsStr;
 		    }

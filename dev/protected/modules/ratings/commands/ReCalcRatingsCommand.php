@@ -7,13 +7,13 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 		switch ( $type ) {
 			case 'BlogPost':
 				Yii::import('application.modules.blogs.models.*');
-				$modelName = 'BlogPost';
+				$modelName = 'modules\blogs\models\BlogPost';
 				$count = $modelName::model()->count();
 				break;
 
 			case 'Blog':
 				Yii::import('application.modules.blogs.models.*');
-				$modelName = 'Blog';
+				$modelName = 'modules\blogs\models\Blog';
 				$count = $modelName::model()->count();
 				break;
 
@@ -31,7 +31,7 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 
 			case 'TorrentGroup':
 				Yii::import('application.modules.torrents.models.*');
-				$modelName = 'TorrentGroup';
+				$modelName = 'modules\torrents\models\TorrentGroup';
 				$count = $modelName::model()->count();
 				break;
 
@@ -53,15 +53,15 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 
 		Yii::getLogger()->autoFlush = 0;
 
-		$startTime = microtime(true);
+		//$startTime = microtime(true);
 
 		try {
 			$j = ceil($count / $limit);
 
-			echo "calc start at " . $startTime . " and going in " . $j . " steps \n";
+			//echo "calc start at " . $startTime . " and going in " . $j . " steps \n";
 			for ( $i = 0; $i < $j; ++$i ) {
 				$offset = ($i * $limit);
-				echo SizeHelper::formatSize(memory_get_usage()) . "\tbefore find\n";
+				//echo SizeHelper::formatSize(memory_get_usage()) . "\tbefore find\n";
 
 				$models = $modelName::model()->findAll(array(
 				                                            'order'  => 'ctime DESC',
@@ -69,7 +69,7 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 				                                            'offset' => $offset
 				                                       ));
 
-				echo SizeHelper::formatSize(memory_get_usage()) . "\tafter find\n";
+				//echo SizeHelper::formatSize(memory_get_usage()) . "\tafter find\n";
 
 				foreach ( $models AS $_model ) {
 					$_model->calculateRating();
@@ -78,18 +78,18 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 				unset($models);
 				gc_collect_cycles();
 
-				echo SizeHelper::formatSize(memory_get_usage()) . "\tafter destruct\n";
+				//echo SizeHelper::formatSize(memory_get_usage()) . "\tafter destruct\n";
 				Yii::getLogger()->flush(true);
 
-				echo "step " . $i . ' (' . $offset . " from " . $count . ") done with " . (microtime(true) - $startTime) . "ms\n";
+				//echo "step " . $i . ' (' . $offset . " from " . $count . ") done with " . (microtime(true) - $startTime) . "ms\n";
 			}
 		} catch ( CException $e ) {
 			echo $e->getMessage();
 			return 1;
 		}
 
-		$endTime = microtime(true);
-		echo "calc end at " . $endTime . ". Time spent: " . ($endTime - $startTime) . " \n";
+		//$endTime = microtime(true);
+		//echo "calc end at " . $endTime . ". Time spent: " . ($endTime - $startTime) . " \n";
 
 		return 0;
 	}

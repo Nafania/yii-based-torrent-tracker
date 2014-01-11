@@ -38,6 +38,18 @@ class Savedsearch extends EActiveRecord {
 		return CMap::mergeArray(parent::relations(), array());
 	}
 
+	protected function beforeValidate () {
+		if ( parent::beforeValidate() ) {
+			if ( !class_exists(self::classNameToNamespace($this->modelName)) ) {
+				$this->addError('modelName', Yii::t('savedsearchesModule.common', 'Модель не существует'));
+				return false;
+			}
+
+			return true;
+		}
+		return false;
+	}
+
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
 			$this->data = serialize($this->data);

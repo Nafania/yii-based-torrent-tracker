@@ -4,7 +4,7 @@ class BlogPostRatingBehavior extends RatingBehavior {
 
 	public function calculateRating () {
 		/**
-		 * @var $owner BlogPost
+		 * @var $owner modules\blogs\models\BlogPost
 		 */
 		/**
 		 * будем использовать следующую формулу

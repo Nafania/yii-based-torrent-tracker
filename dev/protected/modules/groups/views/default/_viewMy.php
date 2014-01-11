@@ -14,7 +14,7 @@
 	echo CHtml::link($img, $data->getUrl(), array('class' => 'pull-left'));
 	?>
 
-	<div class="media-body pull-left">
+	<div class="media-body">
         <h3 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h3>
 		<p><?php echo Yii::t('groupsModule.common',
 					'Участники группы:') . ' ' . CHtml::link(Yii::t('groupsModule.common',
@@ -84,4 +84,3 @@
 			)); ?>
 	</div>
 </div>
-<hr />

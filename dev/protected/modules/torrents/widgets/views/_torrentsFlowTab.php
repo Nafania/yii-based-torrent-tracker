@@ -1,6 +1,6 @@
 <?php
 $cs = Yii::app()->getClientScript();
-$cs->registerScript('Carousel' . $catId, "$('#Carousel" . $catId . "').jMyCarousel({visible: '100%',eltByElt: true, evtStart:'click',evtStop:'click'});");
+$cs->registerScript('Carousel' . $catId, "$('#Carousel" . $catId . "').jMyCarousel({visible: '100%',eltByElt: true, evtStart:'click',evtStop:'click', mouseWheel: true});");
 ?>
 
 <div class="jMyCarousel" id="Carousel<?php echo $catId ?>">

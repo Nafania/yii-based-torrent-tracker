@@ -7,6 +7,8 @@
  * @property integer $idGroup
  * @property integer $idUser
  * @property integer $status
+ * @property integer $ctime
+ * @property Group   $group
  */
 class GroupUser extends EActiveRecord {
 	const STATUS_DECLINED = 1;
@@ -137,8 +139,8 @@ class GroupUser extends EActiveRecord {
 		$criteria->compare('idUser', $this->idUser);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 
@@ -148,15 +150,15 @@ class GroupUser extends EActiveRecord {
 				$this,
 				'idUser',
 				array(
-				     'criteria' => array(
-					     'condition' => 'idGroup = :idGroup',
-					     'params'    => array(
-						     ':idGroup' => $this->idGroup,
-					     ),
-				     ),
-				     'message'  => Yii::t('GroupsModule.common',
-					     'Пользователь {userName} уже подавал заявку на вступление в эту группу.',
-					     array('{userName}' => $this->user->getName()))
+					'criteria' => array(
+						'condition' => 'idGroup = :idGroup',
+						'params'    => array(
+							':idGroup' => $this->idGroup,
+						),
+					),
+					'message'  => Yii::t('GroupsModule.common',
+							'Пользователь {userName} уже подавал заявку на вступление в эту группу.',
+							array('{userName}' => $this->user->getName()))
 				));
 			$this->getValidatorList()->insertAt(0, $validator);
 		}
@@ -165,9 +167,9 @@ class GroupUser extends EActiveRecord {
 
 	public function checkStatus ( $attribute, $params ) {
 		$model = self::findByAttributes(array(
-		                                     'idUser'  => $this->idUser,
-		                                     'idGroup' => $this->idGroup
-		                                ));
+			'idUser'  => $this->idUser,
+			'idGroup' => $this->idGroup
+		));
 
 		/**
 		 * Если предыдущий статус был Приглашен, а теперь становится одобрен или отклонен инвайт, то
@@ -195,10 +197,10 @@ class GroupUser extends EActiveRecord {
 
 	public function statusLabels () {
 		return array(
-			self::STATUS_APPROVED => 'Участник',
-			self::STATUS_DECLINED => 'Отклонен',
-			self::STATUS_NEW      => 'Не проверен',
-			self::STATUS_INVITED  => 'Приглашен',
+			self::STATUS_APPROVED        => 'Участник',
+			self::STATUS_DECLINED        => 'Отклонен',
+			self::STATUS_NEW             => 'Не проверен',
+			self::STATUS_INVITED         => 'Приглашен',
 			self::STATUS_INVITE_DECLINED => 'Приглашение отклонено',
 		);
 	}

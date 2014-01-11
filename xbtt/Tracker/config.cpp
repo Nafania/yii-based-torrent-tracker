@@ -79,6 +79,7 @@ void Cconfig::fill_maps(const Cconfig* v)
 			"table_userProfiles", &m_table_userProfiles, "userProfiles",
 			"table_snatched", &m_table_snatched, "downloads",
 			"table_deleted_files", &m_table_deleted_files, "xbt_deleted_hashes",
+			"table_changed_files", &m_table_changed_files, "xbt_changed_hashes",
 			"torrent_pass_private_key", &m_torrent_pass_private_key, "",
 			NULL, NULL, ""
 		};

@@ -12,7 +12,7 @@ $img = CHtml::image($model->getImageUrl(100, 100),
 echo CHtml::link($img, $model->getUrl(), array('class' => 'pull-left'));
 ?>
 
-	<div class="media-body pull-left">
+	<div class="media-body">
        <h1 class="media-heading"><?php echo $model->getTitle(); ?></h1>
 	<p><?php echo Yii::t('groupsModule.common',
 				'Участники группы:') . ' ' . CHtml::link(Yii::t('groupsModule.common',

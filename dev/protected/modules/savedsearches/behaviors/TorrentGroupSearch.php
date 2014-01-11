@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Поведение для испльзования поиска в TorrentGroup
  *
@@ -7,10 +8,11 @@
 class TorrentGroupSearch extends CActiveRecordBehavior {
 	public function setSearchSettings () {
 		$this->_setCriteria();
+		return $this->getOwner();
 	}
 
-	private function _setCriteria () {
-		$searchData = Yii::app()->getUser()->getSavedSearchData('TorrentGroup');
+	public function _setCriteria () {
+		$searchData = Yii::app()->getUser()->getSavedSearchData('modules_torrents_models_TorrentGroup');
 
 		$category = Yii::app()->getRequest()->getParam('category', $searchData['category']);
 		$tags = Yii::app()->getRequest()->getParam('tags', $searchData['tags']);
@@ -35,9 +37,7 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 		 */
 		if ( strpos($sort, 'commentsCount') !== false ) {
 			$_criteria = new CDbCriteria();
-			$_criteria->select = $alias . '.*, cc.count AS commentsCount';
-			$_criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = :modelName AND cc.modelId = ' . $alias . '.id)';
-			$_criteria->params[':modelName'] = $owner->resolveClassName();
+			$_criteria->with = 'commentsCount';
 			$this->getOwner()->getDbCriteria()->mergeWith($_criteria);
 		}
 		/**
@@ -45,13 +45,11 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 		 */
 		if ( strpos($sort, 'rating') !== false ) {
 			$_criteria = new CDbCriteria();
-			$_criteria->select = $alias . '.*, r.rating AS rating';
-			$_criteria->join = 'LEFT JOIN {{ratings}} r ON ( r.modelName = :modelName AND r.modelId = ' . $alias . '.id)';
-			$_criteria->params[':modelName'] = $owner->resolveClassName();
+			$_criteria->with = 'rating';
 			$this->getOwner()->getDbCriteria()->mergeWith($_criteria);
 		}
 
-		$this->getOwner()->getDbCriteria()->mergeWith(modules\torrents\models\TorrentGroup::getPeriodCriteria($period));
+		$this->getOwner()->getDbCriteria()->mergeWith(modules\torrents\models\TorrentGroup::model()->getPeriodCriteria($period));
 
 		list($sortColumn, $sortDesc) = $this->_getSort($sort);
 		$criteria = new CDbCriteria();
@@ -62,10 +60,9 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 			$criteria->order = $alias . '.mtime DESC';
 		}
 		$this->getOwner()->getDbCriteria()->mergeWith($criteria);
-
 	}
 
-	private function _getSort ( $sort ) {
+	protected function _getSort ( $sort ) {
 		$sortType = $sortDesc = false;
 		if ( $sort ) {
 			$bits = explode('.', $sort);
@@ -86,6 +83,15 @@ class TorrentGroupSearch extends CActiveRecordBehavior {
 
 		if ( !in_array($sortType, $_sortColumns) ) {
 			$sortType = $sortDesc = false;
+		}
+
+		$sort = $this->getOwner()->search()->sort;
+
+		if ( $sortType && $var = $sort->attributes[$sortType] ) {
+			return array(
+				( is_array($var) ? $var['asc'] : $var ),
+				$sortDesc
+			);
 		}
 
 		return array(

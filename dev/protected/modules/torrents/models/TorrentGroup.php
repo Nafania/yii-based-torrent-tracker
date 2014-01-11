@@ -1,5 +1,6 @@
 <?php
 namespace modules\torrents\models;
+
 use CDbCriteria;
 use CActiveDataProvider;
 use CMap;
@@ -19,7 +20,7 @@ use modules\torrents\models AS models;
  * @property integer                               $cId
  * @property \Category                             $category
  * @property integer                               $uid
- * @property models\Torrent[]     torrents
+ * @property models\Torrent[]                      torrents
  * @property string                                description
  *
  */
@@ -54,95 +55,100 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 		// will receive user inputs.
 		return CMap::mergeArray(parent::rules(),
 			array(
-			     //array('picture', 'required', 'on' => 'insert'),
-			     array(
-				     'title',
-				     'required',
-				     'on' => 'upload'
-			     ),
-			     array(
-				     'id, ctime, mtime, cId',
-				     'numerical',
-				     'integerOnly' => true
-			     ),
-			     array(
-				     'title',
-				     'length',
-				     'max' => 255
-			     ),
-			     array(
-				     'picture',
-				     'required',
-				     'on' => 'insert'
-			     ),
-			     // The following rule is used by search().
-			     // Please remove those attributes that should not be searched.
-			     array(
-				     'id, title, ctime, picture, mtime',
-				     'safe',
-				     'on' => 'search'
-			     ),
-			     array(
-				     'id, title, ctime, picture, mtime, cId',
-				     'safe',
-				     'on' => 'adminSearch'
-			     ),
+				//array('picture', 'required', 'on' => 'insert'),
+				array(
+					'title',
+					'required',
+					'on' => 'upload'
+				),
+				array(
+					'id, ctime, mtime, cId',
+					'numerical',
+					'integerOnly' => true
+				),
+				array(
+					'title',
+					'length',
+					'max' => 255
+				),
+				array(
+					'picture',
+					'required',
+					'on' => 'insert'
+				),
+				// The following rule is used by search().
+				// Please remove those attributes that should not be searched.
+				array(
+					'id, title, ctime, picture, mtime',
+					'safe',
+					'on' => 'search'
+				),
+				array(
+					'id, title, ctime, picture, mtime, cId',
+					'safe',
+					'on' => 'adminSearch'
+				),
 			));
 	}
 
 	public function relations () {
 		return CMap::mergeArray(parent::relations(),
 			array(
-			     'torrents' => array(
-				     self::HAS_MANY,
-				     'modules\torrents\models\Torrent',
-				     'gId'
-			     ),
+				'torrents' => array(
+					self::HAS_MANY,
+					'modules\torrents\models\Torrent',
+					'gId'
+				),
 			));
 	}
 
 	public function behaviors () {
 		return CMap::mergeArray(parent::behaviors(),
 			array(
-			     'eavAttr' => array(
-				     'class'            => 'application.modules.torrents.extensions.eav.EEavBehavior',
-				     // Table that stores attributes (required)
-				     'tableName'        => 'torrentGroupsEAV',
-				     // model id column
-				     // Default is 'entity'
-				     'entityField'      => 'entity',
-				     // attribute name column
-				     // Default is 'attribute'
-				     'attributeField'   => 'attribute',
-				     // attribute value column
-				     // Default is 'value'
-				     'valueField'       => 'value',
-				     'cacheId'          => 'cache',
-				     // Model FK name
-				     // By default taken from primaryKey
-				     //'modelTableFk'     => primaryKey,
-				     // Array of allowed attributes
-				     // All attributes are allowed if not specified
-				     // Empty by default
-				     'safeAttributes'   => array(),
-				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
-				     // Empty by default
-				     'attributesPrefix' => '',
-				     'preload'          => true,
-			     )
+				'eavAttr' => array(
+					'class'            => 'application.modules.torrents.extensions.eav.EEavBehavior',
+					// Table that stores attributes (required)
+					'tableName'        => 'torrentGroupsEAV',
+					// model id column
+					// Default is 'entity'
+					'entityField'      => 'entity',
+					// attribute name column
+					// Default is 'attribute'
+					'attributeField'   => 'attribute',
+					// attribute value column
+					// Default is 'value'
+					'valueField'       => 'value',
+					'cacheId'          => 'cache',
+					// Model FK name
+					// By default taken from primaryKey
+					//'modelTableFk'     => primaryKey,
+					// Array of allowed attributes
+					// All attributes are allowed if not specified
+					// Empty by default
+					'safeAttributes'   => array(),
+					// Attribute prefix. Useful when storing attributes for multiple models in a single table
+					// Empty by default
+					'attributesPrefix' => '',
+					'preload'          => true,
+				)
 			),
 			array(
-			     'getTorrentTitleBehavior' => array(
-				     'class' => 'application.modules.torrents.behaviors.GetTorrentTitleBehavior'
-			     )
+				'delete187F3' => array(
+					'class' => 'application.modules.torrents.behaviors.Delete187F3'
+				)
 			),
 			array(
-			     'SlugBehavior' => array(
-				     'class'         => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
-				     'sourceMethod'  => 'getTitle',
-				     'slugAttribute' => 'slug',
-				     'mode'          => 'translit',
-			     ),
+				'getTorrentTitleBehavior' => array(
+					'class' => 'application.modules.torrents.behaviors.GetTorrentTitleBehavior'
+				)
+			),
+			array(
+				'SlugBehavior' => array(
+					'class'         => 'application.extensions.SlugBehavior.aii.behaviors.SlugBehavior',
+					'sourceMethod'  => 'getTitle',
+					'slugAttribute' => 'slug',
+					'mode'          => 'translit',
+				),
 			));
 	}
 
@@ -175,36 +181,30 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 		$criteria->compare('t.id', $this->id);
 		$criteria->compare('t.title', $this->title, true);
 		$criteria->compare('t.ctime', $this->ctime);
-		$criteria->compare('t.picture', $this->picture, true);
 		$criteria->compare('t.mtime', $this->mtime);
 		$criteria->compare('t.cId', $this->cId);
-		//$criteria->order = 'mtime DESC';
 
-		/*$sort = new CSort($this);
-		$sort->defaultOrder = 't.mtime DESC';
+		$sort = new \CSort();
+		$sort->sortVar = 'sort';
 		$sort->attributes = array(
-			'*',
-			'commentsCount' => array(
-				'asc'     => 'commentsCount ASC',
-				'desc'    => 'commentsCount DESC',
-				'default' => 'desc',
-			),
-			'rating'        => array(
-				'asc'     => 'rating ASC',
-				'desc'    => 'rating DESC',
-				'default' => 'desc',
-			),
-		);*/
+			'rating'        => 'rating.rating',
+			'commentsCount' => 'commentsCount.count',
+			'*'
+		);
+
 		return new CActiveDataProvider($this, array(
-		                                           'criteria'   => $criteria,
-		                                           //'sort'     => $sort
-		                                           'pagination' => array('pageVar' => 'page'),
-		                                      ));
+			'criteria'   => $criteria,
+			'pagination' => array(
+				'pageVar'  => 'page',
+				'pageSize' => Yii::app()->user->getState('pageSize', Yii::app()->params['defaultPageSize']),
+			),
+			'sort'       => $sort,
+		));
 	}
 
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
-			//$this->mtime = time();
+			$this->description = null;
 
 			if ( $this->getIsNewRecord() ) {
 				$this->ctime = $this->mtime = time();
@@ -302,10 +302,27 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 
 	public function searchWithText ( $search = '' ) {
 		if ( $search ) {
-			$alias = $this->getTableAlias();
 			$criteria = new CDbCriteria();
-			$criteria->condition = $alias . '.title LIKE :search';
-			$criteria->params[':search'] = '%' . $search . '%';
+			$alias = $this->getTableAlias();
+			try {
+				$spSearch = Yii::app()->sphinx;
+				$spSearch->setSelect('*');
+				$spSearch->setMatchMode(SPH_MATCH_ALL);
+				$resArray = $spSearch->query(\SphinxClient::EscapeString($search), 'yiiTorrents');
+
+				$keys = array();
+				if ( sizeof($resArray['matches']) ) {
+					foreach ( $resArray['matches'] AS $key => $data ) {
+						$keys[] = $key;
+					}
+				}
+				$criteria->addInCondition($alias . '.id', $keys);
+
+			} catch ( \CException $e ) {
+				$criteria = new CDbCriteria();
+				$criteria->condition = $alias . '.title LIKE :search';
+				$criteria->params[':search'] = '%' . $search . '%';
+			}
 			$this->getDbCriteria()->mergeWith($criteria);
 		}
 	}
@@ -364,26 +381,31 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 	}
 
 
-	public static function getPeriodCriteria ( $period ) {
+	public function getPeriodCriteria ( $period, $alias = '' ) {
 		$criteria = new CDbCriteria();
+
+		if ( !$alias ) {
+			$alias = $this->getTableAlias();
+		}
+
 		switch ( $period ) {
 			case 'day':
-				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->addCondition($alias . '.mtime BETWEEN :start AND :end');
 				$criteria->params[':start'] = time() - 24 * 60 * 60;
 				$criteria->params[':end'] = time();
 				break;
 			case 'week':
-				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->addCondition($alias . '.mtime BETWEEN :start AND :end');
 				$criteria->params[':start'] = time() - 7 * 24 * 60 * 60;
 				$criteria->params[':end'] = time();
 				break;
 			case 'month':
-				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->addCondition($alias . '.mtime BETWEEN :start AND :end');
 				$criteria->params[':start'] = time() - 30 * 24 * 60 * 60;
 				$criteria->params[':end'] = time();
 				break;
 			case 'year':
-				$criteria->addCondition('mtime BETWEEN :start AND :end');
+				$criteria->addCondition($alias . '.mtime BETWEEN :start AND :end');
 				$criteria->params[':start'] = time() - 365 * 24 * 60 * 60;
 				$criteria->params[':end'] = time();
 				break;

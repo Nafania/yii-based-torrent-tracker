@@ -128,6 +128,8 @@ class ExtendedClientScript extends CClientScript {
 
 		if ( $this->combineCss ) {
 			if ( count($this->cssFiles) !== 0 ) {
+				$cssFiles = array();
+
 				foreach ( $this->cssFiles as $url => $media ) {
 					$url = $this->getRealPath($url);
 					if ( !$this->isRemoteFile($url) ) {

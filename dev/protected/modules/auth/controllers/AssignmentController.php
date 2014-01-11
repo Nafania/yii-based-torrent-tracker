@@ -17,11 +17,17 @@ class AssignmentController extends AuthController {
 	public function actionIndex () {
 		$this->breadcrumbs[] = Yii::t('AuthModule.main', 'Assignments');
 
-		$dataProvider = new CActiveDataProvider($this->module->userClass);
+		$model = new $this->module->userClass;
+		$model->setScenario('adminSearch');
+		$model->unsetAttributes();
+
+		if ( isset($_GET[$model->resolveClassName($model)]) ) {
+			$model->setAttributes($_GET[$model->resolveClassName($model)]);
+		}
 
 		$this->render('index',
 			array(
-			     'dataProvider' => $dataProvider
+				'model' => $model,
 			));
 	}
 
@@ -70,10 +76,10 @@ class AssignmentController extends AuthController {
 
 		$this->render('view',
 			array(
-			     'model'             => $model,
-			     'authItemDp'        => $authItemDp,
-			     'formModel'         => $formModel,
-			     'assignmentOptions' => $assignmentOptions,
+				'model'             => $model,
+				'authItemDp'        => $authItemDp,
+				'formModel'         => $formModel,
+				'assignmentOptions' => $assignmentOptions,
 			));
 	}
 
@@ -102,9 +108,9 @@ class AssignmentController extends AuthController {
 
 			if ( !isset($_POST['ajax']) ) {
 				$this->redirect(array(
-				                     'view',
-				                     'id' => $userId
-				                ));
+					'view',
+					'id' => $userId
+				));
 			}
 		}
 		else {

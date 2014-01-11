@@ -112,7 +112,7 @@ return array(
 		),
 
 		'cache'         => array(
-			'class'     => 'system.caching.CDummyCache',
+			'class'     => 'system.caching.CApcCache',
 			'keyPrefix' => 'tor_',
 		),
 
@@ -129,9 +129,9 @@ return array(
 		),
 		'clientScript'  => array(
 			'class'       => 'ext.ExtendedClientScript.ExtendedClientScript',
-			'compressJs'  => false,
+			'compressJs'  => true,
 			'compressCss' => false,
-			'combineJs'   => false,
+			'combineJs'   => true,
 			'combineCss'  => false,
 
 			'packages'    => array(
@@ -163,10 +163,18 @@ return array(
 			'autoStart'               => true,
 			//'cookieMode'              => 'none',
 			'sessionTableName'        => '{{sessions}}',
-			'timeout'                 => 7 * 24 * 60 * 60,
+			'timeout'                 => 1 * 24 * 60 * 60,
 			'cookieParams'            => array(
 				'lifetime' => 30 * 24 * 60 * 60,
 			),
+		),
+		'sphinx'        => array(
+			'class'             => 'ext.DGSphinxSearch.DGSphinxSearch',
+			'server'            => '127.0.0.1',
+			'port'              => 3312,
+			'maxQueryTime'      => 3000,
+			'enableProfiling'   => 0,
+			'enableResultTrace' => 0,
 		),
 	)
 );

@@ -87,6 +87,6 @@ class CommentCount extends EActiveRecord
     }
 
 	public function __toString() {
-		return ( $this->count ? $this->count : 0);
+		return (string) ( $this->count ? $this->count : 0);
 	}
 }

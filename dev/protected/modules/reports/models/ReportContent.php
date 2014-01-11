@@ -85,17 +85,6 @@ class ReportContent extends EActiveRecord {
 
 	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
-			$validator = CValidator::createValidator('exist',
-				$this,
-				'modelId',
-				array(
-				     'attributeName' => 'id',
-				     'className'     => self::classNameToNamespace($this->modelName),
-				     'allowEmpty'    => false,
-				));
-			$this->getValidatorList()->insertAt(0, $validator);
-
-
 			$report = Report::model()->findByAttributes(array(
 			                                                 'modelId'   => $this->modelId,
 			                                                 'modelName' => $this->modelName
@@ -145,6 +134,8 @@ class ReportContent extends EActiveRecord {
 
 			return true;
 		}
+
+		return false;
 	}
 
 

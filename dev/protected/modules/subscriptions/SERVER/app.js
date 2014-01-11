@@ -15,5 +15,9 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('newEvent', function (data) {
         socket.broadcast.to(data.room).emit('newEvent');
-    })
+    });
+
+    socket.on('disconnect', function () {
+        socket.leave();
+    });
 });

@@ -33,7 +33,7 @@
 			'name' => 'description',
 			'label' => Yii::t('AuthModule.main', 'Description'),
 		),
-		/*
+
         array(
 			'name' => 'bizrule',
 			'label' => Yii::t('AuthModule.main', 'Business rule'),
@@ -42,7 +42,6 @@
 			'name' => 'data',
 			'label' => Yii::t('AuthModule.main', 'Data'),
 		),
-		*/
     ),
 )); ?>
 

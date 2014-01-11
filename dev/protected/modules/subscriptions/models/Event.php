@@ -4,15 +4,17 @@
  * This is the model class for table "events".
  *
  * The followings are the available columns in table 'events':
- * @property integer             $id
- * @property string              $title
- * @property string              $text
- * @property string              $url
- * @property integer             $ctime
- * @property integer             $uId
- * @property integer             $unread
- * @property string              $icon
- * @property integer             $notified
+ * @property integer              $id
+ * @property string               $title
+ * @property string               $text
+ * @property string               $url
+ * @property integer              $ctime
+ * @property integer              $uId
+ * @property integer              $unread
+ * @property string               $icon
+ * @property integer              $notified
+ * @property string               $uniqueType
+ * @property integer              $count
  */
 class Event extends EActiveRecord {
 	const EVENT_UNREAD = 1;
@@ -25,7 +27,7 @@ class Event extends EActiveRecord {
 	 *
 	 * @param string $className active record class name.
 	 *
-	 * @return Torrent the static model class
+	 * @return Event the static model class
 	 */
 	public static function model ( $className = __CLASS__ ) {
 		return parent::model($className);
@@ -46,10 +48,10 @@ class Event extends EActiveRecord {
 		// will receive user inputs.
 		return CMap::mergeArray(parent::rules(),
 			array(
-			     array(
-				     'text',
-				     'required'
-			     ),
+				array(
+					'text',
+					'required'
+				),
 			));
 	}
 
@@ -106,9 +108,9 @@ class Event extends EActiveRecord {
 				null,
 				null,
 				json_encode(array(
-				                 'name' => 'newEvent',
-				                 'args' => array('room' => md5($this->uId)),
-				            )));
+					'name' => 'newEvent',
+					'args' => array('room' => md5($this->uId)),
+				)));
 			$elephant->close();
 		} catch ( Exception $e ) {
 			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
@@ -140,12 +142,26 @@ class Event extends EActiveRecord {
 		$criteria = new CDbCriteria;
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
+
+			if ( $this->getIsNewRecord() && $this->uniqueType ) {
+				$oldEvent = self::model()->findByAttributes(array(
+					'uniqueType' => $this->uniqueType,
+					'uId'        => $this->uId,
+					'unread'     => self::EVENT_UNREAD
+				));
+
+				if ( $oldEvent ) {
+					$oldEvent->saveCounters(array('count' => 1));
+
+					return false;
+				}
+			}
 
 			$this->url = serialize($this->url);
 			$this->icon = ($this->icon ? $this->icon : 'envelope');
@@ -154,6 +170,7 @@ class Event extends EActiveRecord {
 				$this->ctime = time();
 				$this->unread = self::EVENT_UNREAD;
 				$this->notified = 0;
+				$this->count = 1;
 			}
 
 			return true;

@@ -83,7 +83,19 @@ class RatingsModule extends CWebModule {
 			     'Rating',
 			     'modelId',
 			     'joinType' => 'LEFT JOIN',
-			     'on'       => 'rating.modelName = \'BlogPost\'',
+			     'on'       => 'rating.modelName = \'modules_blogs_models_BlogPost\'',
+			     'together' => true,
+			),
+			'application.modules.ratings.models.*');
+
+		Yii::app()->pd->addRelations('modules\torrents\models\TorrentGroup',
+			'rating',
+			array(
+			     CActiveRecord::HAS_ONE,
+			     'Rating',
+			     'modelId',
+			     'joinType' => 'LEFT JOIN',
+			     'on'       => 'rating.modelName = \'modules_torrents_models_TorrentGroup\'',
 			     'together' => true,
 			),
 			'application.modules.ratings.models.*');
@@ -96,7 +108,7 @@ class RatingsModule extends CWebModule {
 			     'modelId',
 			     'condition' => 'modelName = :modelName',
 			     'params'    => array(
-				     'modelName' => 'TorrentGroup'
+				     'modelName' => 'modules_torrents_models_TorrentGroup'
 			     )
 			),
 			'application.modules.ratings.models.*');
@@ -109,7 +121,7 @@ class RatingsModule extends CWebModule {
 				     'class' => 'application.modules.ratings.behaviors.UserRatingBehavior'
 			     )
 			));
-		Yii::app()->pd->registerBehavior('Blog',
+		Yii::app()->pd->registerBehavior('modules\blogs\models\Blog',
 			array(
 			     'blogRatingBehavior' => array(
 				     'class' => 'application.modules.ratings.behaviors.BlogRatingBehavior'

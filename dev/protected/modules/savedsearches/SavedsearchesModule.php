@@ -9,6 +9,7 @@ class SavedsearchesModule extends CWebModule {
 		// import the module-level models and components
 		$this->setImport(array(
 		                      'savedsearches.models.*',
+		                      'savedsearches.behaviors.*',
 		                 ));
 	}
 
@@ -37,6 +38,12 @@ class SavedsearchesModule extends CWebModule {
 			array(
 			     'torrentGroupSearch' => array(
 				     'class' => 'application.modules.savedsearches.behaviors.TorrentGroupSearch'
+			     )
+			));
+		Yii::app()->pd->registerBehavior('modules\torrents\models\Torrent',
+			array(
+			     'torrentSearch' => array(
+				     'class' => 'application.modules.savedsearches.behaviors.TorrentSearch'
 			     )
 			));
 	}

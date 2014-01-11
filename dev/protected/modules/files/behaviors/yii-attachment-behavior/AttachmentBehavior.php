@@ -145,6 +145,7 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				Yii::import('application.modules.files.helpers.*');
 				$src = ImageHelper::adaptiveThumb($width, $height, $src);
 			} catch ( Exception $exc ) {
+				$this->getOwner()->saveAttributes(array($this->attribute => ''));
 				Yii::log('Cant convert image ' . $this->getImagePath() . ' with error ' . $exc->getMessage(),
 					'warning');
 			}
@@ -154,6 +155,7 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				Yii::import('application.modules.files.helpers.*');
 				$src = ImageHelper::thumb($width, $height, $src);
 			} catch ( Exception $exc ) {
+				$this->getOwner()->saveAttributes(array($this->attribute => ''));
 				Yii::log('Cant convert image ' . $this->getImagePath() . ' with error ' . $exc->getMessage(),
 					'warning');
 			}
@@ -324,7 +326,7 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		);
 		$replacement = array(
 			$this->folder,
-			get_class($this->Owner),
+			$this->getOwner()->resolveClassName(),
 			$this->Owner->primaryKey,
 			$this->file_extension,
 			$this->filename,

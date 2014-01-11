@@ -1,6 +1,7 @@
 <?php
 
 class CommentsModule extends CWebModule {
+	public $backendController = 'commentsBackend';
 	private $_assetsUrl;
 
 	public function init () {
@@ -26,6 +27,7 @@ class CommentsModule extends CWebModule {
 		self::_addModelsRelations();
 		self::_addBehaviors();
 		self::_setImport();
+		Yii::app()->pd->addAdminModule('comments', 'Models management');
 	}
 
 	private static function _addUrlRules () {
@@ -63,7 +65,7 @@ class CommentsModule extends CWebModule {
 			     CActiveRecord::HAS_ONE,
 			     'CommentCount',
 			     'modelId',
-			     'condition' => 'modelName = :modelName',
+			     'condition' => 'commentsCount.modelName = :modelName',
 			     'params'    => array(
 				     'modelName' => 'modules_torrents_models_TorrentGroup'
 			     )
@@ -91,7 +93,7 @@ class CommentsModule extends CWebModule {
 			     'modelId',
 			     'condition' => 'modelName = :modelName',
 			     'params'    => array(
-				     'modelName' => 'modules_torrents_models_BlogPost'
+				     'modelName' => 'modules_blogs_models_BlogPost'
 			     )
 			),
 			'application.modules.comments.models.*');

@@ -16,7 +16,6 @@ $form = $this->beginWidget('CActiveForm',
 	<?php if ( $model->hasErrors() ): ?>
     <p class="errornote"><?php echo YiiadminModule::t('Пожалуйста, исправьте ошибки, указанные ниже.'); ?></p>
 	<?php endif; ?>
-
         <div class="column span-16">
             <h3><?php echo Yii::t(get_class($model), get_class($model)) ?></h3>
             <fieldset class="module">
@@ -26,7 +25,7 @@ $form = $this->beginWidget('CActiveForm',
 					echo 'errors';
 				} ?>">
                     <div class="column span-4"><?php echo $form->labelEx($model, 'name'); ?></div>
-                    <div class="column span-flexible">
+                    <div class="column span">
 						<?php echo $form->textField($model, 'name'); ?>
                         <ul class="errorlist">
                             <li><?php echo $form->error($model, 'name'); ?></li>
@@ -38,7 +37,7 @@ $form = $this->beginWidget('CActiveForm',
 					echo 'errors';
 				} ?>">
                     <div class="column span-4"><?php echo $form->labelEx($model, 'image'); ?></div>
-                    <div class="column span-flexible">
+                    <div class="column span">
 						<?php echo $form->fileField($model, 'image'); ?>
                         <ul class="errorlist">
                             <li><?php echo $form->error($model, 'image'); ?></li>
@@ -50,7 +49,7 @@ $form = $this->beginWidget('CActiveForm',
 					echo 'errors';
 				} ?>">
                     <div class="column span-4"><?php echo $form->labelEx($model, 'description'); ?></div>
-                    <div class="column span-flexible">
+                    <div class="column span">
 						<?php echo $form->textArea($model, 'description'); ?>
                         <ul class="errorlist">
                             <li><?php echo $form->error($model, 'description'); ?></li>

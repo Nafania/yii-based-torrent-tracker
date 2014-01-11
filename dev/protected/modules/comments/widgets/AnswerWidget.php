@@ -1,4 +1,5 @@
 <?php
+
 class AnswerWidget extends CWidget {
 	public $model;
 	public $modelId;
@@ -33,11 +34,12 @@ class AnswerWidget extends CWidget {
 
 		$this->render('answer',
 			array(
-			     'comment'   => $comment,
-			     'modelId'   => $this->modelId,
-			     'modelName' => $this->modelName,
-			     'parentId'  => $this->parentId,
-			     'torrents'  => $this->torrents,
+				'comment'   => $comment,
+				'modelId'   => $this->modelId,
+				'modelName' => $this->modelName,
+				'parentId'  => $this->parentId,
+				'torrents'  => $this->torrents,
+				'action'    => Yii::app()->createUrl('/comments/default/create')
 			));
 	}
 }

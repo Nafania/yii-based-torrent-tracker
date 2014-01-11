@@ -147,26 +147,17 @@ class User extends EActiveRecord {
 
 			array(
 				'email',
-				'email'
+				'email',
+				'checkMX' => true,
 			),
 			/**
-			 * нельзя использовать имя admin
-			 */
-			array(
-				'name',
-				'compare',
-				'operator'     => '!=',
-				'compareValue' => 'admin',
-				'message'      => Yii::t('userModule.common', 'There is can be only one admin! You shall not pass!')
-			),
-			/**
-			 * имя должно быть не менее чем 2 символа и не более чем 125
+			 * имя должно быть не менее чем 2 символа и не более чем 50
 			 */
 			array(
 				'name',
 				'length',
 				'min' => 2,
-				'max' => 125,
+				'max' => 50,
 			),
 			/**
 			 * регексп, для ограничения символов в имени
@@ -247,16 +238,16 @@ class User extends EActiveRecord {
 			if ( !$this->_identity->authenticate() ) {
 				switch ( $this->_identity->errorCode ) {
 					case UserIdentity::ERROR_EMAIL_INVALID:
-						$this->addError('email', Yii::t('userModule.common', 'Email not found in database'));
+						$this->addError('email', Yii::t('userModule.common', 'Указанный email не найден в базе данных'));
 						break;
 					case UserIdentity::ERROR_USER_NOT_ACTIVE:
-						$this->addError('email', Yii::t('userModule.common', 'User account deactivated'));
+						$this->addError('email', Yii::t('userModule.common', 'Этот аккаунт был отключен'));
 						break;
 					case UserIdentity::ERROR_PASSWORD_INVALID:
-						$this->addError('password', Yii::t('userModule.common', 'Incorrect password.'));
+						$this->addError('password', Yii::t('userModule.common', 'Неверный пароль'));
 						break;
 					default:
-						$this->addError('password', Yii::t('userModule.common', 'Incorrect email or password.'));
+						$this->addError('password', Yii::t('userModule.common', 'Неверный email адрес или пароль'));
 						break;
 				}
 			}
@@ -329,6 +320,17 @@ class User extends EActiveRecord {
 				$this->sendCreate();
 				break;
 		}
+	}
+
+	protected function beforeValidate() {
+		if ( parent::beforeValidate() ) {
+			if ( $this->getId() != 1 && $this->getName() == 'admin') {
+				$this->addError('name', 'There is can be only one admin! You shall not pass!');
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 
 

@@ -28,7 +28,7 @@
 	        ?>
 	    </h3>
 		<?php
-		if ( Yii::app()->user->checkAccess('updateOwnGroup',
+		if ( Yii::app()->user->checkAccess('updateMembersStatusInOwnGroup',
 				array('ownerId' => $group->ownerId)) || Yii::app()->user->checkAccess('updateGroup')
 		) {
 			?>
@@ -78,5 +78,3 @@
 	</div>
 
 </div>
-<hr />
-

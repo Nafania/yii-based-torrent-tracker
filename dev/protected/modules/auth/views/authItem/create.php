@@ -18,6 +18,12 @@ echo $form->textField($model, 'name'); ?>
 <?php echo $form->label($model, 'description');
 echo $form->textField($model, 'description'); ?>
 
+<?php echo $form->label($model, 'bizrule');
+echo $form->textField($model, 'bizrule'); ?>
+
+<?php echo $form->label($model, 'data');
+echo $form->textField($model, 'data'); ?>
+
 <div class="form-actions">
 	<?php echo CHtml::submitButton(Yii::t('AuthModule.main', 'Create')); ?>
 	<?php echo CHtml::link(Yii::t('AuthModule.main', 'Cancel'), array('index')); ?>

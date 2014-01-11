@@ -7,16 +7,8 @@ class TorrentsFlow extends CWidget {
 		$cs->registerCssFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/jMyCarousel/css/style.css');
 		$cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/jMyCarousel/jMyCarousel.js');
 
-
-		$criteria = new CDbCriteria();
-		$criteria->order = 'mtime DESC';
-		$criteria->limit = 20;
-
-		$torrentsGroup = modules\torrents\models\TorrentGroup::model()->findAll($criteria);
-
 		$this->render('torrentsFlow',
 			array(
-			     'torrentsGroup' => $torrentsGroup,
 			     'tabs'          => $this->_getTabs(),
 			));
 	}
@@ -45,17 +37,20 @@ class TorrentsFlow extends CWidget {
 
 	private function _renderTab ( $catId ) {
 		$criteria = new CDbCriteria();
-		$criteria->select = 't.*, r.rating';
+		$criteria->select = 't.*, r.rating AS rating';
 		$criteria->order = 'r.rating DESC';
 		$criteria->condition = 't.cId = :cId AND mtime > ( UNIX_TIMESTAMP(NOW()) - 14 * 24 * 60 * 60 )';
-		$criteria->join = 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'TorrentGroup\' AND r.modelId = t.id)';
+		$criteria->join = 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'modules_torrents_models_TorrentGroup\' AND r.modelId = t.id)';
 		//$criteria->group = 't.id';
 		$criteria->limit = 15;
 		$criteria->params = array(
 			':cId' => $catId,
 		);
 
-		$torrentsGroup = modules\torrents\models\TorrentGroup::model()->findAll($criteria);
+		$model = modules\torrents\models\TorrentGroup::model();
+		$model->setSearchSettings();
+		$model->getDbCriteria()->mergeWith($criteria);
+		$torrentsGroup = $model->findAll();
 
 		if ( sizeof($torrentsGroup) > $this->minLimit ) {
 			return $this->render('_torrentsFlowTab',

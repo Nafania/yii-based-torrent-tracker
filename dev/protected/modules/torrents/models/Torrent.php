@@ -1,34 +1,32 @@
 <?php
 namespace modules\torrents\models;
+
 use Yii;
 use CDbCriteria;
 use CActiveDataProvider;
 use CMap;
 use modules\torrents\components AS tComponents;
 use modules\torrents\models AS models;
+use modules\tracking\components AS trackable;
 
 /**
  * This is the model class for table "torrents".
  *
  * The followings are the available columns in table 'torrents':
- * @property integer                                 $id
- * @property integer                                 $ctime
- * @property integer                                 $size
- * @property integer                                 $downloads
- * @property integer                                 $seeders
- * @property integer                                 $leechers
- * @property integer                                 $mtime
- * @property string                                  $info_hash
- * @property integer                                 $uid
- * @property string                                  $title
- * @property integer                                 $hashChanged
- * @property models\TorrentGroup                     torrentGroup
+ * @property integer                                  $id
+ * @property integer                                  $ctime
+ * @property integer                                  $size
+ * @property integer                                  $downloads
+ * @property integer                                  $seeders
+ * @property integer                                  $leechers
+ * @property integer                                  $mtime
+ * @property string                                   $info_hash
+ * @property integer                                  $uid
+ * @property string                                   $title
+ * @property models\TorrentGroup                      torrentGroup
+ * @property \User                                    user
  */
-class Torrent extends \EActiveRecord {
-
-	const HASH_CHANGED = 1;
-	const HASH_NOT_CHANGED = 0;
-
+class Torrent extends \EActiveRecord implements trackable\Trackable {
 	public $cacheTime = 3600;
 
 	/**
@@ -90,46 +88,51 @@ class Torrent extends \EActiveRecord {
 	public function behaviors () {
 		return CMap::mergeArray(parent::behaviors(),
 			array(
-			     'eavAttr' => array(
-				     'class'            => 'application.modules.torrents.extensions.eav.EEavBehavior',
-				     // Table that stores attributes (required)
-				     'tableName'        => 'torrentsEAV',
-				     // model id column
-				     // Default is 'entity'
-				     'entityField'      => 'entity',
-				     // attribute name column
-				     // Default is 'attribute'
-				     'attributeField'   => 'attribute',
-				     // attribute value column
-				     // Default is 'value'
-				     'valueField'       => 'value',
-				     'cacheId'          => 'cache',
-				     // Model FK name
-				     // By default taken from primaryKey
-				     //'modelTableFk'     => primaryKey,
-				     // Array of allowed attributes
-				     // All attributes are allowed if not specified
-				     // Empty by default
-				     'safeAttributes'   => array(),
-				     // Attribute prefix. Useful when storing attributes for multiple models in a single table
-				     // Empty by default
-				     'attributesPrefix' => '',
-				     'preload'          => true,
-			     )
+				'eavAttr' => array(
+					'class'            => 'application.modules.torrents.extensions.eav.EEavBehavior',
+					// Table that stores attributes (required)
+					'tableName'        => 'torrentsEAV',
+					// model id column
+					// Default is 'entity'
+					'entityField'      => 'entity',
+					// attribute name column
+					// Default is 'attribute'
+					'attributeField'   => 'attribute',
+					// attribute value column
+					// Default is 'value'
+					'valueField'       => 'value',
+					'cacheId'          => 'cache',
+					// Model FK name
+					// By default taken from primaryKey
+					//'modelTableFk'     => primaryKey,
+					// Array of allowed attributes
+					// All attributes are allowed if not specified
+					// Empty by default
+					'safeAttributes'   => array(),
+					// Attribute prefix. Useful when storing attributes for multiple models in a single table
+					// Empty by default
+					'attributesPrefix' => '',
+					'preload'          => true,
+				)
 			));
 	}
 
 	public function relations () {
 		return CMap::mergeArray(parent::relations(),
 			array(
-			     'torrentGroup' => array(
-				     self::BELONGS_TO,
-				     'modules\torrents\models\TorrentGroup',
-				     'gId'
-			     ),
-			)
-
-		);
+				'torrentGroup' => array(
+					self::BELONGS_TO,
+					'modules\torrents\models\TorrentGroup',
+					'gId'
+				),
+			),
+			array(
+				'user' => array(
+					self::BELONGS_TO,
+					'User',
+					'uid'
+				),
+			));
 	}
 
 	/**
@@ -145,6 +148,7 @@ class Torrent extends \EActiveRecord {
 			'leechers'  => Yii::t('torrentsModule.common', 'Качают'),
 			'mtime'     => Yii::t('torrentsModule.common', 'Время изменения'),
 			'info_hash' => Yii::t('torrentsModule.common', 'Торрент файл'),
+			'title'     => Yii::t('torrentsModule.common', 'Название'),
 		);
 	}
 
@@ -158,18 +162,37 @@ class Torrent extends \EActiveRecord {
 
 		$criteria = new CDbCriteria;
 
-		$criteria->compare('id', $this->id);
-		$criteria->compare('ctime', $this->ctime);
-		$criteria->compare('size', $this->size);
-		$criteria->compare('downloads', $this->downloads);
-		$criteria->compare('seeders', $this->seeders);
-		$criteria->compare('leechers', $this->leechers);
-		$criteria->compare('mtime', $this->mtime);
-		$criteria->order = 'ctime DESC';
+		$alias = $this->getTableAlias();
+
+		$criteria->compare('t.id', $this->id);
+		$criteria->compare('t.ctime', $this->ctime);
+		$criteria->compare('t.size', $this->size);
+		$criteria->compare('t.downloads', $this->downloads);
+		$criteria->compare('t.seeders', $this->seeders);
+		$criteria->compare('t.leechers', $this->leechers);
+		$criteria->compare('t.mtime', $this->mtime);
+
+		$sort = new \CSort();
+		$sort->sortVar = 'sort';
+		$sort->attributes = array(
+			'rating'        => 'rating.rating',
+			'commentsCount' => 'commentsCount.count',
+			'mtime'         => array(
+				'asc'     => $alias . '.ctime',
+				'desc'    => $alias . '.ctime DESC',
+				'default' => 'desc',
+			),
+			'*'
+		);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria'   => $criteria,
+			'pagination' => array(
+				'pageVar'  => 'page',
+				'pageSize' => Yii::app()->user->getState('pageSize', Yii::app()->params['defaultPageSize']),
+			),
+			'sort'       => $sort,
+		));
 	}
 
 	protected function beforeValidate () {
@@ -185,7 +208,12 @@ class Torrent extends \EActiveRecord {
 					$this->addError('info_hash', Yii::t('torrentsModule.common', 'Empty files list in a torrent file'));
 					return false;
 				}
-				if ( self::model()->findAllByAttributes(array('info_hash' => $torrent->hash_info())) ) {
+
+				/**
+				 * allow to change torrent file with same hash only for same torrent
+				 */
+				$model = self::model()->findByAttributes(array('info_hash' => $torrent->hash_info()));
+				if ( $model && $model->getId() <> $this->getId() ) {
 					$this->addError('info_hash', Yii::t('torrentsModule.common', 'Torrent file already exists'));
 					return false;
 				}
@@ -219,10 +247,11 @@ class Torrent extends \EActiveRecord {
 
 				$current = self::findByPk($this->getId());
 				if ( $current ) {
-					$this->deleteXbtHash();
+					$this->deleteXbtHash(false);
 					@unlink($current->getTorrentFilePath() . $this->getId() . '.torrent');
 				}
-				$this->info_hash->saveAs($this->getTmpFile($torrent->hash_info()));
+
+				$torrent->save($this->getTmpFile($torrent->hash_info()));
 
 				$this->info_hash = $torrent->hash_info();
 				$this->size = $torrent->size();
@@ -238,8 +267,12 @@ class Torrent extends \EActiveRecord {
 		return false;
 	}
 
-	protected function deleteXbtHash () {
-		$this->hashChanged = self::HASH_CHANGED;
+	protected function deleteXbtHash ( $onlyDelete = true ) {
+		if ( !$onlyDelete ) {
+			$comm = $this->getDbConnection()->createCommand('INSERT INTO {{xbt_changed_hashes}} (tId) VALUES(:fid)');
+			$comm->bindValue(':fid', $this->id);
+			$comm->execute();
+		}
 
 		$comm = $this->getDbConnection()->createCommand('INSERT INTO {{xbt_deleted_hashes}} (fid, info_hash) VALUES(:fid, :info_hash)');
 		$comm->bindValue(':fid', $this->id);
@@ -329,8 +362,8 @@ class Torrent extends \EActiveRecord {
 			return $this->title;
 		}
 		$sepAttr = $this->torrentGroup->category->attrs(array(
-		                                                     'condition' => 'separate = 1',
-		                                                ));
+			'condition' => 'separate = 1',
+		));
 
 		$return = array();
 		foreach ( $sepAttr AS $attribute ) {
@@ -361,6 +394,18 @@ class Torrent extends \EActiveRecord {
 		return $this->leechers;
 	}
 
+	public function getFilesCount () {
+		$torrent = new tComponents\TorrentComponent($this->getDownloadPath());
+
+		return sizeof($torrent->content());
+	}
+
+	public function getFilesSize () {
+		$torrent = new tComponents\TorrentComponent($this->getDownloadPath());
+
+		return $torrent->size();
+	}
+
 	public function getDownloadPath () {
 		return Yii::getPathOfAlias('webroot') . '/uploads/torrents/' . date('Y.m.d',
 			$this->ctime) . '/' . $this->getId() . '.torrent';
@@ -379,5 +424,71 @@ class Torrent extends \EActiveRecord {
 		}
 
 		return $announce;
+	}
+
+	public function getUrl () {
+		return CMap::mergeArray($this->torrentGroup->getUrl(),
+			array('#' => 'torrent' . $this->getId()));
+	}
+
+
+	public function searchWithText ( $search = '' ) {
+		if ( $search ) {
+			$criteria = new CDbCriteria();
+			$alias = $this->getTableAlias();
+			try {
+				$spSearch = Yii::app()->sphinx;
+				$spSearch->setSelect('*');
+				$spSearch->setMatchMode(SPH_MATCH_ALL);
+				$resArray = $spSearch->query(\SphinxClient::EscapeString($search), 'yiiTorrents');
+
+				$keys = array();
+				if ( sizeof($resArray['matches']) ) {
+					foreach ( $resArray['matches'] AS $key => $data ) {
+						$keys[] = $key;
+					}
+				}
+				$criteria->with = 'torrentGroup';
+				$criteria->addInCondition('torrentGroup.id', $keys);
+
+			} catch ( \CException $e ) {
+				$criteria = new CDbCriteria();
+				$criteria->with = 'torrentGroup';
+				$criteria->condition = 'torrentGroup.title LIKE :search';
+				$criteria->params[':search'] = '%' . $search . '%';
+			}
+			$this->getDbCriteria()->mergeWith($criteria);
+		}
+	}
+
+	public function searchWithTags ( $tags = '' ) {
+		if ( $tags ) {
+			$this->taggedWith($tags);
+		}
+	}
+
+	public function searchWithNotTags ( $tags = '' ) {
+		if ( $tags ) {
+			$this->notTaggedWith($tags);
+		}
+	}
+
+	public function searchWithCategory ( $category = '' ) {
+		if ( $category ) {
+			$criteria = new CDbCriteria();
+			$criteria->with = 'torrentGroup.category';
+			$criteria->together = true;
+			if ( is_numeric($category) ) {
+				$criteria->compare('category.id', $category);
+			}
+			else {
+				$criteria->compare('category.name', $category);
+			}
+			$this->getDbCriteria()->mergeWith($criteria);
+		}
+	}
+
+	public function getLastTime () {
+		return $this->ctime;
 	}
 }

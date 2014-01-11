@@ -1,5 +1,8 @@
 Options FollowSymLinks
 RewriteEngine on
+#RewriteCond %{REQUEST_URI} /tracker
+RewriteCond %{REQUEST_URI} /tracker/[^forum/](.*?)t([0-9]+)\.html
+RewriteRule ^(.*)$ redirect.php?id=%2 [L,QSA]
 
 # if a directory or a file exists, use it directly
 RewriteCond %{REQUEST_FILENAME} !-f

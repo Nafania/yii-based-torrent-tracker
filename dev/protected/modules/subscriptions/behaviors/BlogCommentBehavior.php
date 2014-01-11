@@ -5,12 +5,12 @@ class BlogCommentBehavior extends CActiveRecordBehavior {
 
 		$owner = $this->getOwner();
 
-		if ( !$owner->modelName == 'BlogPost' ) {
+		if ( $owner->modelName != 'modules_blogs_models_BlogPost' ) {
 			return false;
 		}
 
 		$blogPost = modules\blogs\models\BlogPost::model()->findByPk($owner->modelId);
-		if ( !$blogPost ) {
+		if ( !$blogPost || $blogPost->ownerId == Yii::app()->getUser()->getId() ) {
 			return false;
 		}
 
@@ -27,9 +27,8 @@ class BlogCommentBehavior extends CActiveRecordBehavior {
 		$event->url = $url;
 		$event->icon = $icon;
 		$event->uId = $blogPost->ownerId;
+		$event->uniqueType = $icon . $owner->modelName . $blogPost->getPrimaryKey();
 
-		$event->save();
-
-		return true;
+		return $event->save();
 	}
 }

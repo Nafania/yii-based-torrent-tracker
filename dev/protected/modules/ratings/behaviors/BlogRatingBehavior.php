@@ -1,7 +1,7 @@
 <?php
 class BlogRatingBehavior extends RatingBehavior {
 	/**
-	 * @var $owner Blog
+	 * @var $owner modules\blogs\models\Blog
 	 */
 
 	public $ratingCacheTime = 3600;
@@ -19,7 +19,7 @@ class BlogRatingBehavior extends RatingBehavior {
 		$maxTime = ( $row = $comm->queryRow() ) ? $row['maxTime'] : 0;
 
 		$comm = Yii::app()->getDb()->createCommand('SELECT SUM(rating) AS rating FROM {{ratings}} r LEFT JOIN {{blogPosts}} b ON ( r.modelName = :modelName AND r.modelId = b.id) WHERE b.blogId = :blogId');
-		$comm->bindValue(':modelName', 'BlogPost');
+		$comm->bindValue(':modelName', 'modules_blogs_models_BlogPost');
 		$comm->bindValue(':blogId', $owner->getPrimaryKey());
 		$sumRatings = ( $row = $comm->queryRow() ) ? $row['rating'] : 0;
 

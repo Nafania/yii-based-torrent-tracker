@@ -1,8 +1,9 @@
 <?php
+
 class TopMenu extends CWidget {
 	public function run () {
 		$categories = Category::model()->findAll();
-		$searchData = Yii::app()->getUser()->getSavedSearchData('TorrentGroup');
+		$searchData = Yii::app()->getUser()->getSavedSearchData('modules_torrents_models_TorrentGroup');
 
 		$selectedCategories = Yii::app()->getRequest()->getParam('category', $searchData['category']);
 		$selectedTags = Yii::app()->getRequest()->getParam('tags', $searchData['tags']);
@@ -13,15 +14,15 @@ class TopMenu extends CWidget {
 
 		$this->render('topMenu',
 			array(
-			     'items'              => $this->_getItems(),
-			     'categories'         => $categories,
-			     'selectedCategories' => $selectedCategories,
-			     'selectedTags'       => $selectedTags,
-			     'notTags'            => $notTags,
-			     'searchVal'          => $searchVal,
-			     'sortVal'            => $sortVal,
-			     'periodVal'          => $periodVal,
-			     'settingActive'      => $selectedCategories || $selectedTags || $notTags || $searchVal || $sortVal || $periodVal,
+				'items'              => $this->_getItems(),
+				'categories'         => $categories,
+				'selectedCategories' => $selectedCategories,
+				'selectedTags'       => $selectedTags,
+				'notTags'            => $notTags,
+				'searchVal'          => $searchVal,
+				'sortVal'            => $sortVal,
+				'periodVal'          => $periodVal,
+				'settingActive'      => $selectedCategories || $selectedTags || $notTags || $searchVal || $sortVal || $periodVal,
 			));
 	}
 
@@ -59,24 +60,24 @@ class TopMenu extends CWidget {
 
 		$items['items'] = CMap::mergeArray($items['items'],
 			array(
-			     array(
-				     'label'       => Yii::t('userModule.common', 'Вход'),
-				     'url'         => array('/user/default/login'),
-				     'linkOptions' => array(
-					     'data-toggle' => 'modal',
-					     'data-target' => '#loginModal',
-				     ),
-				     'visible'     => Yii::app()->getUser()->getIsGuest(),
-			     ),
-			     array(
-				     'label'       => Yii::t('userModule.common', 'Регистрация'),
-				     'url'         => array('/user/default/register'),
-				     'linkOptions' => array(
-					     'data-toggle' => 'modal',
-					     'data-target' => '#registerModal',
-				     ),
-				     'visible'     => Yii::app()->getUser()->getIsGuest(),
-			     ),
+				array(
+					'label'       => Yii::t('userModule.common', 'Вход'),
+					'url'         => array('/user/default/login'),
+					'linkOptions' => array(
+						'data-toggle' => 'modal',
+						'data-target' => '#loginModal',
+					),
+					'visible'     => Yii::app()->getUser()->getIsGuest(),
+				),
+				array(
+					'label'       => Yii::t('userModule.common', 'Регистрация'),
+					'url'         => array('/user/default/register'),
+					'linkOptions' => array(
+						'data-toggle' => 'modal',
+						'data-target' => '#registerModal',
+					),
+					'visible'     => Yii::app()->getUser()->getIsGuest(),
+				),
 			));
 
 		if ( !Yii::app()->getUser()->getIsGuest() ) {
@@ -93,66 +94,71 @@ class TopMenu extends CWidget {
 			}
 
 			$items['items'] = CMap::mergeArray(array(
-			                                        array(
-				                                        'divider' => true,
-			                                        ),
-			                                        array(
-				                                        'label'   => CHtml::image(Yii::app()->getUser()->profile->getImageUrl(18,
-						                                        18),
-					                                        Yii::app()->getUser()->getName(),
-					                                        array(
-					                                             'style' => 'width:18px;height:18px;',
-					                                        )) . ' <span class="badge ' . $class . '">' . $rating . '</span>',
-				                                        'url'     => '#',
-				                                        'visible' => !Yii::app()->getUser()->getIsGuest(),
-				                                        'items'   => array(
-					                                        array(
-						                                        'label' => Yii::t('userModule.common', 'Профиль'),
-						                                        'url'   => Yii::app()->getUser()->getUrl(),
-					                                        ),
-					                                        array(
-						                                        'label' => Yii::t('pmsModule.common',
-							                                        'Личные сообщения'),
-						                                        'url'   => array('/pms/default/index'),
-					                                        ),
-					                                        array(
-						                                        'label' => Yii::t('blogsModule.common', 'Мои блоги'),
-						                                        'url'   => array('/blogs/default/my'),
-					                                        ),
-					                                        array(
-						                                        'label' => Yii::t('groupsModule.common', 'Мои группы'),
-						                                        'url'   => array('/groups/default/my'),
-					                                        ),
-					                                        array(
-						                                        'label' => Yii::t('userModule.common', 'Настройки'),
-						                                        'url'   => array('/user/default/settings'),
-					                                        ),
-					                                        array(
-						                                        'label' => Yii::t('userModule.common', 'Выход'),
-						                                        'url'   => array('/user/default/logout'),
-					                                        ),
+					array(
+						'divider' => true,
+					),
+					array(
+						'label'   => CHtml::image(Yii::app()->getUser()->profile->getImageUrl(18,
+									18),
+								Yii::app()->getUser()->getName(),
+								array(
+									'style' => 'width:18px;height:18px;',
+								)) . ' <span class="badge ' . $class . '">' . $rating . '</span>',
+						'url'     => '#',
+						'visible' => !Yii::app()->getUser()->getIsGuest(),
+						'items'   => array(
+							array(
+								'label' => Yii::t('userModule.common', 'Профиль'),
+								'url'   => Yii::app()->getUser()->getUrl(),
+							),
+							array(
+								'label' => Yii::t('pmsModule.common',
+										'Личные сообщения'),
+								'url'   => array('/pms/default/index'),
+							),
+							array(
+								'label' => Yii::t('blogsModule.common', 'Мои блоги'),
+								'url'   => array('/blogs/default/my'),
+							),
+							array(
+								'label' => Yii::t('groupsModule.common', 'Мои группы'),
+								'url'   => array('/groups/default/my'),
+							),
+							array(
+								'label'   => Yii::t('favoritesModule.common', 'Избранное'),
+								'url'     => array('/favorites/default/index'),
+								'visible' => Yii::app()->getUser()->checkAccess('favorites.default.index'),
+							),
+							array(
+								'label' => Yii::t('userModule.common', 'Настройки'),
+								'url'   => array('/user/default/settings'),
+							),
+							array(
+								'label' => Yii::t('userModule.common', 'Выход'),
+								'url'   => array('/user/default/logout'),
+							),
 
-				                                        ),
-			                                        ),
-			                                        array(
-				                                        'label'       => 'Лента ' . $this->widget('application.modules.subscriptions.widgets.EventsWidget',
-					                                        array(),
-					                                        true),
-				                                        'url'         => array('/subscriptions/event/getList'),
-				                                        'visible'     => !Yii::app()->getUser()->getIsGuest(),
-				                                        'linkOptions' => array(
-					                                        'id'          => 'eventsMenu',
-					                                        'class'       => 'dropdown-toggle',
-					                                        'data-toggle' => 'dropdown'
-				                                        ),
-				                                        'itemOptions' => array(
-					                                        'class' => 'dropdown'
-				                                        )
+						),
+					),
+					array(
+						'label'       => 'Лента ' . $this->widget('application.modules.subscriptions.widgets.EventsWidget',
+								array(),
+								true),
+						'url'         => array('/subscriptions/event/getList'),
+						'visible'     => !Yii::app()->getUser()->getIsGuest(),
+						'linkOptions' => array(
+							'id'          => 'eventsMenu',
+							'class'       => 'dropdown-toggle',
+							'data-toggle' => 'dropdown'
+						),
+						'itemOptions' => array(
+							'class' => 'dropdown'
+						)
 
-				                                        //'items'   => $eventItems
-			                                        ),
-			                                        '---'
-			                                   ),
+						//'items'   => $eventItems
+					),
+					'---'
+				),
 				$items['items']);
 		}
 

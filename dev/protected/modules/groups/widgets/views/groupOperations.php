@@ -111,8 +111,8 @@ if ( Yii::app()->user->checkAccess('joinGroup',
 		));
 }
 
-if ( Yii::app()->user->checkAccess('editOwnGroup',
-		array('ownerId' => $group->ownerId)) || Yii::app()->user->checkAccess('editGroup')
+if ( Yii::app()->user->checkAccess('updateMembersStatusInOwnGroup',
+		array('ownerId' => $group->ownerId)) || Yii::app()->user->checkAccess('updateGroup')
 ) {
 	?>
 
@@ -132,6 +132,10 @@ if ( Yii::app()->user->checkAccess('editOwnGroup',
 			     'title' => Yii::t('groupsModule.common', 'Пригласить пользователей в группу'),
 		     )
 		));
+}
+if ( Yii::app()->user->checkAccess('updateOwnGroup',
+		array('ownerId' => $group->ownerId)) || Yii::app()->user->checkAccess('updateGroup')
+) {
 	?>
 
 	<?php $this->widget('bootstrap.widgets.TbButton',

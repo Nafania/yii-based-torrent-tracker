@@ -593,10 +593,11 @@ void Cserver::read_db_files_sql()
 		else if (m_config.m_auto_register)
 			return;
 		//Csql_result result = Csql_query(m_database, "select info_hash, ?, ?, ctime, hidden, free, flags from ? where ? >= ? OR flags > 1")
-		Csql_result result = Csql_query(m_database, "select info_hash, ?, ?, ctime, hashChanged from ? where ? >= ? OR hashChanged = 1")
+		Csql_result result = Csql_query(m_database, "select info_hash, ?, ?, ctime, tId AS hashChanged from ? LEFT JOIN ? ON id = tId where ? >= ? OR tId IS NOT NULL")
 			.p_name(column_name(column_files_completed))
 			.p_name(column_name(column_files_fid))
 			.p_name(table_name(table_files))
+			.p_name(table_name(table_changed_files))
 			.p_name(column_name(column_files_fid))
 			.p(m_fid_end)
 			.execute();
@@ -701,21 +702,25 @@ void Cserver::write_db_files()
 				Csql_query(m_database, "insert into ? (info_hash, mtime, ctime) values (?, unix_timestamp(), unix_timestamp())").p_name(table_name(table_files)).p(i.first).execute();
 				file.fid = m_database.insert_id();
 			}
-			buffer += Csql_query(m_database, "(?,?,?,?,?),").p(file.leechers).p(file.seeders).p(file.downloads).p(file.fid).p(file.hashChanged).read();
+			buffer += Csql_query(m_database, "(?,?,?,?),").p(file.leechers).p(file.seeders).p(file.downloads).p(file.fid).read();			
 			file.dirty = false;
+			
+			/**
+			*	Delete changed hashes
+			**/
+			Csql_query(m_database, "DELETE FROM ? WHERE tId = ?").p_name(table_name(table_changed_files)).p(file.fid).execute();
 		}
 		if (!buffer.empty())
 		{
 			buffer.erase(buffer.size() - 1);
-			m_database.query("insert into " + table_name(table_files) + " (" + column_name(column_files_leechers) + ", " + column_name(column_files_seeders) + ", " + column_name(column_files_completed) + ", " + column_name(column_files_fid) + ", hashChanged) values "
+			m_database.query("insert into " + table_name(table_files) + " (" + column_name(column_files_leechers) + ", " + column_name(column_files_seeders) + ", " + column_name(column_files_completed) + ", " + column_name(column_files_fid) + ") values "
 				+ buffer
 				+ " on duplicate key update"
 				+ "  " + column_name(column_files_leechers) + " = values(" + column_name(column_files_leechers) + "),"
 				+ "  " + column_name(column_files_seeders) + " = values(" + column_name(column_files_seeders) + "),"
 				+ "  " + column_name(column_files_completed) + " = values(" + column_name(column_files_completed) + "),"
-				+ "  mtime = unix_timestamp(),"
-				+ "  hashChanged = values(hashChanged)"
-			);
+				+ "  mtime = unix_timestamp()"
+			);			
 		}
 	}
 	catch (Cdatabase::exception&)
@@ -822,7 +827,7 @@ void Cserver::read_config()
 	if (m_config.m_listen_ipas.empty())
 		m_config.m_listen_ipas.insert(htonl(INADDR_ANY));
 	if (m_config.m_listen_ports.empty())
-		m_config.m_listen_ports.insert(2710);
+		m_config.m_listen_ports.insert(2720);
 	m_read_config_time = time();
 }
 
@@ -997,6 +1002,8 @@ std::string Cserver::table_name(int v) const
 		return m_config.m_table_snatched.empty() ? m_table_prefix + "snatched" : m_config.m_table_snatched;*/
 	case table_deleted_files:
 		return m_config.m_table_deleted_files.empty() ? m_table_prefix + "xbt_deleted_hashes" : m_config.m_table_deleted_files;		
+	case table_changed_files:
+		return m_config.m_table_changed_files.empty() ? m_table_prefix + "xbt_changed_hashes" : m_config.m_table_changed_files;	
 	}
 	assert(false);
 	return "";
@@ -1010,12 +1017,13 @@ int Cserver::test_sql()
 	{
 		mysql_get_server_version(&m_database.handle());
 		m_database.query("select param, value from " + table_name(table_config));
-		m_database.query("select " + column_name(column_files_fid) + ", info_hash, " + column_name(column_files_leechers) + ", " + column_name(column_files_seeders) + ", hashChanged, mtime, ctime from " + table_name(table_files) + " where 0");
+		m_database.query("select " + column_name(column_files_fid) + ", info_hash, " + column_name(column_files_leechers) + ", " + column_name(column_files_seeders) + ", mtime, ctime from " + table_name(table_files) + " where 0");
 		m_database.query("select fid, uid, active, announced, completed, downloaded, `left`, uploaded from " + table_name(table_files_users) + " where 0");
 		m_database.query("select " + column_name(column_users_uid) + " from " + table_name(table_users) + " where 0");
 		//m_read_users_can_leech = m_database.query("show columns from " + table_name(table_users) + " like 'can_leech'");
 		m_read_users_torrent_pass = m_database.query("show columns from " + table_name(table_userProfiles) + " like 'torrentPass'");
 		//m_read_users_torrents_limit = m_database.query("show columns from " + table_name(table_users) + " like 'torrents_limit'");
+		m_database.query("select tId from " + table_name(table_changed_files) + " where 0");
 		return 0;
 	}
 	catch (Cdatabase::exception&)

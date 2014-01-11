@@ -1,5 +1,6 @@
 <?php
 namespace modules\torrents\controllers;
+
 use Yii;
 use CMap;
 use CDbCriteria;
@@ -20,8 +21,8 @@ class DefaultController extends components\Controller {
 	public function filters () {
 		return CMap::mergeArray(parent::filters(),
 			array(
-			     'postOnly + delete, deleteTorrent',
-			     'ajaxOnly + fileList, tagsSuggest, suggest',
+				'postOnly + delete, deleteTorrent',
+				'ajaxOnly + fileList, tagsSuggest, suggest',
 			));
 	}
 
@@ -47,7 +48,7 @@ class DefaultController extends components\Controller {
 	 * @param integer $id the ID of the model to be displayed
 	 */
 	public function actionView ( $id ) {
-		$model = $this->loadModel($id);
+		$model = $this->loadModel($id)->deleteForRussianOrError();
 
 		$title = Yii::t('torrentsModule.common', '{torrentName}', array('{torrentName}' => $model->getTitle()));
 		$this->breadcrumbs[] = $title;
@@ -58,7 +59,7 @@ class DefaultController extends components\Controller {
 
 		$this->render('view',
 			array(
-			     'model' => $model,
+				'model' => $model,
 			));
 	}
 
@@ -127,9 +128,9 @@ class DefaultController extends components\Controller {
 
 		$this->render('createTorrent',
 			array(
-			     'torrentGroup' => $TorrentGroup,
-			     'torrent'      => $Torrent,
-			     'attributes'   => $Attributes,
+				'torrentGroup' => $TorrentGroup,
+				'torrent'      => $Torrent,
+				'attributes'   => $Attributes,
 			));
 	}
 
@@ -218,11 +219,11 @@ class DefaultController extends components\Controller {
 
 		$this->render('createGroup',
 			array(
-			     'torrentGroup' => $TorrentGroup,
-			     'category'     => $Category,
-			     'torrent'      => $Torrent,
-			     'attributes'   => $Attributes,
-			     'cId'          => $cId
+				'torrentGroup' => $TorrentGroup,
+				'category'     => $Category,
+				'torrent'      => $Torrent,
+				'attributes'   => $Attributes,
+				'cId'          => $cId
 			));
 	}
 
@@ -254,29 +255,35 @@ class DefaultController extends components\Controller {
 			if ( $valid ) {
 				if ( $gId ) {
 					$this->redirect(array(
-					                     'createTorrent',
-					                     'gId' => $gId,
-					                     'cId' => $category->getId()
-					                ));
+						'createTorrent',
+						'gId' => $gId,
+						'cId' => $category->getId()
+					));
 				}
 				else {
 					$this->redirect(array(
-					                     'createGroup',
-					                     'cId' => $category->getId()
-					                ));
+						'createGroup',
+						'cId' => $category->getId()
+					));
 				}
 			}
 		}
 
 		$this->render('create',
 			array(
-			     'model'    => $model,
-			     'category' => $category,
+				'model'    => $model,
+				'category' => $category,
 			));
 	}
 
 	public function actionUpdateGroup ( $id ) {
 		$TorrentGroup = $this->loadModel($id);
+
+		if ( !Yii::app()->user->checkAccess('updateOwnTorrentGroup',
+				array('model' => $TorrentGroup)) && !Yii::app()->user->checkAccess('updateTorrentGroup')
+		) {
+			throw new \CHttpException(403);
+		}
 
 		$title = Yii::t('torrentsModule.common',
 			'Редактирование группы "{title}"',
@@ -320,7 +327,7 @@ class DefaultController extends components\Controller {
 
 					Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 						Yii::t('torrentsModule.common',
-							'При создании торента возникли проблемы, пожалуйста, попробуйте позже.'));
+							'При редактировании торента возникли проблемы, пожалуйста, попробуйте позже.'));
 				}
 			}
 
@@ -328,8 +335,8 @@ class DefaultController extends components\Controller {
 
 		$this->render('updateGroup',
 			array(
-			     'torrentGroup' => $TorrentGroup,
-			     'attributes'   => $Attributes,
+				'torrentGroup' => $TorrentGroup,
+				'attributes'   => $Attributes,
 			));
 
 	}
@@ -345,6 +352,12 @@ class DefaultController extends components\Controller {
 
 		if ( !$Torrent ) {
 			throw new \CHttpException(404);
+		}
+
+		if ( !Yii::app()->user->checkAccess('updateOwnTorrent',
+				array('model' => $Torrent)) && !Yii::app()->user->checkAccess('updateTorrent')
+		) {
+			throw new \CHttpException(403);
 		}
 
 		$TorrentGroup = $Torrent->torrentGroup;
@@ -413,7 +426,7 @@ class DefaultController extends components\Controller {
 
 					Yii::app()->getUser()->setFlash(\User::FLASH_ERROR,
 						Yii::t('torrentsModule.common',
-							'При создании торента возникли проблемы, пожалуйста, попробуйте позже.'));
+							'При редактирование торента возникли проблемы, пожалуйста, попробуйте позже.'));
 				}
 			}
 
@@ -422,9 +435,9 @@ class DefaultController extends components\Controller {
 
 		$this->render('createTorrent',
 			array(
-			     'torrent'      => $Torrent,
-			     'torrentGroup' => $TorrentGroup,
-			     'attributes'   => $Attributes
+				'torrent'      => $Torrent,
+				'torrentGroup' => $TorrentGroup,
+				'attributes'   => $Attributes
 			));
 	}
 
@@ -438,6 +451,12 @@ class DefaultController extends components\Controller {
 		$model = models\TorrentGroup::model()->findByPk($id);
 		if ( $model === null ) {
 			throw new \CHttpException(404, Yii::t('torrentsModule.common', 'Группа торрентов не найдена'));
+		}
+
+		if ( !Yii::app()->user->checkAccess('deleteOwnTorrentGroup',
+				array('model' => $model)) && !Yii::app()->user->checkAccess('deleteTorrentGroup')
+		) {
+			throw new \CHttpException(403);
 		}
 
 
@@ -459,6 +478,12 @@ class DefaultController extends components\Controller {
 		$model = models\Torrent::model()->findByPk($id);
 		if ( $model === null ) {
 			throw new \CHttpException(404, Yii::t('torrentsModule.common', 'Торрент не найден'));
+		}
+
+		if ( !Yii::app()->user->checkAccess('deleteOwnTorrent',
+				array('model' => $model)) && !Yii::app()->user->checkAccess('deleteTorrent')
+		) {
+			throw new \CHttpException(403);
 		}
 
 		$url = $model->torrentGroup->getUrl();
@@ -484,28 +509,66 @@ class DefaultController extends components\Controller {
 		$title = Yii::t('torrentsModule.common', 'Торренты');
 		$this->pageTitle = $title;
 
-		$model = new models\TorrentGroup();
+		$view = Yii::app()->getRequest()->getParam('view', Yii::app()->getUser()->getState('view', 'list'));
 
-		$model->unsetAttributes(); // clear any default values
-		$model->setScenario('search');
-		$model->setSearchSettings();
+		if ( isset($_GET['pageSize']) ) {
+			Yii::app()->getUser()->setState('pageSize', (int) $_GET['pageSize']);
+			unset($_GET['pageSize']); // would interfere with pager and repetitive page size change
+		}
 
-		$attributes = Yii::app()->getRequest()->getQuery('TorrentGroup', '');
+		$pageSize = Yii::app()->user->getState('pageSize', Yii::app()->config->get('torrentsModule.pageSize'));
 
-		//$model->title = $search;
-		$model->attributes = $attributes;
+		if ( $view == 'list' ) {
+			Yii::app()->getUser()->setState('view', 'list');
 
-		$dataProvider = $model->search();
+			$model = new models\TorrentGroup();
 
-		\Ajax::renderAjax('index',
-			array(
-			     'dataProvider' => $dataProvider
+			$model->unsetAttributes(); // clear any default values
+			$model->setScenario('search');
+			$model->setSearchSettings();
 
-			),
-			false,
-			false,
-			true);
+			$attributes = Yii::app()->getRequest()->getQuery('TorrentGroup', '');
 
+			//$model->title = $search;
+			$model->attributes = $attributes;
+
+			$dataProvider = $model->search();
+
+			\Ajax::renderAjax('index',
+				array(
+					'dataProvider' => $dataProvider,
+				    'pageSize' => $pageSize,
+
+				),
+				false,
+				false,
+				true);
+		}
+		else {
+			Yii::app()->getUser()->setState('view', 'grid');
+
+			$model = new models\Torrent();
+
+			$model->unsetAttributes(); // clear any default values
+			$model->setScenario('search');
+			$model->setSearchSettings();
+
+			$attributes = Yii::app()->getRequest()->getQuery('Torrent', '');
+
+			//$model->title = $search;
+			$model->attributes = $attributes;
+
+			$dataProvider = $model->search();
+
+			\Ajax::renderAjax('indexGrid',
+				array(
+					'dataProvider' => $dataProvider,
+					'pageSize' => $pageSize,
+				),
+				false,
+				false,
+				true);
+		}
 	}
 
 	public function actionSuggest ( $term, $category ) {
@@ -513,7 +576,7 @@ class DefaultController extends components\Controller {
 		$Category = \Category::model()->findByPk($category);
 
 		if ( !$Category ) {
-			\Ajax::send(\Ajax::AJAX_ERROR,
+			\Ajax::send(\Ajax::AJAX_WARNING,
 				Yii::t('torrentsModule.common',
 					'Сначала выберете категорию, а после этого заполните поле "{fieldName}"',
 					array('{fieldName}' => $TorrentGroup->getAttributeLabel('title'))));
@@ -524,10 +587,10 @@ class DefaultController extends components\Controller {
 		$criteria->params = array(
 			'cId' => $category,
 		);
-		$criteria->addSearchCondition('title', $term, true);
 		$criteria->limit = 50;
 		$criteria->order = 'mtime DESC';
-		//$criteria->addSearchCondition('description', $term, true, 'OR');
+
+		$TorrentGroup->searchWithText($term);
 		$models = $TorrentGroup->findAll($criteria);
 
 		$return = array();
@@ -562,22 +625,25 @@ class DefaultController extends components\Controller {
 		}
 
 		$dataProvider = new CArrayDataProvider($data, array(
-		                                                   'sort'       => array(
-			                                                   'attributes' => array(
-				                                                   'filename',
-				                                                   'size'
-			                                                   ),
-		                                                   ),
+			'sort'       => array(
+				'attributes' => array(
+					'filename',
+					'size'
+				),
+			),
 
-		                                                   'pagination' => array(
-			                                                   'pageSize' => 50,
-		                                                   ),
-		                                              ));
+			'pagination' => array(
+				'pageSize' => 50,
+			),
+		));
+
+		Yii::app()->getClientScript()->scriptMap['jquery.js'] = false;
+		Yii::app()->getClientScript()->scriptMap['jquery.min.js'] = false;
 
 		\Ajax::renderAjax('fileList',
 			array(
-			     'dataProvider' => $dataProvider,
-			     'model'        => $Torrent
+				'dataProvider' => $dataProvider,
+				'model'        => $Torrent
 			),
 			false,
 			true,
@@ -604,8 +670,8 @@ class DefaultController extends components\Controller {
 		\Ajax::send(\Ajax::AJAX_SUCCESS,
 			'ok',
 			array(
-			     'tags'  => $result,
-			     'total' => sizeof($result)
+				'tags'  => $result,
+				'total' => sizeof($result)
 			));
 
 	}
@@ -717,15 +783,15 @@ class DefaultController extends components\Controller {
 					$errorText = Yii::t('torrentsModule.common',
 						'Торрент с названием "{title}" уже есть на трекере, он называется "{newTitle}" (кликните, чтобы посмотреть). Если вы загружаете такой же торрент, то кликните {here}, чтобы добавить ваш торрент в группу "{newTitle}".',
 						array(
-						     '{title}'    => \CHtml::encode($_POST['Attribute'][$firstKey]),
-						     '{newTitle}' => \CHtml::link($model->getTitle(),
-							     $model->getUrl(),
-							     array('target' => '_blank')),
-						     '{here}'     => \CHtml::link(Yii::t('torrentsModule.common', 'здесь'),
-							     array(
-							          '/torrents/default/createTorrent',
-							          'gId' => $model->getId()
-							     ))
+							'{title}'    => \CHtml::encode($_POST['Attribute'][$firstKey]),
+							'{newTitle}' => \CHtml::link($model->getTitle(),
+									$model->getUrl(),
+									array('target' => '_blank')),
+							'{here}'     => \CHtml::link(Yii::t('torrentsModule.common', 'здесь'),
+									array(
+										'/torrents/default/createTorrent',
+										'gId' => $model->getId()
+									))
 						));
 
 					$errors = true;

@@ -198,6 +198,7 @@ private:
 		table_userProfiles,
 		table_snatched,
 		table_deleted_files,
+		table_changed_files,
 	};
 
 	typedef boost::ptr_list<Cconnection> t_connections;

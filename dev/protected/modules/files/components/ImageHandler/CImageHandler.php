@@ -111,7 +111,7 @@ class CImageHandler extends CApplicationComponent
 			switch ($result['format'] = $imageInfo[2])
 			{
 				case self::IMG_GIF:
-					if ($result['image'] = imagecreatefromgif($file))
+					if ($result['image'] = @imagecreatefromgif($file))
 					{
 						return $result;
 					}
@@ -121,7 +121,7 @@ class CImageHandler extends CApplicationComponent
 					}
 					break;
 				case self::IMG_JPEG:
-					if ($result['image'] = imagecreatefromjpeg($file))
+					if ($result['image'] = @imagecreatefromjpeg($file))
 					{
 						return $result;
 					}
@@ -131,7 +131,7 @@ class CImageHandler extends CApplicationComponent
 					}
 					break;
 				case self::IMG_PNG:
-					if ($result['image'] = imagecreatefrompng($file))
+					if ($result['image'] = @imagecreatefrompng($file))
 					{
 						return $result;
 					}

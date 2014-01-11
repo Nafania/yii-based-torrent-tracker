@@ -14,7 +14,7 @@ class BlogPostSubscription extends CActiveRecordBehavior {
 
 		if ( $blog ) {
 			$subscriptions = Subscription::model()->findAllByAttributes(array(
-			                                                                 'modelName' => 'Blog',
+			                                                                 'modelName' => 'modules_blogs_models_Blog',
 			                                                                 'modelId'   => $blog->getId()
 			                                                            ));
 			$url = $owner->getUrl();

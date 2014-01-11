@@ -14,7 +14,7 @@
  * @property string  $modelName
  * @property integer $modelId
  */
-class Comment extends EActiveRecord implements ChangesInterface {
+class Comment extends EActiveRecord implements ChangesInterface, modules\tracking\components\Trackable {
 
 	const APPROVED = 0;
 	const NOT_APPROVED = 1;
@@ -50,50 +50,50 @@ class Comment extends EActiveRecord implements ChangesInterface {
 		// will receive user inputs.
 		return CMap::mergeArray(parent::rules(),
 			array(
-			     array(
-				     'text, modelId, modelName',
-				     'required'
-			     ),
-			     array(
-				     'text',
-				     'filter',
-				     'filter' => array(
-					     new CHtmlPurifier(),
-					     'purify'
-				     )
-			     ),
-			     array(
-				     'modelId, parentId',
-				     'numerical',
-				     'integerOnly' => true
-			     ),
-			     array(
-				     'modelName',
-				     'length',
-				     'max' => 45
-			     ),
-			     // The following rule is used by search().
-			     // Please remove those attributes that should not be searched.
-			     array(
-				     'id, text, ownerId, ctime, mtime, status, parentId, modelName, modelId',
-				     'safe',
-				     'on' => 'search'
-			     ),
-			     array(
-				     'id, text, ownerId, ctime, mtime, status, parentId, modelName, modelId',
-				     'safe',
-				     'on' => 'adminSearch'
-			     ),
+				array(
+					'text, modelId, modelName',
+					'required'
+				),
+				array(
+					'text',
+					'filter',
+					'filter' => array(
+						new CHtmlPurifier(),
+						'purify'
+					)
+				),
+				array(
+					'modelId, parentId',
+					'numerical',
+					'integerOnly' => true
+				),
+				array(
+					'modelName',
+					'length',
+					'max' => 45
+				),
+				// The following rule is used by search().
+				// Please remove those attributes that should not be searched.
+				array(
+					'id, text, ownerId, ctime, mtime, status, parentId, modelName, modelId',
+					'safe',
+					'on' => 'search'
+				),
+				array(
+					'id, text, ownerId, ctime, mtime, status, parentId, modelName, modelId',
+					'safe',
+					'on' => 'adminSearch'
+				),
 			));
 	}
 
 	public function behaviors () {
 		return CMap::mergeArray(parent::behaviors(),
 			array(
-			     'AdjacencyListBehavior' => array(
-				     'class'           => 'application.modules.comments.behaviors.AdjacencyListBehavior',
-				     'parentAttribute' => 'parentId',
-			     )
+				'AdjacencyListBehavior' => array(
+					'class'           => 'application.modules.comments.behaviors.AdjacencyListBehavior',
+					'parentAttribute' => 'parentId',
+				)
 			));
 	}
 
@@ -144,8 +144,8 @@ class Comment extends EActiveRecord implements ChangesInterface {
 		$criteria->compare('modelId', $this->modelId);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 	protected function beforeValidate () {
@@ -154,9 +154,9 @@ class Comment extends EActiveRecord implements ChangesInterface {
 				$this,
 				'modelId',
 				array(
-				     'attributeName' => 'id',
-				     'className'     => self::classNameToNamespace($this->modelName),
-				     'allowEmpty'    => false,
+					'attributeName' => 'id',
+					'className'     => self::classNameToNamespace($this->modelName),
+					'allowEmpty'    => false,
 				));
 			$this->getValidatorList()->insertAt(0, $validator);
 
@@ -167,10 +167,15 @@ class Comment extends EActiveRecord implements ChangesInterface {
 
 	protected function beforeSave () {
 		if ( parent::beforeSave() ) {
+			$time = time();
+
 			if ( $this->getIsNewRecord() ) {
 				$this->ownerId = Yii::app()->getUser()->getId();
-				$this->ctime = time();
+				$this->ctime = $time;
 				$this->status = self::APPROVED;
+			}
+			else {
+				$this->mtime = $time;
 			}
 
 			return true;
@@ -182,15 +187,29 @@ class Comment extends EActiveRecord implements ChangesInterface {
 
 		if ( $this->getIsNewRecord() ) {
 			$commentCount = CommentCount::model()->findByPk(array(
-			                                                     'modelName' => $this->modelName,
-			                                                     'modelId'   => $this->modelId
-			                                                ));
+				'modelName' => $this->modelName,
+				'modelId'   => $this->modelId
+			));
 			if ( !$commentCount ) {
 				$commentCount = new CommentCount();
 				$commentCount->modelName = $this->modelName;
 				$commentCount->modelId = $this->modelId;
 			}
 			$commentCount->count += 1;
+			$commentCount->save();
+		}
+	}
+
+	protected function afterDelete () {
+		parent::afterDelete();
+
+		$commentCount = CommentCount::model()->findByPk(array(
+			'modelName' => $this->modelName,
+			'modelId'   => $this->modelId
+		));
+
+		if ( $commentCount ) {
+			$commentCount->count -= 1;
 			$commentCount->save();
 		}
 	}
@@ -258,7 +277,7 @@ class Comment extends EActiveRecord implements ChangesInterface {
 		return Yii::t('commentsModule.common',
 			'Добавлен ответ на ваш комментарий к "{title}"',
 			array(
-			     '{title}' => $owner->getTitle()
+				'{title}' => $owner->getTitle()
 			));
 	}
 
@@ -290,5 +309,9 @@ class Comment extends EActiveRecord implements ChangesInterface {
 	public function getStatusLabel () {
 		$labels = $this->statusLabels();
 		return (isset($labels[$this->status]) ? $labels[$this->status] : null);
+	}
+
+	public function getLastTime () {
+		return $this->mtime ? $this->mtime : $this->ctime;
 	}
 }

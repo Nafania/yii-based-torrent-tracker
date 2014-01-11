@@ -2,7 +2,7 @@
 
 $cs = Yii::app()->getClientScript();
 $cs->registerPackage('common');
-$cs->registerCssFile('/css/style.css');
+$cs->registerCssFile('/css/style.css?3');
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -15,7 +15,9 @@ $cs->registerCssFile('/css/style.css');
 
 <body>
 <?php $this->widget('application.widgets.TopMenu'); ?>
-
+<?php
+$this->widget('application.widgets.YaShare', array());
+?>
 <?php
 
 	if ( isset($this->breadcrumbs) ):
@@ -29,17 +31,17 @@ $cs->registerCssFile('/css/style.css');
 <?php
 $this->widget('bootstrap.widgets.TbAlert',
 	array(
-	     'block'     => true,
-	     'fade'      => true,
-	     'closeText' => '×',
-	     'alerts'    => array( // configurations per alert type
-		     'success',
-		     'info',
-		     'warning',
-		     'error',
-		     'danger'
-		     // success, info, warning, error or danger
-	     ),
+		'block'     => true,
+		'fade'      => true,
+		'closeText' => '×',
+		'alerts'    => array( // configurations per alert type
+		                      'success',
+		                      'info',
+		                      'warning',
+		                      'error',
+		                      'danger'
+		                      // success, info, warning, error or danger
+		),
 	));
 
 ?>

@@ -1,4 +1,5 @@
 <?php
+
 class Ajax extends CComponent {
 	const AJAX_ERROR = 'error';
 	const AJAX_NOTICE = 'notice';
@@ -8,13 +9,18 @@ class Ajax extends CComponent {
 	/**
 	 * Send ajax answers
 	 *
-	 * @param string      $status
-	 * @param string      $message
-	 * @param array       $data
+	 * @param string $status
+	 * @param string $message
+	 * @param array  $data
 	 */
 	static function send ( $status, $message, $data = array() ) {
 		if ( Yii::app()->getRequest()->getIsAjaxRequest() ) {
 			if ( $status == self::AJAX_ERROR || $status == self::AJAX_WARNING ) {
+				if ( $status == self::AJAX_ERROR ) {
+					Yii::log(var_export(CMap::mergeArray($data, array('message' => $message)), true),
+						CLogger::LEVEL_ERROR);
+				}
+
 				$header = 'HTTP/1.1 500 Internal Server Error';
 			}
 			else {
@@ -26,10 +32,10 @@ class Ajax extends CComponent {
 			}
 
 			echo CJSON::encode(array(
-			                        'status'  => $status,
-			                        'message' => $message,
-			                        'data'    => $data,
-			                   ));
+				'status'  => $status,
+				'message' => $message,
+				'data'    => $data,
+			));
 
 			Yii::app()->end();
 		}
@@ -44,6 +50,9 @@ class Ajax extends CComponent {
 	 *
 	 * @param       $view
 	 * @param array $data
+	 * @param bool  $return
+	 * @param bool  $processOutput
+	 * @param bool  $asPlainText
 	 */
 	static function renderAjax ( $view, $data, $return = false, $processOutput = false, $asPlainText = false ) {
 		if ( Yii::app()->getRequest()->getIsAjaxRequest() ) {
@@ -54,10 +63,10 @@ class Ajax extends CComponent {
 				Ajax::send(Ajax::AJAX_SUCCESS,
 					'',
 					array(
-					     'form' => Yii::app()->getController()->renderPartial($view,
-						     $data,
-						     $return,
-						     $processOutput)
+						'form' => Yii::app()->getController()->renderPartial($view,
+								$data,
+								$return,
+								$processOutput)
 					));
 			}
 		}
@@ -66,7 +75,14 @@ class Ajax extends CComponent {
 		}
 	}
 
-	static function saveModel ( $model, $successText = '', $errorText = '' ) {
+	/**
+	 * @param CActiveRecord $model
+	 * @param string        $successText
+	 * @param string        $errorText
+	 *
+	 * @return bool
+	 */
+	static function saveModel ( CActiveRecord $model, $successText = '', $errorText = '' ) {
 		if ( !$successText ) {
 			$successText = Yii::t('main', 'Запись сохранена успешно');
 		}

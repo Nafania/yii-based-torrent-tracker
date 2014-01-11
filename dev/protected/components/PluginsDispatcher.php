@@ -71,7 +71,8 @@ class PluginsDispatcher extends CApplicationComponent {
 				$className = $data['class'];
 			}
 			else {
-				$className = array_pop(explode('.', $data['class']));
+				$className = explode('.', $data['class']);
+				$className = array_pop($className);
 			}
 
 			Yii::trace('PluginsDispatcher getting module ' . $moduleTitle . ' data', 'PluginsDispatcher');

@@ -11,7 +11,7 @@
  * Base controller for the module.
  * Note: Do NOT extend your controllers from this class!
  */
-abstract class AuthController extends YAdminController
+abstract class AuthController extends \YAdminController
 {
     /**
      * @var array context menu items. This property will be assigned to {@link CMenu::items}.

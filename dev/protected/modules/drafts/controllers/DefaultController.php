@@ -6,7 +6,11 @@ class DefaultController extends components\Controller {
 		$formId = Yii::app()->getRequest()->getParam('formId', '');
 		$data = Yii::app()->getRequest()->getParam('data', array());
 
-		$draft = Draft::model()->findByPk($formId);
+		$draft = Draft::model()->findByPk(array(
+			'formId' => $formId,
+			'uId'    => Yii::app()->getUser()->getId()
+		));
+
 		if ( !$draft ) {
 			$draft = new Draft();
 		}
@@ -27,29 +31,29 @@ class DefaultController extends components\Controller {
 	public function actionGet () {
 		$formId = Yii::app()->getRequest()->getParam('formId', '');
 
-		$draft = $this->loadModel($formId);
+		$draft = Draft::model()->findByPk(array(
+			'formId' => $formId,
+			'uId'    => Yii::app()->getUser()->getId()
+		));
 
-		Ajax::send(Ajax::AJAX_SUCCESS,
-			'ok',
-			array(
-			     'data'    => unserialize($draft->data),
-			     'mtime'   => (int) $draft->mtime,
-			     'deleted' => (int) $draft->deleted,
-			));
+		if ( $draft ) {
+			Ajax::send(Ajax::AJAX_SUCCESS,
+				'ok',
+				array(
+					'data'    => unserialize($draft->data),
+					'mtime'   => (int) $draft->mtime,
+					'deleted' => (int) $draft->deleted,
+				));
+		}
+		else {
+			Ajax::send(Ajax::AJAX_NOTICE, 'not found');
+		}
 	}
 
 	public function actionDelete () {
 		$formId = Yii::app()->getRequest()->getParam('formId', '');
 
 		$draft = $this->loadModel($formId);
-
-		if ( !Yii::app()->getUser()->checkAccess('deleteOwnDraft',
-			array(
-			     'uId' => $draft->uId
-			))
-		) {
-			throw new CHttpException(403);
-		}
 
 		if ( $draft->delete() ) {
 			Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('draftsModule.common', 'Черновик успешно удален.'));
@@ -60,7 +64,10 @@ class DefaultController extends components\Controller {
 	}
 
 	protected function loadModel ( $pk ) {
-		$model = Draft::model()->findByPk($pk);
+		$model = Draft::model()->findByPk(array(
+			'formId' => $pk,
+			'uId'    => Yii::app()->getUser()->getId()
+		));
 
 		if ( !$model ) {
 			throw new CHttpException(404, Yii::t('draftsModule.common', 'Черновик не найден.'));

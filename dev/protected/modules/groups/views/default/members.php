@@ -14,7 +14,7 @@ $this->renderPartial('_singleView', array(
 ?>
 <?php
 
-if ( Yii::app()->user->checkAccess('updateOwnGroup',
+if ( Yii::app()->user->checkAccess('updateMembersStatusInOwnGroup',
 		array('ownerId' => $group->ownerId)) || Yii::app()->user->checkAccess('updateGroup')
 ) {
 
@@ -25,7 +25,7 @@ if ( Yii::app()->user->checkAccess('updateOwnGroup',
 			'content' => $this->widget('zii.widgets.CListView',
 				array(
 				     'id'           => 'usersListView',
-				     'dataProvider' => $model->with('groupUser:new')->search(),
+				     'dataProvider' => $model->with('groupUser:approved')->search(),
 				     'itemView'     => '_member',
 				     'viewData'     => array(
 					     'group'  => $group,

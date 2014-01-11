@@ -581,7 +581,8 @@ class EEavBehavior extends CActiveRecordBehavior {
 			}
 			// If search models with attribute name with anything values.
 			elseif ( is_int($attribute) ) {
-				$values = $conn->quoteValue('%' . $values . '%');
+				//$values = $conn->quoteValue('%' . $values . '%');
+				$values = $conn->quoteValue($values);
 				$criteria->join .= "\nJOIN {$this->tableName} eavb$i" . "\nON t.{$pk} = eavb$i.{$this->entityField}" . "\nAND eavb$i.{$this->valueField} LIKE $values";
 				$i++;
 			}

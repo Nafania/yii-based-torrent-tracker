@@ -6,7 +6,7 @@ class DeleteDraftBehavior extends CActiveRecordBehavior {
 		Yii::import('application.modules.drafts.models.*');
 
 		if ( $formId = Yii::app()->getUser()->getState('draft' . get_class($this->getOwner())) ) {
-			$draft = Draft::model()->findByPk($formId);
+			$draft = Draft::model()->findByPk(array('formId' => $formId, 'uId' => Yii::app()->getUser()->getId()));
 			if ( $draft ) {
 				$draft->deleted = Draft::DELETED;
 				$draft->save(false);

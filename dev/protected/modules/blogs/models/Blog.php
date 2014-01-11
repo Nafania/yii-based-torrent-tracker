@@ -213,6 +213,7 @@ class Blog extends \EActiveRecord {
 			':idUser'  => Yii::app()->getUser()->getId(),
 			':status'  => \GroupUser::STATUS_APPROVED,
 		);
+		$criteria->group = 't.id';
 
 		$this->getDbCriteria()->mergeWith($criteria);
 

@@ -1,0 +1,8 @@
+Disallow: /index.php
+Disallow: /torrents*search=*
+Disallow: /torrents*sort=*
+Disallow: /torrents*period=*
+Disallow: /torrents*category[]=*
+Disallow: /torrents*tags=*
+Disallow: /torrents*notTags=*
+Sitemap: /sitemap.xml

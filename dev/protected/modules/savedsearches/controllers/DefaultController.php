@@ -12,10 +12,6 @@ class DefaultController extends components\Controller {
 	}
 
 	public function actionCreate ( $modelName ) {
-		if ( !class_exists($modelName) ) {
-			throw new CHttpException(404);
-		}
-
 		$data = array();
 		foreach ( $_POST AS $param => $val ) {
 			if ( $param == Yii::app()->getRequest()->csrfTokenName || !$val ) {

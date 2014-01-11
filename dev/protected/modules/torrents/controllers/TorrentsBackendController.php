@@ -1,5 +1,6 @@
 <?php
 namespace modules\torrents\controllers;
+
 use Yii;
 use modules\torrents\models AS models;
 
@@ -31,8 +32,8 @@ class TorrentsBackendController extends \YAdminController {
 		$model->setScenario('adminSearch');
 		$model->unsetAttributes();
 
-		if ( isset($_GET[get_class($model)]) ) {
-			$model->setAttributes($_GET[get_class($model)]);
+		if ( isset($_GET[$model->resolveClassName($model)]) ) {
+			$model->setAttributes($_GET[$model->resolveClassName($model)]);
 		}
 
 		$criteria = new \CDbCriteria();
@@ -41,7 +42,7 @@ class TorrentsBackendController extends \YAdminController {
 
 		\Ajax::renderAjax('index',
 			array(
-			     'model' => $model,
+				'model' => $model,
 			),
 			false,
 			false,
@@ -72,7 +73,7 @@ class TorrentsBackendController extends \YAdminController {
 
 		\Ajax::renderAjax('create',
 			array(
-			     'model' => $model,
+				'model' => $model,
 			),
 			false,
 			false,
@@ -106,7 +107,7 @@ class TorrentsBackendController extends \YAdminController {
 
 		\Ajax::renderAjax('create',
 			array(
-			     'model' => $model,
+				'model' => $model,
 			),
 			false,
 			false,
@@ -132,8 +133,10 @@ class TorrentsBackendController extends \YAdminController {
 		if ( !is_array($ids) ) {
 			$ids = array($ids);
 		}
-		$groups = models\TorrentGroup::model()->findAllByPk($ids, array('order' => 'FIELD(id, ' . implode(',', $ids) . ')'));
+		$groups = models\TorrentGroup::model()->findAllByPk($ids,
+			array('order' => 'FIELD(id, ' . implode(',', $ids) . ')'));
 		$first = array_shift($groups);
+		$mtime = $first->mtime;
 
 		try {
 
@@ -148,6 +151,7 @@ class TorrentsBackendController extends \YAdminController {
 				$ratings = $group->ratings;
 				$subscriptions = $group->subscriptions;
 				$commentsCount = $group->commentsCount;
+				$mtime = max($mtime, $group->mtime);
 
 				foreach ( $comments AS $comment ) {
 					$comment->modelId = $first->getId();;
@@ -178,12 +182,15 @@ class TorrentsBackendController extends \YAdminController {
 
 				}
 
-				$firstCommentCount->count += $commentsCount->count;
-				$firstCommentCount->save(false);
+				if ( $firstCommentCount ) {
+					$firstCommentCount->count += $commentsCount->count;
+					$firstCommentCount->save(false);
+				}
 
 				$group->delete();
 			}
 
+			$first->mtime = $mtime;
 			$first->save(false);
 			$transaction->commit();
 

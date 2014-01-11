@@ -1,4 +1,5 @@
 <?php
+
 class EDbHttpSession extends CDbHttpSession {
 	public function writeSession ( $id, $data ) {
 		// exception must be caught in session write handler
@@ -14,22 +15,25 @@ class EDbHttpSession extends CDbHttpSession {
 			) {
 				$db->createCommand()->insert($this->sessionTableName,
 					array(
-					     'id'     => $id,
-					     'data'   => $data,
-					     'expire' => $expire,
-					     'uId'    => Yii::app()->getUser()->getId(),
+						'id'        => $id,
+						'data'      => $data,
+						'expire'    => $expire,
+						'uId'       => Yii::app()->getUser()->getId(),
 					));
+
+				$this->add('lastVisit', time());
 			}
 			else {
 				$db->createCommand()->update($this->sessionTableName,
 					array(
-					     'data'   => $data,
-					     'expire' => $expire,
-					     'uId'    => Yii::app()->getUser()->getId(),
+						'data'      => $data,
+						'expire'    => $expire,
+						'uId'       => Yii::app()->getUser()->getId(),
 					),
 					'id=:id',
 					array(':id' => $id));
 			}
+
 		} catch ( Exception $e ) {
 			if ( YII_DEBUG ) {
 				echo $e->getMessage();

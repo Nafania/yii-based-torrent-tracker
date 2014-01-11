@@ -163,7 +163,7 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface {
 		 */
 		if ( strpos($sort, 'commentsCount') !== false ) {
 			$criteria->select = 't.*, cc.count AS commentsCount';
-			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'' . get_class($this) . '\' AND cc.modelId = t.id)';
+			$criteria->join = 'LEFT JOIN {{commentCounts}} cc ON ( cc.modelName = \'' . $this->resolveClassName() . '\' AND cc.modelId = t.id)';
 			//$criteria->group = 't.id';
 		}
 		/**
@@ -171,7 +171,7 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface {
 		 */
 		if ( strpos($sort, 'rating') !== false ) {
 			$criteria->select = 't.*, r.rating AS rating';
-			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . get_class($this) . '\' AND r.modelId = t.id)';
+			$criteria->join .= 'LEFT JOIN {{ratings}} r ON ( r.modelName = \'' . $this->resolveClassName() . '\' AND r.modelId = t.id)';
 		}
 
 		$sort = new CSort($this);
@@ -197,6 +197,12 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface {
 	}
 
 	public function afterFind () {
+		parent::afterFind();
+
+		if ( php_sapi_name() == 'cli' ) {
+			return true;
+		}
+
 		/**
 		 * если запись скрытая
 		 */
@@ -217,7 +223,7 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface {
 			/**
 			 * или если, запись не группы, то проверим права на чтение скрытых записей
 			 */
-			elseif ( !Yii::app()->user->checkAccess('canViewOwnHiddenPost',
+			elseif ( !Yii::app()->getUser()->checkAccess('canViewOwnHiddenPost',
 				array(
 				     'ownerId' => $this->ownerId
 				))
@@ -230,8 +236,10 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface {
 	}
 
 	public function onlyVisible () {
+		$alias = $this->getTableAlias();
+
 		$criteria = new CDbCriteria();
-		$criteria->condition = 'hidden = :hidden';
+		$criteria->condition = $alias . '.hidden = :hidden';
 		$criteria->params = array(
 			'hidden' => self::NOT_HIDDEN
 		);
@@ -271,6 +279,8 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface {
 
 			return true;
 		}
+
+		return false;
 	}
 
 	public function getId () {

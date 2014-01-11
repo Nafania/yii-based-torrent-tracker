@@ -4,8 +4,8 @@ class ReportsBackendController extends YAdminController {
 
 	public function filters () {
 		return CMap::mergeArray(array(
-		                             'postOnly + delete',
-		                        ),
+				'postOnly + delete',
+			),
 			parent::filters());
 	}
 
@@ -40,9 +40,10 @@ class ReportsBackendController extends YAdminController {
 			$model->attributes = $_GET['Report'];
 		}
 
-		Ajax::renderAjax('index', array(
-		                               'model' => $model,
-		                          ));
+		Ajax::renderAjax('index',
+			array(
+				'model' => $model,
+			));
 	}
 
 

@@ -19,7 +19,7 @@ $this->widget('zii.widgets.grid.CGridView',
 	     'id'            => 'objects-grid',
 	     'dataProvider'  => $model->search(),
 	     'filter'        => $model,
-	     //'ajaxUrl'       => Yii::app()->createUrl('/torrents/torrentsBackend/index'),
+	     'ajaxUrl'       => Yii::app()->createUrl('/torrents/torrentsBackend/index'),
 	     'enableHistory' => true,
 	     'columns'       => array(
 		     array(

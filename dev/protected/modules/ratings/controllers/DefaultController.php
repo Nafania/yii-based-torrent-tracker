@@ -31,7 +31,7 @@ class DefaultController extends components\Controller {
 				));
 		}
 		else {
-			Ajax::send(Ajax::AJAX_ERROR,
+			Ajax::send(Ajax::AJAX_WARNING,
 				Yii::t('ratingsModule.common', 'При добавлении рейтинга возникли ошибки'),
 				array(
 				     'errors' => $errors

@@ -12,7 +12,7 @@ class AutoCreateBlogForGroup extends CActiveRecordBehavior {
 			return;
 		}
 
-		$blog = new Blog();
+		$blog = new modules\blogs\models\Blog();
 		$blog->title = $blog->description = Yii::t('blogsModule.common',
 			'Блог группы "{groupName}"',
 			array('{groupName}' => $owner->getTitle()));

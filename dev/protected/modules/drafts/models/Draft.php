@@ -40,17 +40,6 @@ class Draft extends EActiveRecord {
 				'length',
 				'max' => 255
 			),
-			array(
-				'formId',
-				'unique',
-			),
-			// The following rule is used by search().
-			// @todo Please remove those attributes that should not be searched.
-			array(
-				'formId, data, ctime, mtime',
-				'safe',
-				'on' => 'search'
-			),
 		);
 	}
 

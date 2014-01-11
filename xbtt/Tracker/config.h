@@ -56,6 +56,7 @@ public:
 	std::string m_table_userProfiles;
 	std::string m_table_snatched;
 	std::string m_table_deleted_files;
+	std::string m_table_changed_files;
 	std::string m_torrent_pass_private_key;
 	t_listen_ipas m_listen_ipas;
 	t_listen_ports m_listen_ports;

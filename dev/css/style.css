@@ -150,7 +150,7 @@ body {
 }
 
 .torrentGroupRating .progress {
-    height: 2px;
+    height: 3px;
     margin-top: 10px;
     margin-bottom: 0;
     width: 83px;
@@ -204,6 +204,9 @@ body {
 
 .commentOptions a {
     display: none;
+}
+.commentOptions a {
+    margin-left: 10px;
 }
 
 .nav-justified {
@@ -262,7 +265,7 @@ body {
 
 .list-view .media:not(:last-of-type) {
     padding-bottom: 20px;
-    border-bottom: 1px solid #EEEEEE;;
+    border-bottom: 1px solid #EEEEEE;
 }
 
 #groupsListView h3.media-heading {
@@ -275,11 +278,10 @@ body {
 }
 
 #groupsListView .pull-right {
-    margin-top: 50px;
+
 }
 
 .groupView .pull-right {
-    margin-top: 80px;
 }
 
 .attributeDescription.checkbox {
@@ -305,13 +307,6 @@ body {
 .searchSettings .span3, .searchSettings .span2 {
     padding-left: 0;
     margin-left: 0;
-}
-
-#searchSettings {
-    /* new custom width */
-    width: 680px;
-    /* must be half of the width, minus scrollbar on the left (30px) */
-    margin-left: -310px;
 }
 
 #searchSettings [class*="span"] {
@@ -344,7 +339,7 @@ body {
 
 .banBlock1 {
     margin: -15px 0 10px 0;
-    height: 90px;
+    height: auto;
 }
 
 .banBlock3 {
@@ -502,4 +497,80 @@ form div[class*="span"] {
 
 #report-form textarea {
     width: 98%;
+}
+
+.commentDeleted {
+    font-style: italic;
+    opacity: 0.3;
+}
+
+.yashare-auto-init {
+    float: right;
+    position: absolute;
+    top: 67px;
+    right: 20px;
+}
+
+#torrents-grid > table td, #torrents-grid > table th {
+    vertical-align: middle;
+    text-align: center;
+}
+#torrents-grid > table td:nth-child(2), #torrents-grid > table th:nth-child(2) {
+    vertical-align: middle;
+    text-align: left;
+}
+
+#torrents-grid > table td .progress { margin-bottom: 0}
+
+#pageSize {
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+#pageSizeBtn {
+    padding-top: 3px;
+}
+
+.container-fluid {
+    margin-bottom: 40px;
+}
+
+@media (max-width: 930px) {
+    .yashare-auto-init {
+        position: fixed;
+        bottom: 5px;
+        right: auto;
+        left: 5px;
+        float: none;
+        z-index: 10;
+        top: auto;
+    }
+}
+
+.labelTorrent, .labelComment {
+    font-size: 9px;
+    line-height: 9px;
+    vertical-align: top;
+}
+
+.latestComments .commentContainer:not(:last-of-type), .latestTorrents .media:not(:last-of-type) {
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.moduleContainer {
+    padding: 10px;
+}
+
+.latestPosts {
+    padding: 0;
+}
+
+.latestComments .commentContainer:not(:last-of-type) {
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.latestTorrents .media:not(:last-of-type) {
+    padding-bottom: 5px;
 }

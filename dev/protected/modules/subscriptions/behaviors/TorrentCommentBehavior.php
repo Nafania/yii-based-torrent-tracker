@@ -20,9 +20,10 @@ class TorrentCommentBehavior extends CActiveRecordBehavior {
 
 		$event = new Event();
 		$event->text = Yii::t('subscriptionsModule.common',
-			'{userName} добавил комментарий к вашему торренту',
+			'{userName} добавил комментарий к вашему торренту "{torrentName}"',
 			array(
-			     '{userName}' => $owner->user->getName()
+			     '{userName}' => $owner->user->getName(),
+			     '{torrentName}' => $owner->getTorrent()->getTitle(),
 			));
 		$event->title = Yii::t('subscriptionsModule.common', 'Новый комментарий');
 		$event->url = $url;

@@ -15,7 +15,7 @@ class NewsBlock extends CWidget {
 		);
 		$criteria->limit = $this->limit;
 
-		$news = models\BlogPost::model()->findAll($criteria);
+		$news = models\BlogPost::model()->onlyVisible()->findAll($criteria);
 
 		if ( !$news ) {
 			return;

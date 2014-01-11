@@ -30,6 +30,62 @@ $(document).on('click', '.commentReply', function (e) {
         }
     });
 });
+
+$(document).on('click', 'a[data-action=updateComment]', function (e) {
+    e.preventDefault();
+
+    var elem = $(this);
+
+    elem.children('i').addClass('icon-load');
+
+    $.ajax({
+        type: 'get',
+        dataType: 'json',
+        url: elem.attr('href'),
+        data: {'Comment[id]': elem.data('id')},
+        success: function (data) {
+            if (data.data.id) {
+
+            }
+            else {
+                var comment = elem.parents('.comment:first');
+                comment.find('.commentText').html(data.data.view);
+            }
+        },
+        complete: function () {
+            elem.children('i').removeClass('icon-load');
+        }
+    });
+});
+$(document).on('click', 'a[data-action=deleteComment]', function (e) {
+    e.preventDefault();
+
+    var elem = $(this);
+
+    elem.children('i').addClass('icon-load');
+
+    $.ajax({
+        type: 'post',
+        dataType: 'json',
+        url: elem.attr('href'),
+        data: {id: elem.data('id')},
+        success: function (data) {
+            elem.parents('.commentContainer:first').remove();
+            $('.top-right').notify({
+                message: { html: data.message },
+                fadeOut: {
+                    enabled: true,
+                    delay: 3000
+                },
+                type: 'success'
+            }).show();
+        },
+        complete: function () {
+            elem.children('i').removeClass('icon-load');
+        }
+    });
+});
+
 $(document).on('mouseenter', '.commentText', function (e) {
     if ($(this).hasClass('rating0')) {
         return true;
@@ -52,7 +108,7 @@ $(document).on('mouseenter', '.comment', function (e) {
 $(document).on('mouseleave', '.comment', function (e) {
     $(this).find('.commentOptions:first a').fadeOut('fast');
 });
-$(document).on('mousedown', '.redactor_btn_quote', function(e) {
+$(document).on('mousedown', '.redactor_btn_quote', function (e) {
     var text = "";
     if (window.getSelection) {
         text = window.getSelection().toString();
@@ -128,6 +184,50 @@ jQuery(function ($) {
             $('.media[data-comments-for=""]').fadeOut('slow');
         }
     });
+
+    /*$('.answerForm').yiiactiveform({
+        'afterValidate': function (form, data, hasError) {
+            var button = form.find("input[type=submit]");
+            if (!hasError) {
+                $.ajax({
+                    type: "POST",
+                    url: form.attr("action"),
+                    data: form.serialize(),
+                    dataType: "json",
+                    success: function (data) {
+                        var Comment_id = $(form).find("#Comment_id");
+                        if (Comment_id.val()) {
+                            $(form).parents(".commentText:first").html($(data.data.view).find(".commentText").html());
+                        }
+                        else {
+                            $("#Comment_text").redactor("set", "");
+                            $(form).prevAll(".commentReply").data("activated", 0);
+                            if (data.data.parentId) {
+                                $(form).remove();
+                                $(data.data.view).appendTo("#comment-" + data.data.parentId + " > div.media-body");
+                            }
+                            else {
+                                if ($(".commentContainer").length) {
+                                    $(data.data.view).insertAfter(".commentsBlock > .commentContainer:last-child");
+                                }
+                                else {
+                                    $(data.data.view).appendTo(".commentsBlock");
+                                }
+                            }
+                            $("html, body").animate({scrollTop: $("#comment-" + data.data.id).position().top }, 100);
+                        }
+                    },
+                    complete: function () {
+                        button.button("reset");
+                    }
+                });
+            }
+            else {
+                button.button("reset");
+            }
+
+        }
+    });*/
 
     /*$('.answerForm').yiiactiveform({'validateOnSubmit': true, 'afterValidate': function (form, data, hasError) {
      if (!hasError) {
