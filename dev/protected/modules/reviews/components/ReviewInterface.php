@@ -41,6 +41,9 @@ abstract class ReviewInterface {
 			return $dataReader['ratingText'];
 		}
 
+		/**
+		 * TODO: убрать в консоль, чтобы не было задержек при открытии страниц
+		 */
 		return $this->sendData($model, $this->getApiData($attrs));
 	}
 

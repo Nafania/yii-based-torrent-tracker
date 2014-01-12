@@ -83,6 +83,11 @@ $this->widget('bootstrap.widgets.TbSelect2',
 	));
 ?>
 
+<?php $this->widget('application.modules.files.widgets.FilesUploadWidget',
+	array(
+		'model' => $torrent
+	));?>
+
 <div class="form-actions">
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(

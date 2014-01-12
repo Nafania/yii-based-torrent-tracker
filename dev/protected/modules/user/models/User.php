@@ -306,6 +306,9 @@ class User extends EActiveRecord {
 
 			if ( !$this->name ) {
 				list($this->name) = explode('@', $this->email);
+				if ( $this->name == 'admin' ) {
+					$this->name = 'admin' . rand(0, 10000);
+				}
 			}
 		}
 

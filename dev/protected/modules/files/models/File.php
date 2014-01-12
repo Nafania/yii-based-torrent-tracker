@@ -189,6 +189,16 @@ class File extends CActiveRecord {
 		if ( !$file ) {
 			$file = $this->getFilePath(true);
 		}
+
+		if ( $_files = Yii::app()->getUser()->getState(self::STATE_NAME) ) {
+			foreach ( $_files AS $key => $_file ) {
+				if ( $_file['modelName'] == $this->modelName && $_file['title'] == $this->title ) {
+					unset($_files[$key]);
+				}
+			}
+			Yii::app()->getUser()->setState(self::STATE_NAME, $_files);
+		}
+
 		$dir = pathinfo($file, PATHINFO_DIRNAME);
 
 		if ( (count(scandir($dir)) == 3) || (count(scandir($dir)) == 2) ) {
@@ -218,7 +228,9 @@ class File extends CActiveRecord {
 	}
 
 	public function getFileUrl () {
-		return Yii::app()->getBaseUrl() . '/' . $this->getFilePath(true);
+		$md5 = md5($this->originalTitle);
+
+		return Yii::app()->getBaseUrl() . '/uploads/files/' . substr($md5, 0, 2) . '/' . $this->getTitle() . '.' . $this->getExt();
 	}
 
 	public function getTitle () {
@@ -227,5 +239,9 @@ class File extends CActiveRecord {
 
 	public function getExt () {
 		return $this->extension;
+	}
+
+	public function getOriginalTitle () {
+		return $this->originalTitle;
 	}
 }

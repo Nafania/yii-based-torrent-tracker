@@ -1,9 +1,9 @@
 <?php
 /**
- * @var TbActiveForm $form
- * @var TorrentGroup $torrentGroup
- * @var Torrent      $torrent
- * @var Attribute[]  $attributes
+ * @var TbActiveForm                          $form
+ * @var \modules\torrents\models\TorrentGroup $torrentGroup
+ * @var \modules\torrents\models\Torrent      $torrent
+ * @var Attribute[]                           $attributes
  */
 ?>
 <h1><?php echo Yii::t('torrentsModule.common',
@@ -13,11 +13,11 @@
 
 $form = $this->beginWidget('bootstrap.widgets.TbActiveForm',
 	array(
-	     'id'                     => 'torrent-form',
-	     'enableClientValidation' => true,
-	     'htmlOptions'            => array(
-		     'enctype' => 'multipart/form-data'
-	     )
+		'id'                     => 'torrent-form',
+		'enableClientValidation' => true,
+		'htmlOptions'            => array(
+			'enctype' => 'multipart/form-data'
+		)
 	)); ?>
 
 <?php
@@ -25,26 +25,26 @@ echo $form->fileFieldRow($torrent, 'info_hash', array('class' => 'span5'));
 
 $this->renderPartial('_attributes',
 	array(
-	     'model'      => $torrent,
-	     'attributes' => $attributes
+		'model'      => $torrent,
+		'attributes' => $attributes
 	));
 
 echo CHtml::label(Yii::t('tagsModule.common', 'Теги'), 'torrentTags');
 $this->widget('bootstrap.widgets.TbSelect2',
 	array(
-	     'asDropDownList' => false,
-	     'name'           => 'torrentTags',
-	     'value'          => $torrent->tags->toString(true),
-	     'options'        => array(
-		     //'containerCssClass' => 'span5',
-		     'width'              => '40.1709%',
+		'asDropDownList' => false,
+		'name'           => 'torrentTags',
+		'value'          => $torrent->tags->toString(true),
+		'options'        => array(
+			//'containerCssClass' => 'span5',
+			'width'              => '40.1709%',
 
-		     'minimumInputLength' => 2,
-		     'multiple'           => true,
-		     'tokenSeparators'    => array(
-			     ',',
-		     ),
-		     'createSearchChoice' => 'js:function(term, data) {
+			'minimumInputLength' => 2,
+			'multiple'           => true,
+			'tokenSeparators'    => array(
+				',',
+			),
+			'createSearchChoice' => 'js:function(term, data) {
 		       if ($(data).filter(function() {
 		         return this.text.localeCompare(term) === 0;
 		       }).length === 0) {
@@ -54,15 +54,15 @@ $this->widget('bootstrap.widgets.TbSelect2',
 		         };
 		       }
 		     }',
-		     'tags'               => true,
-		     'initSelection'      => 'js:function (element, callback) {
+			'tags'               => true,
+			'initSelection'      => 'js:function (element, callback) {
 		         var data = [];
 		         $(element.val().split(",")).each(function () {
 		             data.push({id: this, text: this});
 		         });
 		         callback(data);
 		     }',
-		     'ajax'               => 'js:{
+			'ajax'               => 'js:{
 				url: ' . CJavaScript::encode(Yii::app()->createUrl('/torrents/default/tagsSuggest')) . ',
                 dataType: "json",
                 cache: true,
@@ -76,23 +76,28 @@ $this->widget('bootstrap.widgets.TbSelect2',
 					return {
 						results: data.data.tags};
                 }}',
-	     )
+		)
 	));
 ?>
+
+<?php $this->widget('application.modules.files.widgets.FilesUploadWidget',
+	array(
+		'model' => $torrent
+	));?>
 
 <div class="form-actions">
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(
-			     'buttonType' => 'submit',
-			     'type'       => 'primary',
-			     'label'      => ($torrent->getIsNewRecord() ? Yii::t('torrentsModule.common',
-				     'Загрузить') : Yii::t('torrentsModule.common', 'Сохранить')),
+				'buttonType' => 'submit',
+				'type'       => 'primary',
+				'label'      => ($torrent->getIsNewRecord() ? Yii::t('torrentsModule.common',
+						'Загрузить') : Yii::t('torrentsModule.common', 'Сохранить')),
 			)); ?>
 	</div>
 
 <?php $this->endWidget(); ?>
 <?php $this->widget('application.modules.drafts.widgets.DraftWidget',
 	array(
-	     'formId' => 'torrent-form',
-	     'model'  => $torrent
+		'formId' => 'torrent-form',
+		'model'  => $torrent
 	));?>

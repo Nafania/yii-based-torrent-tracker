@@ -1,4 +1,9 @@
 <?php
+/**
+ * Class UpdateModelsBehavior
+ *
+ * @method EActiveRecord getOwner()
+ */
 class UpdateModelsBehavior extends CActiveRecordBehavior {
 	public function afterSave ( $e ) {
 		parent::afterSave($e);
@@ -7,9 +12,11 @@ class UpdateModelsBehavior extends CActiveRecordBehavior {
 			return true;
 		}
 
-		$db = Yii::app()->getDb();
-		$id = $this->getOwner()->getPrimaryKey();
-		$modelName = get_class($this->getOwner());
+		$owner = $this->getOwner();
+
+		$db = $owner->getDbConnection();
+		$id = $owner->getPrimaryKey();
+		$modelName = $owner->resolveClassName();
 
 		foreach ( $files AS $file ) {
 			$sql = 'UPDATE {{files}} SET modelId = :id WHERE title = :title AND modelName = :modelName AND ownerId = :ownerId';

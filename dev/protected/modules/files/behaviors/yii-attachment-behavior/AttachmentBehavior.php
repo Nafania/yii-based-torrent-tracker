@@ -39,7 +39,7 @@
  * @private string $filename
  * @private integer $filesize
  * @private string $parsedPath
- * @method CActiveRecord getOwner()
+ * @method EActiveRecord getOwner()
  * */
 class AttachmentBehavior extends CActiveRecordBehavior {
 
@@ -285,12 +285,12 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				$this->getOwner(),
 				$this->attribute,
 				array(
-				     'allowEmpty' => $this->allowEmpty,
-				     'types'      => $this->types,
-				     'mimeTypes'  => $this->mimeTypes,
-				     'maxFiles'   => $this->maxFiles,
-				     'maxSize'    => $this->maxSize,
-				     'minSize'    => $this->minSize
+					'allowEmpty' => $this->allowEmpty,
+					'types'      => $this->types,
+					'mimeTypes'  => $this->mimeTypes,
+					'maxFiles'   => $this->maxFiles,
+					'maxSize'    => $this->maxSize,
+					'minSize'    => $this->minSize
 				));
 			$this->getOwner()->getValidatorList()->insertAt(0, $validator);
 
@@ -348,6 +348,41 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 			}
 		}
 		return str_replace($needle, $replacement, $this->path);
+	}
+
+	public function getFiles () {
+		$owner = $this->getOwner();
+
+		$pk = $owner->getPrimaryKey();
+
+		if ( $pk ) {
+			$files = File::model()->findAllByAttributes(array(
+				'modelName' => $owner->resolveClassName(),
+				'modelId'   => $pk
+			));
+
+			if ( $files ) {
+				return $files;
+			}
+		}
+		else {
+			if ( $sessionFiles = Yii::app()->getUser()->getState(File::STATE_NAME) ) {
+				$files = array();
+				foreach ( $sessionFiles AS $file ) {
+					$model = File::model()->findByAttributes(array(
+						'modelName' => $file['modelName'],
+						'title'     => $file['title']
+					));
+					if ( $model ) {
+						$files[] = $model;
+					}
+				}
+
+				return $files;
+			}
+		}
+
+		return array();
 	}
 
 

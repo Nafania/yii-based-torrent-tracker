@@ -33,6 +33,14 @@ Yii::app()->getComponent('bootstrap')->registerPackage('social-buttons');
 
      <div class="span10">
 	     <dl class="dl-horizontal">
+		     <dt><?php echo Yii::t('userModule.common', 'Статус') ?></dt>
+		     <dd><?php
+			     $roles = Yii::app()->getAuthManager()->getRoles($model->getId());
+			     foreach ( $roles AS $role ) {
+				     echo $role->getDescription();
+			     } ?>
+		     </dd>
+
 		     <dt><?php echo Yii::t('userModule.common', 'Дата регистрации') ?></dt>
 		     <dd><?php echo $model->getCtime('d.m.Y'); ?></dd>
 

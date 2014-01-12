@@ -139,6 +139,13 @@ position:relative;
 padding:5px;
 }
 
+.fileListItem {
+    height:105px;
+    overflow:hidden;
+    position:relative;
+    padding:5px;
+}
+
 .torrentItem h3 {
 position:absolute;
 bottom:5px;
@@ -158,18 +165,18 @@ height:auto;
 width:auto;
 }
 
-.torrentItem a {
+.torrentItem a, .fileListItem a {
 display:block;
 overflow:hidden;
 }
 
-.torrentItem img,.torrentItem a img {
+.torrentItem img,.torrentItem a img, .fileListItem img, .fileListItem a img {
 border:none;
 margin:0;
 padding:0!important;
 }
 
-.torrentItem {
+.torrentItem, .fileListItem {
 border:1px solid #ddd;
 float:left;
 }
@@ -182,4 +189,12 @@ color:#eee;
 .torrentItem h3 a:hover {
 background-color:#eaeaea;
 color:#747474;
+}
+
+#filesCarousel, #filesCarousel > ul {
+    height: 125px !important;
+}
+
+#filesCarousel .next, #filesCarousel .prev {
+    top: 25% !important;
 }

@@ -142,6 +142,19 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 				'{torrentName}' => $torrent->getTitle()
 			)); ?>"><i class="icon-file"></i></a>
 
+		<?php if ( Yii::app()->getUser()->checkAccess('files.default.index') &&  $torrent->files ) {
+			$cs->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/jMyCarousel/jMyCarousel.js');
+			$cs->registerScriptFile(Yii::app()->getModule('files')->getAssetsUrl() . '/js/filesViewGallery.js');
+			?>
+
+		<a href="<?php echo Yii::app()->createUrl('/files/default/index') ?>" class="btn btn-mini" data-action="filesList" data-id="<?php echo $torrent->getId(); ?>" data-model="<?php echo $torrent->resolveClassName(); ?>" data-toggle="tooltip" data-placement="top" title="<?php echo Yii::t('filesModule.common',
+			'Смотреть скриншоты для {torrentName}',
+			array(
+				'{torrentName}' => $torrent->getTitle()
+			)); ?>"><i class="icon-picture"></i></a>
+
+		<?php } ?>
+
 		<?php
 		if ( Yii::app()->user->checkAccess('updateOwnTorrent',
 				array('model' => $torrent)) || Yii::app()->user->checkAccess('updateTorrent')
@@ -213,7 +226,12 @@ $cs->registerScriptFile(Yii::app()->getBaseUrl() . '/js/fancyapps-fancyBox/sourc
 		<div id="fileList<?php echo $torrent->getId() ?>" class="accordion-body collapse">
                 <div class="accordion-inner"></div>
             </div>
+
+		<div id="filesList<?php echo $torrent->getId() ?>" class="accordion-body collapse">
+                <div class="accordion-inner"></div>
+            </div>
 		</div>
+
 <?php } ?>
 	</div>
 

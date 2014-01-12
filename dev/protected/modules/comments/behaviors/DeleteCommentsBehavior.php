@@ -11,7 +11,7 @@ class DeleteCommentsBehavior extends CActiveRecordBehavior {
 		                                               ));
 
 		foreach ( $comments AS $comment ) {
-			$comment->delete();
+			$comment->deleteNode();
 		}
 
 		if ( $count = sizeof($comments) ) {
