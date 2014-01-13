@@ -19,7 +19,7 @@ a:focus, .btn:focus {
 }
 
 .comment .img-polaroid {
-    width: 100px;
+    max-width: 100px;
 }
 
 footer > div {
