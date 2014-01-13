@@ -190,11 +190,3 @@ color:#eee;
 background-color:#eaeaea;
 color:#747474;
 }
-
-#filesCarousel, #filesCarousel > ul {
-    height: 125px !important;
-}
-
-#filesCarousel .next, #filesCarousel .prev {
-    top: 25% !important;
-}

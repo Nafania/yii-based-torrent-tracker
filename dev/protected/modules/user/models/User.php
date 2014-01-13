@@ -11,6 +11,7 @@
  * @property string      $resetHash
  * @property UserProfile $profile
  * @property integer     $emailConfirmed
+ * @property integer     $active
  */
 class User extends EActiveRecord {
 
@@ -169,6 +170,12 @@ class User extends EActiveRecord {
 				'message' => Yii::t('userModule.common',
 						'Вы можете использовать буквы, цифры, пробел, тире и подчеркивание.'),
 			),
+
+			array(
+				'name,active,email,id',
+				'safe',
+				'on' => 'adminSearch',
+			)
 		);
 	}
 
@@ -220,6 +227,7 @@ class User extends EActiveRecord {
 		$criteria->compare('id', $this->id);
 		$criteria->compare('name', $this->name, true);
 		$criteria->compare('email', $this->email, true);
+		$criteria->compare('active', $this->active);
 
 		return new CActiveDataProvider($this, array(
 			'criteria' => $criteria,
@@ -328,7 +336,7 @@ class User extends EActiveRecord {
 
 	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
-			if ( $this->getId() != 1 && $this->getName() == 'admin' ) {
+			if ( $this->getId() != 1 && trim(mb_strtolower($this->getName())) == 'admin' ) {
 				$this->addError('name', 'There is can be only one admin! You shall not pass!');
 				return false;
 			}
@@ -365,6 +373,95 @@ class User extends EActiveRecord {
 		}
 	}
 
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function ban () {
+		$this->active = self::USER_NOT_ACTIVE;
+		if ( $this->save(false) ) {
+
+			$db = $this->getDbConnection();
+			$comm = $db->createCommand('DELETE FROM {{sessions}} WHERE uId = :uId');
+			$comm->bindValue(':uId', $this->getId());
+			$comm->execute();
+
+			$this->sendBanEmail();
+
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant ban user'));
+		}
+	}
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function unBan () {
+		$this->active = self::USER_ACTIVE;
+		if ( $this->save(false) ) {
+			$this->sendUnBanEmail();
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant ban user'));
+		}
+	}
+
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function sendUnBanEmail () {
+		Yii::import('ext.mail.*');
+
+		$message = new YiiMailMessage;
+		$message->view = 'application.modules.user.views.mail.unBan';
+		$message->setBody(array('model' => $this), 'text/html');
+
+		$message->subject = Yii::t('userModule.common',
+			'Ваш аккаунт на сайте {siteName} включен',
+			array('{siteName}' => Yii::app()->config->get('base.siteName')));
+		$message->from = Yii::app()->config->get('base.fromEmail');
+		$message->to = $this->email;
+
+		if ( Yii::app()->mail->send($message) ) {
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
+		}
+	}
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function sendBanEmail () {
+		Yii::import('ext.mail.*');
+
+		$message = new YiiMailMessage;
+		$message->view = 'application.modules.user.views.mail.ban';
+		$message->setBody(array('model' => $this), 'text/html');
+
+		$message->subject = Yii::t('userModule.common',
+			'Ваш аккаунт на сайте {siteName} отключен',
+			array('{siteName}' => Yii::app()->config->get('base.siteName')));
+		$message->from = Yii::app()->config->get('base.fromEmail');
+		$message->to = $this->email;
+
+		if ( Yii::app()->mail->send($message) ) {
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
+		}
+	}
+
 	public function sendCreate () {
 		Yii::import('ext.mail.*');
 
@@ -382,7 +479,7 @@ class User extends EActiveRecord {
 			return true;
 		}
 		else {
-			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 
@@ -403,7 +500,7 @@ class User extends EActiveRecord {
 			return true;
 		}
 		else {
-			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 
@@ -424,7 +521,7 @@ class User extends EActiveRecord {
 			return true;
 		}
 		else {
-			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 
@@ -456,7 +553,7 @@ class User extends EActiveRecord {
 			return true;
 		}
 		else {
-			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 

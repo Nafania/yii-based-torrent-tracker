@@ -1,6 +1,9 @@
 <?php
 
 class UserModule extends CWebModule {
+	public $backendController = 'usersBackend';
+	public $defaultController = 'default';
+
 	private $_assetsUrl;
 
 	public function init () {
@@ -29,6 +32,8 @@ class UserModule extends CWebModule {
 		self::_registerComponent();
 		self::_addUrlRules();
 		self::_setImport();
+
+		Yii::app()->pd->addAdminModule('user', 'Models management');
 	}
 
 	private static function _registerComponent () {
@@ -63,6 +68,9 @@ class UserModule extends CWebModule {
 
 	protected static function _addUrlRules () {
 		Yii::app()->pd->addUrlRules(array(
+			'yiiadmin/user/backend/<action:\w+>/*' => 'user/usersBackend/<action>',
+			'yiiadmin/user/backend/*'              => 'user/usersBackend',
+
 			'user/<name>-<id>'                     => 'user/default/view',
 			'user/<action:\w+>/*'                  => 'user/default/<action>',
 			'user/<controller:\w+>/<action:\w+>/*' => 'user/<controller>/<action>',

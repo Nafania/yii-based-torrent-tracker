@@ -12,7 +12,7 @@ class BlogPostSubscription extends CActiveRecordBehavior {
 		$owner = $this->getOwner();
 		$blog = modules\blogs\models\Blog::model()->findByPk($owner->blogId);
 
-		if ( $blog ) {
+		if ( $owner->getIsNewRecord() && $blog ) {
 			$subscriptions = Subscription::model()->findAllByAttributes(array(
 			                                                                 'modelName' => 'modules_blogs_models_Blog',
 			                                                                 'modelId'   => $blog->getId()

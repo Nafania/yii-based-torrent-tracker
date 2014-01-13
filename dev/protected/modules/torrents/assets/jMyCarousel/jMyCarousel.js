@@ -23,6 +23,7 @@
 (function ( $ ) {                  // Compliant with jquery.noConflict()
 $.fn.jMyCarousel = function(o) {   
     o = $.extend({
+        height: null,
         btnPrev: null,			// previous button customization
         btnNext: null,			// next button customization
         mouseWheel: true,		// shall the carousel handle the mousewheel event to animate ?
@@ -88,7 +89,7 @@ $.fn.jMyCarousel = function(o) {
             .css("left", "0px");                            // after creating carousel show it on screen
         
         var liSize = o.vertical ? height(li) : width(li);   // Full li size(incl margin)-Used for animation
-        var liSizeV = o.vertical ? elHeight(li) : height(li);	// size of the main layer, in its side          
+        var liSizeV = o.vertical ? elHeight(li) : ( o.height == null ? height(li) : o.height );	// size of the main layer, in its side
         var curr = o.start;   								// Current position in pixels  
         var nbAllElts = li.size();							// Total number of items  
         var ulSize = liSize * nbAllElts;                   	// size of full ul(total length, not just for the visible items)
@@ -98,7 +99,7 @@ $.fn.jMyCarousel = function(o) {
         //var jmcSize = jmcSize();							// Size of the carousel
         var step = o.step == 'default' ? liSize : o.step;	// step size
         
-        //debug("liSize=" + liSize + "; liSizeV=" + liSizeV + "; curr=" + curr + "; visible : " + liSize * v); // debug
+        //console.log("liSize=" + liSize + "; liSizeV=" + liSizeV + "; curr=" + curr + "; visible : " + liSize * v); // debug
   		o.btnPrev = defaultBtn ? $('<input type="button" class="' + (o.vertical ? 'up' : 'prev') + '" />') : $(o.btnPrev);
   		o.btnNext = defaultBtn ? $('<input type="button" class="' + (o.vertical ? 'down' : 'next') + '" />') : $(o.btnNext);
         var prev = o.btnPrev;
@@ -417,15 +418,21 @@ function css(el, prop) {
 }
 
 function width(el) {
-    //console.log(el[0].offsetWidth + css(el, 'marginLeft') + css(el, 'marginRight'));
-    //return el[0].offsetWidth + css(el, 'marginLeft') + css(el, 'marginRight');
-    return 158;
+    var elem = $(el[0]);
+    var totalWidth = elem.width();
+    totalWidth += parseInt(elem.css("padding-left").replace('px', '')) + parseInt(elem.css("padding-right").replace('px', '')); //Total Padding Width
+    totalWidth += parseInt(elem.css("margin-left").replace('px', '')) + parseInt(elem.css("margin-right").replace('px', '')); //Total Margin Width
+    totalWidth += parseInt(elem.css("borderLeftWidth").replace('px', '')) + parseInt(elem.css("borderRightWidth").replace('px', '')); //Total Border Width
+    return parseInt(totalWidth);
 }
 
 function height(el) {
-    //console.log(el[0].offsetHeight + css(el, 'marginTop') + css(el, 'marginBottom'));
-    //return el[0].offsetHeight + css(el, 'marginTop') + css(el, 'marginBottom');
-    return 218;
+    var elem = $(el[0]);
+    var totalHeight = elem.height();
+    totalHeight += parseInt(elem.css("padding-top").replace('px', '')) + parseInt(elem.css("padding-bottom").replace('px', '')); //Total Padding Width
+    totalHeight += parseInt(elem.css("margin-top").replace('px', '')) + parseInt(elem.css("margin-bottom").replace('px', '')); //Total Margin Width
+    totalHeight += parseInt(elem.css("borderTopWidth").replace('px', '')) + parseInt(elem.css("borderBottomWidth").replace('px', '')); //Total Border Width
+    return totalHeight;
 }
 
 })(jQuery);

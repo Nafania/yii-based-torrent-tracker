@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * Class CommentsAnswerBehavior
+ *
+ * @method Comment getOwner()
+ */
 class CommentsAnswerBehavior extends CActiveRecordBehavior {
 	public function afterSave ( $e ) {
 		parent::afterSave($e);
@@ -10,7 +16,7 @@ class CommentsAnswerBehavior extends CActiveRecordBehavior {
 			return true;
 		}
 
-		if ( !$owner->getParentId() ) {
+		if ( !$owner->getIsNewRecord() || !$owner->getParentId() ) {
 			return true;
 		}
 

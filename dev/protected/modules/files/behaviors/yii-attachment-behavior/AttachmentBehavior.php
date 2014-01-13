@@ -350,6 +350,9 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		return str_replace($needle, $replacement, $this->path);
 	}
 
+	/**
+	 * @return array|CActiveRecord[]
+	 */
 	public function getFiles () {
 		$owner = $this->getOwner();
 
@@ -383,6 +386,17 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		}
 
 		return array();
+	}
+
+	/**
+	 * @param CEvent $e
+	 */
+	public function afterDelete( $e ) {
+		parent::afterDelete($e);
+
+		foreach ( $this->getFiles() AS $file ) {
+			$file->delete();
+		}
 	}
 
 
