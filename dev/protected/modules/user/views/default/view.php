@@ -11,9 +11,9 @@ Yii::app()->getComponent('bootstrap')->registerPackage('font-awesome');
 Yii::app()->getComponent('bootstrap')->registerPackage('social-buttons');
 ?>
 
-	<h1><?php echo Yii::t('userModule.common',
-			'Просмотр профиля "{name}"',
-			array('{name}' => $model->getName())) ?><span class="userRating <?php echo $model->getRatingClass() ?>"><?php echo $model->getRating() ?></span></h1>
+<h1><?php echo Yii::t('userModule.common',
+		'Просмотр профиля "{name}"',
+		array('{name}' => $model->getName())) ?><span class="userRating <?php echo $model->getRatingClass() ?>"><?php echo $model->getRating() ?></span></h1>
 
 	<div class="row-fluid">
 
@@ -28,6 +28,14 @@ Yii::app()->getComponent('bootstrap')->registerPackage('social-buttons');
 		     ));
 	     echo CHtml::link($img,
 		     $model->profile->getImageUrl());
+
+	     if ( $model->warnings ) {
+		     echo '<div class="userWarnings">';
+		     foreach ( $model->warnings AS $warning ) {
+			     echo '<i class="icon-warning-sign" title="' . $warning->getFullText() . '" data-toggle="tooltip"></i>';
+		     }
+		     echo '</div>';
+	     }
 	     ?>
      </div>
 
@@ -36,9 +44,12 @@ Yii::app()->getComponent('bootstrap')->registerPackage('social-buttons');
 		     <dt><?php echo Yii::t('userModule.common', 'Статус') ?></dt>
 		     <dd><?php
 			     $roles = Yii::app()->getAuthManager()->getRoles($model->getId());
+			     $rolesStr .= '';
 			     foreach ( $roles AS $role ) {
-				     echo $role->getDescription();
-			     } ?>
+				     $rolesStr .= ( $rolesStr ? ', ' : '') . $role->getDescription();
+			     }
+			     echo $rolesStr;
+			     ?>
 		     </dd>
 
 		     <dt><?php echo Yii::t('userModule.common', 'Дата регистрации') ?></dt>
@@ -95,11 +106,11 @@ Yii::app()->getComponent('bootstrap')->registerPackage('social-buttons');
 
 
  </div>
-
+<div class="form-actions">
 <?php
 if ( Yii::app()->user->checkAccess('pms.default.create') ) {
 	?>
-	<div class="form-actions">
+
 	<div class="pull-left">
 		<?php $this->widget('bootstrap.widgets.TbButton',
 			array(
@@ -111,4 +122,17 @@ if ( Yii::app()->user->checkAccess('pms.default.create') ) {
 			));
 		?>
 		</div>
+
 <?php } ?>
+	<?php
+	if ( Yii::app()->user->checkAccess('userwarnings.default.create') ) {
+		?>
+		<div class="pull-right">
+			<?php $this->widget('application.modules.userwarnings.widgets.WarningButton',
+				array(
+					'model' => $model,
+				));
+			?>
+		</div>
+	<?php } ?>
+</div>

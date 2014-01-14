@@ -36,7 +36,7 @@
 				</div>
 		       <div class="row">
 		            <div class="column span-4"><?php echo $form->label($model, 'bizrule'); ?></div>
-					<div class="column span-16 span-flexible"><?php echo $form->textField($model,
+					<div class="column span-16 span-flexible"><?php echo $form->textArea($model,
 							'bizrule'); ?></div>
 				</div>
 

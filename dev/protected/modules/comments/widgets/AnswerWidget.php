@@ -10,10 +10,6 @@ class AnswerWidget extends CWidget {
 	public function init () {
 		parent::init();
 
-		if ( !Yii::app()->getUser()->checkAccess('comments.default.create') ) {
-			return;
-		}
-
 		Yii::import('application.modules.comments.models.*');
 
 		if ( !$this->model instanceof CActiveRecord ) {
@@ -30,6 +26,10 @@ class AnswerWidget extends CWidget {
 	}
 
 	public function run () {
+		if ( !Yii::app()->getUser()->checkAccess('comments.default.create') ) {
+			return false;
+		}
+
 		$comment = new Comment();
 
 		$this->render('answer',

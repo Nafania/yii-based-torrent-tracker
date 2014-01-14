@@ -44,7 +44,7 @@ class RatingsModule extends CWebModule {
 		$ratings = Yii::app()->config->get('ratingsModule.ratings');
 		if ( !$ratings = @unserialize($ratings) ) {
 			$ratings = array();
-			for ( $i = 0; $i < 17; ++$i ) {
+			for ( $i = 0; $i < 18; ++$i ) {
 				$ratings[] = 0;
 			}
 		}

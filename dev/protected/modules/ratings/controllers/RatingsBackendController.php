@@ -8,7 +8,7 @@ class RatingsBackendController extends YAdminController {
 
 		if ( !$ratings = @unserialize($ratings) ) {
 			$ratings = array();
-			for ( $i = 0; $i < 17; ++$i ) {
+			for ( $i = 0; $i < 18; ++$i ) {
 				$ratings[] = 0;
 			}
 		}
@@ -17,7 +17,7 @@ class RatingsBackendController extends YAdminController {
 			$_ratings = (array) $_POST['Rating'];
 
 			$ratings = array();
-			for ( $i = 0; $i < 17; ++$i ) {
+			for ( $i = 0; $i < 18; ++$i ) {
 				$rating = str_replace(',','.',(isset($_ratings[$i]) ? (float) $_ratings[$i] : 0));
 				$ratings[] = $rating;
 			}

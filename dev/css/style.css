@@ -313,6 +313,13 @@ body {
     float: left !important;
 }
 
+#searchSettings .checkbox {
+    min-height: 20px;
+}
+#searchSettings .control-group {
+    margin-bottom: 5px;
+}
+
 .list-view-loading {
     background-position: top right;
 }
@@ -406,7 +413,7 @@ form div[class*="span"] {
 }
 
 .userRating.negative:before {
-    content: "-";
+    /*content: "-";*/
 }
 
 .userRating.neutral {
@@ -573,4 +580,24 @@ form div[class*="span"] {
 
 .latestTorrents .media:not(:last-of-type) {
     padding-bottom: 5px;
+}
+
+.userWarnings {
+    position: relative;
+    top:-205px;
+    left: 5px;
+    background: #fff;
+    display: inline-block;
+    height: 20px;
+    padding: 0 5px;
+    text-align: center;
+    max-width: 200px;
+}
+.userWarnings .tooltip-inner, .tooltip {
+    min-width: 300px;
+}
+
+.userWarnings i {
+    display: inline-block;
+    margin-right: 5px;
 }

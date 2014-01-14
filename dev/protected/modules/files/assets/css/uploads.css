@@ -1,0 +1,14 @@
+#FineUploader, .qq-upload-list {
+    margin-top: 20px !important;
+}
+.qq-upload-button {
+    background-color: #006DCC !important;
+}
+
+.upload-delete {
+    font-size: 12px;
+    font-weight: 400;
+    color: #000000;
+    display: inline;
+    margin-right: 12px;
+}

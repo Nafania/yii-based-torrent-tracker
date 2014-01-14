@@ -85,7 +85,7 @@ $(function () {
         $(this).button('loading');
     });
 
-
+    $('a[href^="http"]').not('a[href*="' + location.host + '"]').attr('target', '_blank');
 });
 (function ($) {
 

@@ -5,10 +5,10 @@ class UserRatingBehavior extends RatingBehavior {
 	public function calculateRating () {
 		/**
 		 * будем использовать следующую формулу
-		 * ( K5 * Кол-во торрентов + K6 * кол-во комментариев + К7 * кол-во записей + K8 * сумма скачиваний торрентов  + K9 * сумма рейтингов комментариев + К10 * сумма рейтингов записей в блоге / К );
+		 * ( K5 * Кол-во торрентов + K6 * кол-во комментариев + К7 * кол-во записей + K8 * сумма скачиваний торрентов  + K9 * сумма рейтингов комментариев + К10 * сумма рейтингов записей в блоге / К )  K17 * сумма предупреждений;
 		 */
 		/**
-		 * @var $owner TorrentGroup
+		 * @var $owner User
 		 */
 		$owner = $this->getOwner();
 
@@ -28,6 +28,10 @@ class UserRatingBehavior extends RatingBehavior {
 		$comm->bindValue(':uId', $owner->getId());
 		$sumBlogPostsRatings = ($row = $comm->queryRow()) ? $row['rating'] : 0;
 
+		$comm = $db->createCommand('SELECT COUNT(*) AS count FROM {{userWarnings}} WHERE uId = :uId');
+		$comm->bindValue(':uId', $owner->getId());
+		$warningsCount = ($row = $comm->queryRow()) ? $row['count'] : 0;
+
 		$ratingVal = ((
 				Yii::app()->getModule('ratings')->getRatingCoefficient(5) * $owner->torrentsCount +
 				Yii::app()->getModule('ratings')->getRatingCoefficient(6) * $owner->commentsCount +
@@ -35,7 +39,8 @@ class UserRatingBehavior extends RatingBehavior {
 				Yii::app()->getModule('ratings')->getRatingCoefficient(7) * $owner->blogPostsCount +
 				Yii::app()->getModule('ratings')->getRatingCoefficient(9) * $sumCommentRatings +
 				Yii::app()->getModule('ratings')->getRatingCoefficient(10) * $sumBlogPostsRatings) /
-			Yii::app()->getModule('ratings')->getRatingCoefficient(0))
+			Yii::app()->getModule('ratings')->getRatingCoefficient(0)) -
+			Yii::app()->getModule('ratings')->getRatingCoefficient(17) * $warningsCount
 		;
 		$this->saveRating($ratingVal);
 	}
