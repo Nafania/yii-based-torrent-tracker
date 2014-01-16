@@ -119,7 +119,8 @@ class TorrentGroupMenu extends CWidget {
 					'title'          => Yii::t('torrentsModule.common',
 							'Редактировать группу торрентов')
 				),
-				'visible'     => Yii::app()->getUser()->checkAccess('torrents.default.updateGroup'),
+				'visible'     => Yii::app()->user->checkAccess('updateOwnTorrentGroup',
+						array('model' => $this->model)) || Yii::app()->user->checkAccess('updateTorrentGroup'),
 			),
 			array(
 				'label'       => '<i class="icon-trash"></i>',

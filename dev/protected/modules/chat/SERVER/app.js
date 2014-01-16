@@ -2,7 +2,7 @@
 var io = require('socket.io')
     , redis = require('redis')
     , redisStore = require('socket.io/lib/stores/redis')
-    , heapdump = require('heapdump')
+    //, heapdump = require('heapdump')
     , users = {}
     , history = []
     , maxHistoryLength = 40
@@ -30,14 +30,14 @@ io.configure(function () {
  , 'htmlfile'
  , 'jsonp-polling'
  ]);*/
-var nextMBThreshold = 0;
+/*var nextMBThreshold = 0;
 setInterval(function () {
     var memMB = process.memoryUsage().rss / 1048576;
     if (memMB > nextMBThreshold) {
         heapdump.writeSnapshot();
         nextMBThreshold += 100;
     }
-}, 6000 * 2);
+}, 6000 * 2);*/
 
 io.sockets.on('connection', function (client) {
 

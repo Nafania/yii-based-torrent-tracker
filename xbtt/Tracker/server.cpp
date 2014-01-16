@@ -998,8 +998,8 @@ std::string Cserver::table_name(int v) const
 		return m_config.m_table_users.empty() ? m_table_prefix + "users" : m_config.m_table_users;
 	case table_userProfiles:
     	return m_config.m_table_userProfiles.empty() ? m_table_prefix + "usersProfiles" : m_config.m_table_userProfiles;
-	/*case table_snatched:
-		return m_config.m_table_snatched.empty() ? m_table_prefix + "snatched" : m_config.m_table_snatched;*/
+	case table_snatched:
+		return m_config.m_table_snatched.empty() ? m_table_prefix + "downloads" : m_config.m_table_snatched;
 	case table_deleted_files:
 		return m_config.m_table_deleted_files.empty() ? m_table_prefix + "xbt_deleted_hashes" : m_config.m_table_deleted_files;		
 	case table_changed_files:
