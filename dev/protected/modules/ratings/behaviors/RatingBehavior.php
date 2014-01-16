@@ -1,13 +1,12 @@
 <?php
+/**
+ * @method \EActiveRecord getOwner()
+ */
 class RatingBehavior extends CActiveRecordBehavior {
 	/**
-	 * @method CActiveRecord getOwner()
-	 */
-
-	/**
-	 * @param $state
+	 * @param int $state
 	 *
-	 * @return array|bool return false if no errors or array of errors
+	 * @return array|bool
 	 */
 	public function addRating ( $state = RatingRelations::RATING_STATE_PLUS ) {
 		$owner = $this->getOwner();

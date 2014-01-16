@@ -14,7 +14,9 @@
  * @property integer $modelId
  * @property integer $ctime
  */
-class File extends CActiveRecord {
+class File extends EActiveRecord {
+
+	public $cacheTime = 3600;
 
 	public $file;
 
@@ -44,7 +46,7 @@ class File extends CActiveRecord {
 	public function rules () {
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
-		return array(
+		return CMap::mergeArray(parent::rules(), array(
 
 			array(
 				'file, description',
@@ -70,16 +72,7 @@ class File extends CActiveRecord {
 				'safe',
 				'on' => 'search'
 			),
-		);
-	}
-
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations () {
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array();
+		));
 	}
 
 	/**

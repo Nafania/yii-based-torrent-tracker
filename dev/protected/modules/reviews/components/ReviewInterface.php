@@ -28,17 +28,15 @@ abstract class ReviewInterface {
 	 * @return mixed
 	 */
 	public function getReviewData ( EActiveRecord $model, $attrs ) {
-		$db = Yii::app()->getDb();
+		$review = Review::model()->findByPk(array(
+				'modelId'   => $model->getPrimaryKey(),
+				'modelName' => $model->resolveClassName(),
+				'apiName'   => $this->getId()
+			),
+			'mtime > ' . time() - 1 * 24 * 60 * 60);
 
-		$sql = 'SELECT * FROM {{reviews}} WHERE modelId = :modelId AND modelName = :modelName AND apiName = :apiName AND mtime > :mtime';
-		$comm = $db->createCommand($sql);
-		$comm->bindValue(':modelId', $model->getPrimaryKey());
-		$comm->bindValue(':modelName', $model->resolveClassName());
-		$comm->bindValue(':apiName', $this->getId());
-		$comm->bindValue(':mtime', time() - 1 * 24 * 60 * 60);
-
-		if ( $dataReader = $comm->queryRow() ) {
-			return $dataReader['ratingText'];
+		if ( $review ) {
+			return $review->ratingText;
 		}
 
 		/**
@@ -54,39 +52,33 @@ abstract class ReviewInterface {
 	 * @return mixed
 	 */
 	public function sendData ( EActiveRecord $model, $data ) {
-		$db = Yii::app()->getDb();
 
-		$sql = 'SELECT * FROM {{reviews}} WHERE modelId = :modelId AND modelName = :modelName AND apiName = :apiName';
-		$comm = $db->createCommand($sql);
-		$comm->bindValue(':modelId', $model->getPrimaryKey());
-		$comm->bindValue(':modelName', $model->resolveClassName());
-		$comm->bindValue(':apiName', $this->getId());
+		$review = Review::model()->findByPk(array(
+			'modelId'   => $model->getPrimaryKey(),
+			'modelName' => $model->resolveClassName(),
+			'apiName'   => $this->getId()
+		));
 
-		if ( $dataReader = $comm->queryRow() ) {
+		if ( $review ) {
 			if ( $data === false ) {
-				$sql = 'UPDATE {{reviews}} SET mtime = :mtime WHERE modelId = :modelId AND modelName = :modelName AND apiName = :apiName';
-				$comm = $db->createCommand($sql);
+				$review->mtime = time();
+
 			}
 			else {
-				$sql = 'UPDATE {{reviews}} SET mtime = :mtime, ratingText = :ratingText WHERE modelId = :modelId AND modelName = :modelName AND apiName = :apiName';
-				$comm = $db->createCommand($sql);
-				$comm->bindValue(':ratingText', $data);
+				$review->mtime = time();
+				$review->ratingText = $data;
 			}
-			$comm->bindValue(':modelId', $model->getPrimaryKey());
-			$comm->bindValue(':modelName', $model->resolveClassName());
-			$comm->bindValue(':apiName', $this->getId());
-			$comm->bindValue(':mtime', time());
 		}
 		else {
-			$sql = 'INSERT INTO {{reviews}} (mtime, modelId, modelName, apiName, ratingText) VALUES(:mtime, :modelId, :modelName, :apiName, :ratingText)';
-			$comm = $db->createCommand($sql);
-			$comm->bindValue(':modelId', $model->getPrimaryKey());
-			$comm->bindValue(':modelName', $model->resolveClassName());
-			$comm->bindValue(':apiName', $this->getId());
-			$comm->bindValue(':mtime', time());
-			$comm->bindValue(':ratingText', ($data === false ? '' : $data));
+			$review = new Review();
+			$review->modelId = $model->getPrimaryKey();
+			$review->modelName = $model->resolveClassName();
+			$review->apiName = $this->getId();
+			$review->mtime = time();
+			$review->ratingText = ($data === false ? '' : $data);
 		}
-		$comm->execute();
+
+		$review->save();
 
 		return $data;
 	}

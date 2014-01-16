@@ -13,17 +13,13 @@ class ReviewWidget extends CWidget {
 	public function run () {
 
 		Yii::import('application.modules.reviews.components.parsers.*');
+		Yii::import('application.modules.reviews.models.*');
 
-		$db = Yii::app()->getDb();
-		$sql = 'SELECT * FROM {{reviewsRelations}} WHERE cId = :cId';
-		$comm = $db->createCommand($sql);
-		$comm->bindValue(':cId', $this->categoryId);
+		$models = ReviewRelation::model()->findAllByAttributes(array('cId' => $this->categoryId));
 
-		$dataReader = $comm->query();
-
-		foreach ( $dataReader AS $row ) {
-			$params = unserialize($row['params']);
-			$class = new $row['apiName'];
+		foreach ( $models  AS $model ) {
+			$params = $model->getParams();
+			$class = new $model->apiName;
 
 			$attrs = array();
 			foreach ( $params AS $key => $val ) {

@@ -1,4 +1,5 @@
 <?php
+
 class ReCalcRatingsCommand extends CConsoleCommand {
 	public function run ( $args ) {
 		$type = (isset($args[0]) ? $args[0] : '');
@@ -8,37 +9,37 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 			case 'BlogPost':
 				Yii::import('application.modules.blogs.models.*');
 				$modelName = 'modules\blogs\models\BlogPost';
-				$count = $modelName::model()->count();
+				$tableName = '{{blogPosts}}';
 				break;
 
 			case 'Blog':
 				Yii::import('application.modules.blogs.models.*');
 				$modelName = 'modules\blogs\models\Blog';
-				$count = $modelName::model()->count();
+				$tableName = '{{blogs}}';
 				break;
 
 			case 'Group':
 				Yii::import('application.modules.groups.models.*');
 				$modelName = 'Group';
-				$count = $modelName::model()->count();
+				$tableName = '{{groups}}';
 				break;
 
 			case 'User':
 				Yii::import('application.modules.user.models.*');
 				$modelName = 'User';
-				$count = $modelName::model()->count();
+				$tableName = '{{users}}';
 				break;
 
 			case 'TorrentGroup':
 				Yii::import('application.modules.torrents.models.*');
 				$modelName = 'modules\torrents\models\TorrentGroup';
-				$count = $modelName::model()->count();
+				$tableName = '{{torrentGroups}}';
 				break;
 
 			case 'Comment':
 				Yii::import('application.modules.comments.models.*');
 				$modelName = 'Comment';
-				$count = $modelName::model()->count();
+				$tableName = '{{comments}}';
 				break;
 
 			default:
@@ -49,11 +50,19 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 
 		$limit = ($limit <= 0 ? 1000 : $limit);
 
-		ini_set('memory_limit', '1024M');
+		ini_set('memory_limit', '256M');
 
 		Yii::getLogger()->autoFlush = 0;
 
-		//$startTime = microtime(true);
+		$startTime = microtime(true);
+
+		/**
+		 * @var CDbConnection $db
+		 */
+		$db = $modelName::model()->getDbConnection();
+		$comm = $db->createCommand('SELECT COUNT(*) AS count FROM ' . $tableName);
+		//$comm->bindValue(':tableName', $tableName);
+		$count = ($row = $comm->queryRow()) ? $row['count'] : 0;
 
 		try {
 			$j = ceil($count / $limit);
@@ -63,7 +72,20 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 				$offset = ($i * $limit);
 				//echo SizeHelper::formatSize(memory_get_usage()) . "\tbefore find\n";
 
-				$models = $modelName::model()->findAll(array(
+				$comm = $db->createCommand('SELECT * FROM ' . $tableName . '  ORDER BY ctime ASC LIMIT :offset, :limit');
+				$comm->bindValue(':limit', $limit);
+				$comm->bindValue(':offset', $offset);
+				$dataReader = $comm->query();
+
+				foreach ( $dataReader AS $data ) {
+					/**
+					 * @var EActiveRecord $model
+					 */
+					$model = $modelName::model()->populateRecord($data, false);
+					$model->calculateRating();
+				}
+
+				/*$models = $modelName::model()->findAll(array(
 				                                            'order'  => 'ctime DESC',
 				                                            'limit'  => $limit,
 				                                            'offset' => $offset
@@ -75,20 +97,20 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 					$_model->calculateRating();
 					unset($_model);
 				}
-				unset($models);
+				unset($models);*/
 				gc_collect_cycles();
 
 				//echo SizeHelper::formatSize(memory_get_usage()) . "\tafter destruct\n";
 				Yii::getLogger()->flush(true);
 
-				//echo "step " . $i . ' (' . $offset . " from " . $count . ") done with " . (microtime(true) - $startTime) . "ms\n";
+				//echo "step " . ( $i + 1 ) . ' (' . $offset . " from " . $count . ") done with " . (microtime(true) - $startTime) . "ms\n";
 			}
 		} catch ( CException $e ) {
 			echo $e->getMessage();
 			return 1;
 		}
 
-		//$endTime = microtime(true);
+		$endTime = microtime(true);
 		//echo "calc end at " . $endTime . ". Time spent: " . ($endTime - $startTime) . " \n";
 
 		return 0;
