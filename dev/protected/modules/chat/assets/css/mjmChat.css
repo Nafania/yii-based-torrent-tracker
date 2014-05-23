@@ -35,8 +35,8 @@
 #mjmChatRoom {
     width: 600px;
     height: 420px;
-    bottom: -400px;
-    right: -450px;
+    top: 150px;
+    right: -580px;
     box-shadow: 1px -1px 6px -1px;
     background-color: #FFFFFF;
     position: fixed;
@@ -75,14 +75,12 @@
 
 #mjmChatRoomTitle {
     cursor: pointer;
-    display: inline-table;
-    height: 20px;
-    padding-left: 7px;
-    width: 554px;
+    width: 30px;
+    float: left;
 }
 
 #mjmChatRoomBody {
-    height: 320px;
+    height: 345px;
     width: 100%;
 }
 
@@ -119,7 +117,7 @@
     float: left;
     height: 40px;
     margin: 0;
-    width: 470px;
+    width: 435px;
 }
 
 #mjmChatSend {
@@ -160,41 +158,88 @@
 }
 
 .chatDown {
-    bottom: -400px;
     right: -450px;
 }
 
 .chatUp {
-    bottom: 0 !important;
     right: 0 !important;
 }
 
-@media screen and (max-height: 640px) {
-    #mjmChatRoomSend {
-        height: 32px;
-    }
+.chatWrapper {
+    float: left;
+    width: 100%;
+}
 
-    #mjmChatMessage {
-        height: 18px;
-    }
+#mjmChatRoomBody, #mjmChatRoomSend {
+    margin-left: 30px;
+}
 
-    #mjmChatSend {
-        height: 26px;
-        overflow: hidden;
-    }
+#mjmChatRoomTitle {
+    float: left;
+    margin-left: -100%;
+    width: 25px;
+    background-color: #C9E0ED;
+    height: 100%;
+}
 
-    #mjmChatRoomBody {
-        height: 150px;
-    }
+#mjmChatRoomTitle > span {
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
 
+    /* also accepts left, right, top, bottom coordinates; not required, but a good idea for styling */
+    -webkit-transform-origin: 50% 50%;
+    -moz-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    -o-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+
+    /* Should be unset in IE9+ I think. */
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+
+    display: block;
+
+    font-weight: bold;
+
+    width: 555px;
+    margin-left: -265px;
+
+
+}
+
+@media screen and (max-width: 620px) {
     #mjmChatRoom {
-        height: 220px;
-        bottom: -200px;
-        right: -450px;
+        width: 500px;
+    }
+    #chatMessages {
+        width: 380px;
+    }
+    #mjmChatUsersList {
+        width: 100px;
+    }
+    #mjmChatMessage {
+        width: 340px;
+    }
+    #mjmChatRoom, .chatDown {
+        right: -475px;
     }
 
-    .chatDown {
-        bottom: -200px;
-        right: -450px;
+}
+
+@media screen and (max-height: 600px) {
+    #mjmChatRoomBody {
+        height: 260px;
+    }
+    #mjmChatRoom {
+        height: 330px;
+        top:15px;
+    }
+
+
+    #mjmChatRoomTitle > span {
+        margin-left: -230px;
+        width: 480px;
     }
 }

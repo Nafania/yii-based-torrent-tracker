@@ -51,7 +51,7 @@ class MjmChat extends CWidget {
 		//TODO: load actual language
 		$cs->registerScriptFile(Yii::app()->getModule('chat')->getAssetsUrl() . '/javascript/moment/lang/ru.js');
 		$cs->registerScriptFile(Yii::app()->getModule('chat')->getAssetsUrl() . '/javascript/livestamp.min.js');
-		$cs->registerCssFile(Yii::app()->getModule('chat')->getAssetsUrl() . '/css/mjmChat.css');
+		$cs->registerCssFile(Yii::app()->getModule('chat')->getAssetsUrl() . '/css/mjmChat.css?5');
 
 		$showChat = Yii::app()->getRequest()->cookies['showChat']->value;
 

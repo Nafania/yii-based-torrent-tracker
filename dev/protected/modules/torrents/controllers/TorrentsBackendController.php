@@ -144,55 +144,61 @@ class TorrentsBackendController extends \YAdminController {
 
 			$firstCommentCount = $first->commentsCount;
 
-			//TODO: убрать в свои модули
-			foreach ( $groups AS $group ) {
-				$comments = $group->comments;
-				$torrents = $group->torrents;
-				$ratings = $group->ratings;
-				$subscriptions = $group->subscriptions;
-				$commentsCount = $group->commentsCount;
-				$mtime = max($mtime, $group->mtime);
+			try {
+				//TODO: убрать в свои модули
+				foreach ( $groups AS $group ) {
+					$comments = $group->comments;
+					$torrents = $group->torrents;
+					$ratings = $group->ratings;
+					$subscriptions = $group->subscriptions;
+					$commentsCount = $group->commentsCount;
+					$mtime = max($mtime, $group->mtime);
 
-				foreach ( $comments AS $comment ) {
-					$comment->modelId = $first->getId();;
-					$comment->saveNode(false);
-				}
+					foreach ( $comments AS $comment ) {
+						$comment->modelId = $first->getId();;
+						$comment->saveNode(false);
+					}
 
-				foreach ( $torrents AS $torrent ) {
-					$first->addTags($torrent->tags->toString());
+					foreach ( $torrents AS $torrent ) {
+						$first->addTags($torrent->tags->toString());
 
-					$torrent->gId = $first->getId();;
-					$torrent->save(false);
-				}
+						$torrent->gId = $first->getId();;
+						$torrent->save(false);
+					}
 
-				/**
-				 * We need to go deeper!
-				 */
-				try {
+					/**
+					 * We need to go deeper!
+					 */
+
 					foreach ( $ratings AS $rating ) {
 						$rating->modelId = $first->getId();;
-						$rating->save(false);
+						$rating->save();
 					}
 
 					foreach ( $subscriptions AS $subscription ) {
 						$subscription->modelId = $first->getId();;
 						$subscription->save(false);
 					}
-				} catch ( \CException $e ) {
 
+					if ( $firstCommentCount ) {
+						$firstCommentCount->count += $commentsCount->count;
+						$firstCommentCount->save(false);
+					}
+
+					$group->delete();
 				}
 
-				if ( $firstCommentCount ) {
-					$firstCommentCount->count += $commentsCount->count;
-					$firstCommentCount->save(false);
-				}
+				$first->mtime = $mtime;
+				$first->save(false);
 
-				$group->delete();
+				$transaction->commit();
+
+			} catch ( \CException $e ) {
+				$transaction->rollback();
+
+				Yii::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 			}
 
-			$first->mtime = $mtime;
-			$first->save(false);
-			$transaction->commit();
 
 			\Ajax::send(\Ajax::AJAX_SUCCESS, Yii::t('torrentsModule.common', 'Группы успешно объединены.'));
 		} catch ( \CException $e ) {

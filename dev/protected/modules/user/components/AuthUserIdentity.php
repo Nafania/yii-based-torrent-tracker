@@ -24,8 +24,13 @@ class AuthUserIdentity extends EAuthUserIdentity {
 
 	public function getSocialAccount () {
 		if ( $this->id !== null ) {
-			if ( $model = UserSocialAccount::model()->findByPk($this->id) ) {
-				return $model;
+            $account = UserSocialAccount::model()->findByAttributes(array(
+                'id' => $this->id,
+                'service' => $this->service->getServiceName()
+            ));
+
+			if ( $account ) {
+				return $account;
 			}
 		}
 		return false;

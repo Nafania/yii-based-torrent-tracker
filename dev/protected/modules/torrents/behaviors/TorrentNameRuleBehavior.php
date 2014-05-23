@@ -26,7 +26,7 @@ class TorrentNameRuleBehavior extends CActiveRecordBehavior {
 		return true;
 	}
 
-	public function afterDelete () {
+	public function afterDelete ( $e ) {
 		$connection = Yii::app()->db;
 		$sql = 'DELETE FROM {{torrentsNameRules}} WHERE catId = :catId';
 		$command = $connection->createCommand($sql);

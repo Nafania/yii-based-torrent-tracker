@@ -10,7 +10,7 @@ foreach ($comments AS $comment) {
 $tid = $comment->getTorrentId();
 ?>
 
-<div class="media commentContainer" data-comments-for="<?php echo $tid ?>" id="comment-<?php echo $comment->getId(); ?>" data-id="<?php echo $comment->getId(); ?>">
+<div class="media commentContainer commentsBlock" data-comments-for="<?php echo $tid ?>" id="comment-<?php echo $comment->getId(); ?>" data-id="<?php echo $comment->getId(); ?>">
 
 	<?php
 	if ( $comment->user ) {

@@ -246,10 +246,10 @@ class ExtendedClientScript extends CClientScript {
 					$mtimes[] = filemtime($fileName);
 				}
 			}
-			$this->_changesHash = md5(serialize($mtimes));
+			$this->_changesHash = md5(implode(',', $mtimes));
 		}
 
-		$combineHash = md5(implode('', $urls));
+		$combineHash = md5(implode(',', $urls));
 
 		$fileName = $this->prefix . md5($combineHash . $optionsHash . $this->_changesHash) . ".$type";
 
@@ -261,6 +261,7 @@ class ExtendedClientScript extends CClientScript {
 
 			foreach ( $urls as $file ) {
 				$fileContents = file_get_contents($this->basePath . '/' . $file);
+
 				if ( $type == 'css' && strpos($fileContents, '@import') !== false ) {
 					$this->cssMinFilters['ImportImports'] = array('BasePath' => dirname($this->basePath . '/' . $file));
 				}

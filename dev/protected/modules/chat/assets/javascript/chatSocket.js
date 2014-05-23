@@ -14,44 +14,8 @@ $(function () {
 
         socket.on('connect', function () {
 
-            socket.on('history', function (history) {
-                for (var key in history) {
-                    var data = history[key];
-
-                    if (!data.user) {
-                        continue;
-                    }
-                    var time = new moment(data.time), maxMergeTime = 60;
-                    var hl = '';
-                    var pos = data.message.indexOf(user.name, 0); // returns -1
-                    if (pos >= 0) {
-                        hl = ' chatHighlight';
-                    }
-
-                    var $lastDiv = $("#chatMessages").find('.media:last');
-                    if (typeof $lastDiv != 'undefined' && $lastDiv.data('uid') == data.user.id && ( time.format('X') - new moment($lastDiv.find('abbr').data('isotimestamp')).format('X') < maxMergeTime )) {
-                        $lastDiv.find('.commentText').append('<br>' + data.message);
-                    }
-                    else {
-                        var html = '<div class="media' + hl + '" data-uid="' + data.user.id + '">\
-                    	<a href="' + data.user.url + '" class="pull-left"><img width="32" height="32" alt="' + data.user.name + '" src="' + data.user.avatar + '" class="media-object"></a>\
-                    	<div class="media-body">\
-                    		<div class="comment">\
-                            <h6 class="media-heading">\
-                    	        <a href="' + data.user.url + '" data-action="chatusername">' + data.user.name + '</a><span class="userRating ' + data.user.ratingClass + '">' + data.user.rating + '</span>, <abbr data-isotimestamp="' + time.toISOString() + '" data-livestamp="' + time.toISOString() + '" title="' + time.format('DD.MM.YY HH:mm') + '">' + time.fromNow() + '</abbr>\
-                    	        </h6>\
-                                 <div class="commentText">' + data.message + '</div>\
-                    					</div>\
-                    			</div>\
-                    </div>';
-                        $("#chatMessages").append(html);
-                    }
-                }
-                mjmChatScrollDown();
-            });
-
             socket.on('newMessage', function (data) {
-                if (!data.user) {
+                if ( !data.user ) {
                     return false;
                 }
                 var time = new moment(data.time), maxMergeTime = 60;
@@ -104,7 +68,9 @@ $(function () {
     }
 
     window.onbeforeunload = function () {
-        socket.disconnect();
+        if ( typeof socket != 'undefined' ) {
+            socket.disconnect();
+        }
     }
 
     if ($.cookie('showChat') == 1) {

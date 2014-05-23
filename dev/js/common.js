@@ -51,6 +51,8 @@ $(document).ajaxError(function (event, request, settings) {
         },
         type: 'error'
     }).show();
+
+    $('[type=submit]').button('reset');
 });
 
 $(function () {

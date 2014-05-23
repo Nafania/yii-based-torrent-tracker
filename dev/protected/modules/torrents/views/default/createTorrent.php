@@ -82,7 +82,8 @@ $this->widget('bootstrap.widgets.TbSelect2',
 
 <?php $this->widget('application.modules.files.widgets.FilesUploadWidget',
 	array(
-		'model' => $torrent
+		'model'       => $torrent,
+		'buttonTitle' => Yii::t('torrentsModule.common', 'Добавить скриншот')
 	));?>
 
 <div class="form-actions">

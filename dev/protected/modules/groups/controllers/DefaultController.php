@@ -52,6 +52,10 @@ class DefaultController extends components\Controller {
 		$blogPost->searchWithText($search);
 		$blogPost->searchWithTags($tags);
 
+        $criteria = new CDbCriteria();
+        $criteria->order = 't.ctime DESC';
+        $blogPost->getDbCriteria()->mergeWith($criteria);
+
 		$postsProvider = $blogPost->search();
 
 		$this->render('view',

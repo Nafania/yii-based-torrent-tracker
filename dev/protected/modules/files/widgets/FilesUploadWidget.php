@@ -6,11 +6,17 @@ class FilesUploadWidget extends CWidget {
 	 */
 	public $model;
 
+	public $buttonTitle;
+
 	public function init () {
 		parent::init();
 
 		if ( !$this->model instanceof CActiveRecord ) {
 			throw new CException('Model must be instanceof CActiveRecord');
+		}
+
+		if ( !$this->buttonTitle ) {
+			$this->buttonTitle = Yii::t('filesModule.common', 'Добавить файл');
 		}
 	}
 
@@ -18,8 +24,9 @@ class FilesUploadWidget extends CWidget {
 		$this->_registerAssets();
 		$this->render('filesUpload',
 			array(
-				'model'     => $this->model,
-				'modelName' => $this->model->resolveClassName(),
+				'model'       => $this->model,
+				'modelName'   => $this->model->resolveClassName(),
+				'buttonTitle' => $this->buttonTitle,
 			));
 	}
 

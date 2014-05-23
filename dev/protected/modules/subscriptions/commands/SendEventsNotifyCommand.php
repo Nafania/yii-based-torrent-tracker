@@ -35,12 +35,14 @@ class SendEventsNotifyCommand extends CConsoleCommand {
 		AND s.expire < :time
 		GROUP BY u.id';*/
 		$sql = 'SELECT COUNT(*) AS count, u.id, u.email, u.name
-		FROM {{events}} e, {{users}} u
+		FROM {{events}} e, {{users}} u, {{userProfiles}} p
 		WHERE e.uId = u.id
 		AND u.emailConfirmed = 1
 		AND e.unread = 1
 		AND u.active = 1
 		AND e.notified = 0
+		AND u.id = p.uid
+		AND p.disabledNotifies = 0
 		GROUP BY u.id';
 		$comm = $db->createCommand($sql);
 		$comm->bindValue(':time', $time);
@@ -59,7 +61,7 @@ class SendEventsNotifyCommand extends CConsoleCommand {
 			$message->setBcc($messages);
 
 			if ( !Yii::app()->mail->send($message) ) {
-				throw new CHttpException(502, Yii::t('subscriptionsModule.common', 'Cant send mail'));
+				throw new CException(Yii::t('subscriptionsModule.common', 'Cant send mail'));
 			}
 		}
 

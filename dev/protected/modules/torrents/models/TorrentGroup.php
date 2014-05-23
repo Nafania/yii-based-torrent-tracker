@@ -129,7 +129,7 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 					// Attribute prefix. Useful when storing attributes for multiple models in a single table
 					// Empty by default
 					'attributesPrefix' => '',
-					'preload'          => true,
+					'preload'          => false,
 				)
 			),
 			array(

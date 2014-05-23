@@ -5,6 +5,7 @@
   "main": "app.js",
   "author": "Nafania",
   "dependencies" : {
-    "socket.io": ""
+    "socket.io": "",
+      "redis": ""
   }
 }

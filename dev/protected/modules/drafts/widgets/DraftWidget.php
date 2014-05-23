@@ -48,6 +48,11 @@ class DraftWidget extends CWidget {
 	}
 
 	public function run () {
+
+        if ( !$this->model->getIsNewRecord() ) {
+            return true;
+        }
+
 		$cs = Yii::app()->getClientScript();
 		$cs->registerScript('appendDraft',
 			'$("form#' . $this->formId . '").saveDraft(' . CJavaScript::encode(array(

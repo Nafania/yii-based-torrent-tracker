@@ -1484,7 +1484,7 @@ class SphinxClient
 		return $res;
 	}
 
-	function EscapeString ( $string )
+	public static function EscapeString ( $string )
 	{
 		$from = array ( '\\', '(',')','|','-','!','@','~','"','&', '/', '^', '$', '=' );
 		$to   = array ( '\\\\', '\(','\)','\|','\-','\!','\@','\~','\"', '\&', '\/', '\^', '\$', '\=' );

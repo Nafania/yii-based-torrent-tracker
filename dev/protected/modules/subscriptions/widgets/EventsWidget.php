@@ -39,13 +39,15 @@ class EventsWidget extends CWidget {
 				'host' => $host,
 				'port' => $port,
 				'hash' => md5(Yii::app()->getUser()->getId()),
+                'prefix' => Yii::app()->redis->prefix,
+                'msg' => Yii::t('subscriptionsModule.common', 'Новое событие')
 			);
 			Yii::app()->clientScript->registerScript('eventsConfig',
 				'var eventsConfig=' . CJavaScript::encode($config) . ';',
 				CClientScript::POS_END);
 		}
 
-		$eventItemsCount = Event::model()->unreaded()->forCurrentUser()->count();
+		$eventItemsCount = (int) Yii::app()->redis->hGet(Event::REDIS_HASH_NAME, \Yii::app()->getUser()->getId());
 
 		$this->render('eventsWidget',
 			array(

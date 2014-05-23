@@ -117,14 +117,19 @@ class DefaultController extends components\Controller {
 
 			foreach ( $structure as $structureNode ) {
 				if ( method_exists($structureNode->getInstance(), 'getPagesForSitemap') ) {
-					$models = $structureNode->getInstance()->getPagesForSitemap()->findAll(array('order' => 'ctime DESC'));
 
-					foreach ( $models AS $model ) {
+                    $model = $structureNode->getInstance()->getPagesForSitemap();
+                    $db = $model->getDbConnection();
+                    $comm = $db->createCommand('SELECT * FROM ' . $model->getTableSchema()->name . ' ORDER BY ctime DESC');
+                    $dataReader = $comm->query();
+
+                    foreach ( $dataReader AS $row ) {
+                        $model = $model->populateRecord($row, false);
 						$url = $model->getUrl();
 						$data[] = array(
 							'url'        => Yii::app()->createAbsoluteUrl($url[0], array_splice($url, 1)),
 							'changefreq' => 'daily',
-							'priority'   => 0.8
+							'priority'   => '0.8'
 						);
 					}
 				}

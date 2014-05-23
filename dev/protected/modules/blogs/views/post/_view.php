@@ -10,7 +10,7 @@
 	    <h2 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h2>
 	    <?php echo StringHelper::cutStr($data->getText(),
 		    500,
-		    '<p>' . CHtml::link(Yii::t('blogsModule.common', 'Читать далее...'),
+		    '<p class="clearfix">' . CHtml::link(Yii::t('blogsModule.common', 'Читать далее...'),
 			    $data->getUrl()) . '</p>'); ?>
 	    <p>
 		    <?php

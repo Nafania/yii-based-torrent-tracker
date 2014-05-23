@@ -79,12 +79,6 @@ $(document).on('click', 'a[data-action=changeStatus]', function (e) {
         }
     });
 });
-$(document).on('mouseenter', '.groupsList, .groupView', function (e) {
-    $(this).find('.groupOperations').fadeIn('fast');
-});
-$(document).on('mouseleave', '.groupsList, .groupView', function (e) {
-    $(this).find('.groupOperations').fadeOut('fast');
-});
 
 $(document).on('click', 'a[data-action=groupInvite]', function (e) {
     e.preventDefault();

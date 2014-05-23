@@ -336,6 +336,13 @@ class User extends EActiveRecord {
 
 	protected function beforeValidate () {
 		if ( parent::beforeValidate() ) {
+
+            switch ( $this->scenario ) {
+                case 'socialLogin':
+                    $this->name = preg_replace('/[^а-яa-z0-9-_ ]/iu', '', $this->name);
+                break;
+            }
+
 			if ( $this->getId() != 1 && trim(mb_strtolower($this->getName())) == 'admin' ) {
 				$this->addError('name', 'There is can be only one admin! You shall not pass!');
 				return false;

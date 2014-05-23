@@ -1,104 +1,147 @@
 <?php
 Yii::import('application.modules.reviews.components.*');
 
-class KinopoiskApi extends ReviewInterface {
+class KinopoiskApi extends ReviewInterface
+{
 
-	public function getType () {
-		return array(
-			'movie',
-			'tvSeries'
-		);
-	}
+    public function getType()
+    {
+        return array(
+            'movie',
+            'tvSeries'
+        );
+    }
 
-	public function getId () {
-		return 'KinopoiskApi';
-	}
+    public function getId()
+    {
+        return 'KinopoiskApi';
+    }
 
-	public function getTitle () {
-		return Yii::t('reviewsModule.kinopoiskApi', 'KinopoiskApi - рейтинги фильмов и сериалов с www.kinopoisk.ru');
-	}
+    public function getTitle()
+    {
+        return Yii::t('reviewsModule.kinopoiskApi', 'KinopoiskApi - рейтинги фильмов и сериалов с www.kinopoisk.ru');
+    }
 
-	public function getDescription () {
-		return Yii::t('reviewsModule.kinopoiskApi', 'Рейтинг kinopoisk.ru');
-	}
+    public function getDescription()
+    {
+        return Yii::t('reviewsModule.kinopoiskApi', 'Рейтинг kinopoisk.ru');
+    }
 
-	public function getNeededFields () {
-		return array(
-			't' => Yii::t('reviewsModule.omDbApi', 'Название фильма или сериала'),
-			'y' => Yii::t('reviewsModule.omDbApi', 'Год выхода'),
-		);
-	}
+    public function getNeededFields()
+    {
+        return array(
+            't' => Yii::t('reviewsModule.omDbApi', 'Название фильма или сериала'),
+            'y' => Yii::t('reviewsModule.omDbApi', 'Год выхода'),
+        );
+    }
 
-	public function getAdditionalFields () {
+    public function getAdditionalFields()
+    {
 
-	}
+    }
 
-	protected function getApiData ( $args ) {
-		$title = $args['t'];
-		$year = $args['y'];
+    protected function getApiData($args)
+    {
+        $title = $args['t'];
+        $year = $args['y'];
+        $type = $args['mt'];
 
-		try {
-			$contents = $this->makeRequest('http://www.kinopoisk.ru/s/type/film/find/' . rawurlencode($title) . '/m_act[year]/' . $year . '/',
-				array(
-					'useragent' => $this->_generateUserAgent(),
-					'headers'   => $this->_generateHeaders(),
-					'referer'   => 'http://www.kinopoisk.ru/',
-				),
-				false);
+        //        http://www.kinopoisk.ru/index.php?level=7&from=forma&result=adv&m_act%5Bfrom%5D=forma&m_act%5Bwhat%5D=content&m_act%5Bfind%5D=%D1%F2%F0%E5%EB%E0&m_act%5Bfrom_year%5D=2012&m_act%5Bto_year%5D=2013&m_act%5Bcontent_find%5D=serial
 
-			return $this->_parseSearchResults($contents);
+        $title = str_replace('/', '', $title);
 
-		} catch ( CException $e ) {
-			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
-		}
+        if ($type == 'S') {
+            $url = 'http://www.kinopoisk.ru/index.php?level=7&from=forma&result=adv&m_act%5Bfrom%5D=forma&m_act%5Bwhat%5D=content&m_act%5Bfind%5D=' . rawurlencode($title) . '&m_act%5Bcontent_find%5D=serial';
+        } else {
+            $url = 'http://www.kinopoisk.ru/s/type/film/find/' . rawurlencode($title) . '/m_act[year]/' . $year . '/';
+        }
 
-		return false;
-	}
+        try {
+            $contents = $this->makeRequest($url,
+                array(
+                    'useragent' => $this->_generateUserAgent(),
+                    'headers' => $this->_generateHeaders(),
+                    'referer' => 'http://www.kinopoisk.ru/',
+                    'proxy' => array(
+                        '108.174.179.82:9999',
+                        '200.110.243.150:3128',
+                        '218.108.170.166:80',
+                        '118.97.95.174:8080',
+                        '110.77.136.102:3128',
+                    )
+                ),
+                false);
 
-	private function _generateUserAgent () {
-		return 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:26.0) Gecko/20100101 Firefox/26.0';
-	}
+            return $this->_parseSearchResults($contents);
 
-	private function _generateHeaders () {
-		return array(
-			'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-			'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-			'Referer: http://www.kinopoisk.ru/',
-			'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:26.0) Gecko/20100101 Firefox/26.0',
-			'DNT: 1',
-			'Accept-Encoding: gzip, deflate',
-			'Connection: keep-alive'
-		);
-	}
+        } catch (CException $e) {
+            Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+        }
 
-	private function _parseSearchResults ( $content ) {
-		$html = phpQuery::newDocument($content);
+        return false;
+    }
 
-		$div = $html->find('div.element.most_wanted');
+    private function _generateUserAgent()
+    {
+        return 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:26.0) Gecko/20100101 Firefox/26.0';
+    }
 
-		if ( $div ) {
-			$href = $div->find('p.name')->find('a')->attr('href');
-			preg_match('/film\/([0-9]+)\//', $href, $matches);
+    private function _generateHeaders()
+    {
+        return array(
+            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
+            'Referer: http://www.kinopoisk.ru/',
+            'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:26.0) Gecko/20100101 Firefox/26.0',
+            'DNT: 1',
+            'Accept-Encoding: gzip, deflate',
+            'Connection: keep-alive'
+        );
+    }
 
-			if ( !empty($matches[1]) ) {
-				$movieId = (int) $matches[1];
+    private function _parseSearchResults($content)
+    {
+        $html = phpQuery::newDocument($content);
 
-				try {
-					$xml = $this->makeRequest('http://rating.kinopoisk.ru/' . $movieId . '.xml',
-						array(
-							'useragent' => $this->_generateUserAgent(),
-						),
-						false);
+        $div = $html->find('div.element.most_wanted');
+        if ($div->length) {
+            $href = $div->find('p.name')->find('a')->attr('href');
+            preg_match('/film\/([0-9]+)\//', $href, $matches);
 
-					$data = simplexml_load_string($xml);
+            if (!empty($matches[1])) {
+                $movieId = (int)$matches[1];
+                return $this->parseXml($movieId);
+            }
+        } else {
+            preg_match('/id_film = ([0-9]+);/', $content, $matches);
+            if (!empty($matches[1])) {
+                $movieId = (int)$matches[1];
+                return $this->parseXml($movieId);
+            }
+        }
+        return false;
+    }
 
-					return '<a href="http://www.kinopoisk.ru' . $href . '" target="_blank">' . $data->kp_rating . '</a>';
+    protected function parseXml($movieId)
+    {
+        try {
+            $xml = $this->makeRequest('http://rating.kinopoisk.ru/' . $movieId . '.xml',
+                array(
+                    'useragent' => $this->_generateUserAgent(),
+                ),
+                false);
 
-				} catch ( CException $e ) {
-					Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
-				}
-			}
-		}
-		return false;
-	}
+            $data = simplexml_load_string($xml);
+            $votes = $data->kp_rating['num_vote'];
+
+            if ($data->kp_rating == 0 || $votes == 0) {
+                return false;
+            } else {
+                return Yii::t('reviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/' . $movieId . '/" target="_blank">{rating}, голосов: {votes}</a>', array('{rating}' => $data->kp_rating, '{votes}' => Yii::app()->getNumberFormatter()->formatDecimal($votes)));
+            }
+
+        } catch (CException $e) {
+            Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+        }
+    }
 }

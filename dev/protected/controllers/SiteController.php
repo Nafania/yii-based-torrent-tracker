@@ -1,4 +1,5 @@
 <?php
+Yii::import('application.components.Controller');
 
 class SiteController extends components\Controller {
 	public function filters () {

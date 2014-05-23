@@ -81,7 +81,7 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 					/**
 					 * @var EActiveRecord $model
 					 */
-					$model = $modelName::model()->populateRecord($data, false);
+					$model = EActiveRecord::model($modelName)->populateRecord($data, false);
 					$model->calculateRating();
 				}
 
@@ -91,7 +91,7 @@ class ReCalcRatingsCommand extends CConsoleCommand {
 				                                            'offset' => $offset
 				                                       ));
 
-				//echo SizeHelper::formatSize(memory_get_usage()) . "\tafter find\n";
+				echo SizeHelper::formatSize(memory_get_usage()) . "\tafter find\n";
 
 				foreach ( $models AS $_model ) {
 					$_model->calculateRating();

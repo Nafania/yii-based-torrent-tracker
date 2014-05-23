@@ -2,7 +2,7 @@
 
 $cs = Yii::app()->getClientScript();
 $cs->registerPackage('common');
-$cs->registerCssFile('/css/style.css?3');
+$cs->registerCssFile('/css/style.css?14');
 ?>
 <!DOCTYPE html>
 <html lang="ru">

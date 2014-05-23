@@ -33,24 +33,10 @@
             this.submit();
         });
 
-        if ( document.location.href.indexOf('draftLoaded', 0) > 0 ) {
+        if (document.location.href.indexOf('draftLoaded', 0) > 0) {
             loaded = true;
             needDraft = false;
         }
-
-        /**
-         * collect inputs and set change event to save draft
-         */
-        form.find(':input').each(function () {
-            if ($(this).attr('name') != 'csrf') {
-                formFields.push($(this));
-            }
-            $(this).change(function () {
-                if (loaded) {
-                    $.fn.saveDraft.save();
-                }
-            });
-        });
 
         /**
          * if need draft load then get it
@@ -95,9 +81,25 @@
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     loaded = true;
+                },
+                complete: function () {
+                    loaded = true;
                 }
             });
         }
+
+
+        /**
+         * collect inputs and set change event to save draft
+         */
+        form.find(':input').each(function () {
+            if ($(this).attr('name') != 'csrf') {
+                formFields.push($(this));
+            }
+            $(this).change(function () {
+                $.fn.saveDraft.save();
+            });
+        });
 
         /**
          * delete draft from server and local storage
@@ -137,24 +139,30 @@
                 if (this.attr('type') == 'checkbox' && this.attr('checked') != 'checked') {
                     return true;
                 }
+                if (this.val() == '') {
+                    return true;
+                }
                 formData[this.attr('name')] = this.val();
             });
 
-            if (xhr[formId] != null) {
-                xhr[formId].abort();
-            }
+            if (Object.keys(formData).length) {
 
-            xhr[formId] = $.ajax({
-                type: 'post',
-                dataType: 'json',
-                url: settings.createUrl,
-                data: {formId: formId, data: JSON.stringify(formData) },
-                success: function (data) {
+                if (xhr[formId] != null) {
+                    xhr[formId].abort();
                 }
-            });
 
-            formData['mtime'] = parseInt(new Date().getTime() / 1000);
-            localStorage && localStorage.setItem('draft' + formId, JSON.stringify(formData));
+                xhr[formId] = $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    url: settings.createUrl,
+                    data: {formId: formId, data: JSON.stringify(formData) },
+                    success: function (data) {
+                    }
+                });
+
+                formData['mtime'] = parseInt(new Date().getTime() / 1000);
+                localStorage && localStorage.setItem('draft' + formId, JSON.stringify(formData));
+            }
         }
 
         /**
@@ -175,7 +183,7 @@
          * @param data
          */
         $.fn.saveDraft.putFormData = function (data) {
-            if ( !data || !data.length ) {
+            if (!data || !Object.keys(data).length) {
                 return false;
             }
             $('.top-right').notify({

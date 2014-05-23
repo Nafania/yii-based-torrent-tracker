@@ -57,11 +57,38 @@ class DefaultController extends components\Controller {
 		$this->pageDescription = $model->getDescription();
 		$this->pageOgImage = $model->getImageUrl(0, 0, true);
 
+        $torrentStreamModel = models\TorrentstreamCategory::model()->findByAttributes(['fk_category' => $model->cId]);
+
 		$this->render('view',
 			array(
 				'model' => $model,
+                'torrentStreamModel' => $torrentStreamModel
 			));
 	}
+
+    /**
+   	 * Displays a particular model.
+   	 *
+   	 * @param integer $id the ID of the model to be displayed
+   	 */
+   	public function actionWatchOnline ( $id ) {
+   		$model = $this->loadModel($id)->deleteForRussianOrError();
+
+        $torrentStreamModel = models\TorrentstreamCategory::model()->findByAttributes(['fk_category' => $model->cId]);
+
+   		$title = Yii::t('torrentsModule.common', '{torrentName} {torrentStreamTitle} ', ['{torrentStreamTitle}' => $torrentStreamModel->getTitle(), '{torrentName}' => $model->getTitle()]);
+   		$this->breadcrumbs[] = $title;
+
+   		$this->pageTitle = $title;
+   		$this->pageDescription = $model->getDescription();
+   		$this->pageOgImage = $model->getImageUrl(0, 0, true);
+
+   		$this->render('watchOnline',
+   			array(
+   				'model' => $model,
+                'torrentStreamModel' => $torrentStreamModel
+   			));
+   	}
 
 	public function actionCreateTorrent ( $gId ) {
 		$TorrentGroup = $this->loadModel($gId);
@@ -145,7 +172,7 @@ class DefaultController extends components\Controller {
 		$torrent = new tComponents\TorrentComponent($Torrent->getDownloadPath());
 		$torrent->comment(Yii::app()->createAbsoluteUrl(array_shift($url), $url));
 		$torrent->announce(array($Torrent->getAnnounce()));
-		$torrent->send($Torrent->getTitle() . '.torrent');
+		$torrent->send($Torrent->getSlugTitle() . '.torrent');
 	}
 
 	public function actionCreateGroup ( $cId ) {

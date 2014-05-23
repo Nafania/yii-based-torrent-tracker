@@ -24,6 +24,7 @@ class ReviewsModule extends CWebModule {
 
 	public static function register () {
 		self::_addUrlRules();
+        self::_addCommandsPath();
 		Yii::app()->pd->addAdminModule('reviews', 'modules');
 	}
 
@@ -33,4 +34,8 @@ class ReviewsModule extends CWebModule {
 			'yiiadmin/reviews/backend/*'              => 'reviews/reviewsBackend',
 		));
 	}
+
+    private static function _addCommandsPath () {
+   		Yii::app()->pd->addCommandsPath('application.modules.reviews.commands');
+   	}
 }

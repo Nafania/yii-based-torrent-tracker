@@ -19,6 +19,7 @@ $this->renderPartial('_singleView', array(
 		     'ctime',
 		     'commentsCount',
 		     'rating',
+             'lastCommentCtime'
 	     ),
 	));
 ?>

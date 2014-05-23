@@ -273,9 +273,9 @@ body {
     line-height: 20px;
 }
 
-.groupOperations {
+/*.groupOperations {
     display: none;
-}
+}*/
 
 #groupsListView .pull-right {
 
@@ -522,7 +522,7 @@ form div[class*="span"] {
     vertical-align: middle;
     text-align: center;
 }
-#torrents-grid > table td:nth-child(2), #torrents-grid > table th:nth-child(2) {
+#torrents-grid > table td:nth-child(3), #torrents-grid > table th:nth-child(3), #torrents-grid > table td:nth-child(1), #torrents-grid > table th:nth-child(1) {
     vertical-align: middle;
     text-align: left;
 }
@@ -584,8 +584,8 @@ form div[class*="span"] {
 
 .userWarnings {
     position: relative;
-    top:-205px;
-    left: 5px;
+    top:-90px;
+    left: -30px;
     background: #fff;
     display: inline-block;
     height: 20px;
@@ -593,11 +593,33 @@ form div[class*="span"] {
     text-align: center;
     max-width: 200px;
 }
-.userWarnings .tooltip-inner, .tooltip {
+.userWarnings .tooltip-inner, .userWarnings .tooltip {
     min-width: 300px;
 }
 
 .userWarnings i {
     display: inline-block;
     margin-right: 5px;
+}
+
+.commentsBlock .commentText {
+    max-height: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.commentsBlock .commentText:hover {
+    height: auto;
+    max-height:inherit;
+    overflow: visible;
+}
+
+.latestPosts iframe {
+    width: auto !important;
+    height: auto !important;
+}
+
+.torrentGridHeader {
+    font-size: 1.2em;
+    font-weight: bold;
 }

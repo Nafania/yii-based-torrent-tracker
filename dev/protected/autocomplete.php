@@ -8,6 +8,7 @@
  * @property CMessageSource            $messages
  * @property EConfig                   $config
  * @property EDbHttpSession            $session
+ * @property Redis                      $redis
  *
  * @method CClientScript getClientScript()
  * @method CHttpRequest getRequest()
@@ -17,5 +18,6 @@
  * @method CAssetManager getAssetManager()
  *
  */
-class CApplication {
+class CApplication
+{
 }

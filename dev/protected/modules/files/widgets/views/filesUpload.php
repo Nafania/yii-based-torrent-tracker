@@ -109,7 +109,7 @@ if ( $model->files ) {
             <span><?php echo Yii::t('filesModule.common', 'Перетащите файлы сюда'); ?></span>
         </div>
         <div class="qq-upload-button-selector qq-upload-button btn btn-primary">
-            <div><?php echo Yii::t('filesModule.common', 'Добавить файл'); ?></div>
+            <div><?php echo $buttonTitle; ?></div>
         </div>
         <span class="qq-drop-processing-selector qq-drop-processing">
             <span>Processing dropped files...</span>

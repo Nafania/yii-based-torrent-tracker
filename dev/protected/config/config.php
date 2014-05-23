@@ -1,6 +1,6 @@
 <?php
-if ( getenv('TEST') ) {
-	$config = dirname(__FILE__) . '/local/config-test.php';
+if ( isset($_SERVER['SERVER_ADDR']) && getenv('TEST') ) {
+	$config = dirname(__FILE__) . '/production/config-test.php';
 
 	defined('YII_DEBUG') or define('YII_DEBUG', true);
 	defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL', 3);

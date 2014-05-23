@@ -16,12 +16,20 @@
 	<div class="media-body">
         <h1 class="media-heading"><?php echo $model->getTitle(); ?></h1>
         <p><?php echo $model->getDescription(); ?></p>
-		<?php
-		if ( Yii::app()->user->checkAccess('createPostInOwnBlog',
-			array('ownerId' => $model->ownerId)) || Yii::app()->user->checkAccess('createPostInBlog')
-		) {
-		?>
+
 		<p class="pull-right">
+            <?php
+            $this->widget('application.modules.subscriptions.widgets.SubscriptionButton', array(
+                'model' => $model,
+            ));
+            ?>
+
+            <?php
+          		if ( Yii::app()->user->checkAccess('createPostInOwnBlog',
+          			array('ownerId' => $model->ownerId)) || Yii::app()->user->checkAccess('createPostInBlog')
+          		):
+          		?>
+
 			<?php $this->widget('bootstrap.widgets.TbButton',
 				array(
 				     'buttonType'  => 'link',
@@ -31,8 +39,11 @@
 					     '/blogs/post/create', 'blogId' => $model->getId()
 				     ),
 				));
-			?></p>
-		<?php } ?>
+			?>
+            <?php endif; ?>
+
+        </p>
+
     </div>
 </div>
 <hr />
@@ -47,6 +58,7 @@
 		     'ctime',
 		     'commentsCount',
 		     'rating',
+             'lastCommentCtime'
 	     ),
 	));
 ?>

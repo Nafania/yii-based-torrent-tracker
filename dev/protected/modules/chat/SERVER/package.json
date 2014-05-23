@@ -7,7 +7,6 @@
     "private": true,
     "dependencies": {
         "socket.io": "latest",
-        "redis": "latest",
-        "validator": ""
+        "redis": "latest"
     }
 }

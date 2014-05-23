@@ -1,6 +1,6 @@
 <?php
 /**
- * @var $blogPost BlogPost
+ * @var $blogPost modules\blogs\models\BlogPost
  */
 ?>
 
@@ -8,6 +8,11 @@
 
     <div class="media-body">
 	    <p class="pull-right">
+            <?php
+            $this->widget('application.modules.subscriptions.widgets.SubscriptionButton', array(
+                'model' => $blogPost,
+            ));
+            ?>
 	    <?php
 	    if ( Yii::app()->user->checkAccess('updatePostInOwnBlog',
 			    array('ownerId' => $blogPost->blog->ownerId)) || Yii::app()->user->checkAccess('updatePostInBlog')
@@ -53,7 +58,7 @@
 	    </p>
 	    <h1><?php echo $blogPost->getTitle() ?></h1>
 	    <?php echo $blogPost->getText(); ?>
-	    <hr />
+	    <hr style="clear: both" />
 
 
 	    <p>

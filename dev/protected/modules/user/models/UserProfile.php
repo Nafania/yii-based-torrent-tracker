@@ -7,116 +7,127 @@
  * @property integer $uid
  * @property string  $picture
  * @property string  $torrentPass
+ * @property integer $disabledNotifies
  */
-class UserProfile extends EActiveRecord {
-	public $cacheTime = 3600;
+class UserProfile extends EActiveRecord
+{
+    public $cacheTime = 3600;
 
-	/**
-	 * Returns the static model of the specified AR class.
-	 *
-	 * @param string $className active record class name.
-	 *
-	 * @return UserProfile the static model class
-	 */
-	public static function model ( $className = __CLASS__ ) {
-		return parent::model($className);
-	}
+    /**
+     * Returns the static model of the specified AR class.
+     *
+     * @param string $className active record class name.
+     *
+     * @return UserProfile the static model class
+     */
+    public static function model($className = __CLASS__)
+    {
+        return parent::model($className);
+    }
 
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName () {
-		return 'userProfiles';
-	}
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'userProfiles';
+    }
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules () {
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return CMap::mergeArray(parent::rules(),
-			array(
-			     array(
-				     'uid',
-				     'required'
-			     ),
-			     array(
-				     'uid',
-				     'numerical',
-				     'integerOnly' => true
-			     ),
-			     array(
-				     'picture',
-				     'safe'
-			     ),
-			     // The following rule is used by search().
-			     // Please remove those attributes that should not be searched.
-			     array(
-				     'uid, picture',
-				     'safe',
-				     'on' => 'search'
-			     ),
-			));
-	}
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        // NOTE: you should only define rules for those attributes that
+        // will receive user inputs.
+        return CMap::mergeArray(parent::rules(),
+            array(
+                array(
+                    'uid',
+                    'required'
+                ),
+                array(
+                    'uid',
+                    'numerical',
+                    'integerOnly' => true
+                ),
+                array(
+                    'picture, disabledNotifies',
+                    'safe'
+                ),
+                // The following rule is used by search().
+                // Please remove those attributes that should not be searched.
+                array(
+                    'uid, picture',
+                    'safe',
+                    'on' => 'search'
+                ),
+            ));
+    }
 
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations () {
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return CMap::mergeArray(parent::relations(),
-			array(
-			     'user' => array(
-				     self::HAS_ONE,
-				     'User',
-				     'uid'
-			     )
-			));
-	}
+    /**
+     * @return array relational rules.
+     */
+    public function relations()
+    {
+        // NOTE: you may need to adjust the relation name and the related
+        // class name for the relations automatically generated below.
+        return CMap::mergeArray(parent::relations(),
+            array(
+                'user' => array(
+                    self::HAS_ONE,
+                    'User',
+                    'uid'
+                )
+            ));
+    }
 
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels () {
-		return array(
-			'uid' => 'Uid',
-			'picture' => Yii::t('userModule.common', 'Аватар'),
-		);
-	}
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return array(
+            'uid' => 'Uid',
+            'picture' => Yii::t('userModule.common', 'Аватар'),
+            'disabledNotifies' => Yii::t('userModule.common', 'Отключить уведомления на почту'),
+        );
+    }
 
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-	 */
-	public function search () {
-		// Warning: Please modify the following code to remove attributes that
-		// should not be searched.
+    /**
+     * Retrieves a list of models based on the current search/filter conditions.
+     * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
+     */
+    public function search()
+    {
+        // Warning: Please modify the following code to remove attributes that
+        // should not be searched.
 
-		$criteria = new CDbCriteria;
+        $criteria = new CDbCriteria;
 
-		$criteria->compare('uid', $this->uid);
-		$criteria->compare('picture', $this->picture, true);
+        $criteria->compare('uid', $this->uid);
+        $criteria->compare('picture', $this->picture, true);
 
-		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
-	}
+        return new CActiveDataProvider($this, array(
+            'criteria' => $criteria,
+        ));
+    }
 
-	protected function beforeSave () {
-		if ( parent::beforeSave() ) {
-			if ( $this->getIsNewRecord() ) {
-				$this->torrentPass = md5(time() . $this->uid . microtime(true));
-			}
+    protected function beforeSave()
+    {
+        if (parent::beforeSave()) {
+            if ($this->getIsNewRecord()) {
+                $this->torrentPass = md5(time() . $this->uid . microtime(true));
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function getTorrentPass() {
-		return $this->torrentPass;
-	}
+    public function getTorrentPass()
+    {
+        return $this->torrentPass;
+    }
 }

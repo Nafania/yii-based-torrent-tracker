@@ -81,7 +81,7 @@ class FilesModule extends CWebModule {
 						'jpeg'
 					),
 					'attribute'      => 'picture',
-					'maxSize'        => 1 * 1024 * 1024,
+					'maxSize'        => 2 * 1024 * 1024,
 					# Default image to return if no image path is found in the DB
 					'fallback_image' => '/images/NoImageAvailable.jpg',
 					'path'           => "uploads/images/:model/:firstTwoCharsMd5/:fileNameMd5_:id.:ext",

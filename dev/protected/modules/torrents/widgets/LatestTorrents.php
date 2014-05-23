@@ -6,7 +6,7 @@ class LatestTorrents extends CWidget {
 		$criteria = new CDbCriteria();
 		$criteria->order = 't.seeders + t.leechers DESC, t.ctime DESC';
 		$criteria->limit = $this->limit;
-		$criteria->condition = 't.ctime > ( UNIX_TIMESTAMP(NOW()) - 7 * 24 * 60 * 60 )';
+		$criteria->condition = 't.ctime > ( UNIX_TIMESTAMP(NOW()) - 2 * 24 * 60 * 60 )';
 
 		$torrents = \modules\torrents\models\Torrent::model()->setSearchSettings()->findAll($criteria);
 

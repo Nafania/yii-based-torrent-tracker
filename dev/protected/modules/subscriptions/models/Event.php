@@ -16,188 +16,194 @@
  * @property string               $uniqueType
  * @property integer              $count
  */
-class Event extends EActiveRecord {
-	const EVENT_UNREAD = 1;
-	const EVENT_READED = 0;
+class Event extends EActiveRecord
+{
+    const EVENT_UNREAD = 1;
+    const EVENT_READED = 0;
+    const REDIS_HASH_NAME = 'H:Event';
 
-	public $cacheTime = 3600;
+    public $cacheTime = 3600;
 
-	/**
-	 * Returns the static model of the specified AR class.
-	 *
-	 * @param string $className active record class name.
-	 *
-	 * @return Event the static model class
-	 */
-	public static function model ( $className = __CLASS__ ) {
-		return parent::model($className);
-	}
+    /**
+     * Returns the static model of the specified AR class.
+     *
+     * @param string $className active record class name.
+     *
+     * @return Event the static model class
+     */
+    public static function model($className = __CLASS__)
+    {
+        return parent::model($className);
+    }
 
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName () {
-		return 'events';
-	}
+    /**
+     * @return string the associated database table name
+     */
+    public function tableName()
+    {
+        return 'events';
+    }
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules () {
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return CMap::mergeArray(parent::rules(),
-			array(
-				array(
-					'text',
-					'required'
-				),
-			));
-	}
+    /**
+     * @return array validation rules for model attributes.
+     */
+    public function rules()
+    {
+        // NOTE: you should only define rules for those attributes that
+        // will receive user inputs.
+        return CMap::mergeArray(parent::rules(),
+            array(
+                array(
+                    'text',
+                    'required'
+                ),
+            ));
+    }
 
-	public function behaviors () {
-		return CMap::mergeArray(parent::behaviors(),
-			array());
-	}
+    public function behaviors()
+    {
+        return CMap::mergeArray(parent::behaviors(),
+            array());
+    }
 
-	public function relations () {
-		return CMap::mergeArray(parent::relations(),
-			array());
-	}
+    public function relations()
+    {
+        return CMap::mergeArray(parent::relations(),
+            array());
+    }
 
-	public function defaultScope () {
-		$alias = $this->getTableAlias(true, false);
-		return array(
-			'order' => "$alias.ctime DESC"
-		);
-	}
+    public function defaultScope()
+    {
+        $alias = $this->getTableAlias(true, false);
+        return array(
+            'order' => "$alias.ctime DESC"
+        );
+    }
 
-	public function scopes () {
-		return array(
-			'unreaded'       => array(
-				'condition' => 'unread = :unread',
-				'params'    => array(
-					'unread' => self::EVENT_UNREAD
-				)
-			),
-			'forCurrentUser' => array(
-				'condition' => 'uId = :uId',
-				'params'    => array(
-					'uId' => Yii::app()->getUser()->getId(),
-				)
-			)
-		);
-	}
+    public function scopes()
+    {
+        return array(
+            'unreaded' => array(
+                'condition' => 'unread = :unread',
+                'params' => array(
+                    'unread' => self::EVENT_UNREAD
+                )
+            ),
+            'forCurrentUser' => array(
+                'condition' => 'uId = :uId',
+                'params' => array(
+                    'uId' => Yii::app()->getUser()->getId(),
+                )
+            )
+        );
+    }
 
-	protected function afterSave () {
-		parent::afterSave();
+    protected function afterSave()
+    {
+        parent::afterSave();
 
-		Yii::setPathOfAlias('ElephantIO',
-			Yii::getPathOfAlias('application.modules.subscriptions.extensions.elephantIO.lib.ElephantIO'));
+        $redis = \Yii::app()->redis;
 
-		try {
+        if ($this->unread == self::EVENT_UNREAD) {
+            $redis->hIncrBy(self::REDIS_HASH_NAME, $this->uId, 1);
+            $redis->publish(md5($this->uId), 'newEvent');
+        } else {
+            $redis->hIncrBy(self::REDIS_HASH_NAME, $this->uId, -1);
+        }
+    }
 
-			$host = Yii::app()->config->get('subscriptionsModule.socketIOHost');
-			$host = ($host ? $host : Yii::app()->getRequest()->getBaseUrl(true));
+    protected function beforeValidate()
+    {
+        if (parent::beforeValidate()) {
 
-			$url = $host . ':' . Yii::app()->config->get('subscriptionsModule.socketIOPort');
+            return true;
+        }
 
-			$elephant = new ElephantIO\Client($url, 'socket.io', 1, false, true, true);
-			$elephant->init();
-			$elephant->send(ElephantIO\Client::TYPE_EVENT,
-				null,
-				null,
-				json_encode(array(
-					'name' => 'newEvent',
-					'args' => array('room' => md5($this->uId)),
-				)));
-			$elephant->close();
-		} catch ( Exception $e ) {
-			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
-		}
-	}
+        return false;
+    }
 
-	protected function beforeValidate () {
-		if ( parent::beforeValidate() ) {
+    /**
+     * @return array customized attribute labels (name=>label)
+     */
+    public function attributeLabels()
+    {
+        return array();
+    }
 
-			return true;
-		}
-	}
+    /**
+     * Retrieves a list of models based on the current search/filter conditions.
+     * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
+     */
+    public function search()
+    {
+        // Warning: Please modify the following code to remove attributes that
+        // should not be searched.
 
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels () {
-		return array();
-	}
+        $criteria = new CDbCriteria;
 
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-	 */
-	public function search () {
-		// Warning: Please modify the following code to remove attributes that
-		// should not be searched.
+        return new CActiveDataProvider($this, array(
+            'criteria' => $criteria,
+        ));
+    }
 
-		$criteria = new CDbCriteria;
+    protected function beforeSave()
+    {
+        if (parent::beforeSave()) {
 
-		return new CActiveDataProvider($this, array(
-			'criteria' => $criteria,
-		));
-	}
+            if ($this->getIsNewRecord() && $this->uniqueType) {
+                $oldEvent = self::model()->findByAttributes(array(
+                    'uniqueType' => $this->uniqueType,
+                    'uId' => $this->uId,
+                    'unread' => self::EVENT_UNREAD
+                ));
 
-	protected function beforeSave () {
-		if ( parent::beforeSave() ) {
+                if ($oldEvent) {
+                    $oldEvent->saveCounters(array('count' => 1));
 
-			if ( $this->getIsNewRecord() && $this->uniqueType ) {
-				$oldEvent = self::model()->findByAttributes(array(
-					'uniqueType' => $this->uniqueType,
-					'uId'        => $this->uId,
-					'unread'     => self::EVENT_UNREAD
-				));
+                    return false;
+                }
+            }
 
-				if ( $oldEvent ) {
-					$oldEvent->saveCounters(array('count' => 1));
+            $this->url = serialize($this->url);
+            $this->icon = ($this->icon ? $this->icon : 'envelope');
 
-					return false;
-				}
-			}
+            if ($this->getIsNewRecord()) {
+                $this->ctime = time();
+                $this->unread = self::EVENT_UNREAD;
+                $this->notified = 0;
+                $this->count = 1;
+            }
 
-			$this->url = serialize($this->url);
-			$this->icon = ($this->icon ? $this->icon : 'envelope');
+            return true;
+        }
+    }
 
-			if ( $this->getIsNewRecord() ) {
-				$this->ctime = time();
-				$this->unread = self::EVENT_UNREAD;
-				$this->notified = 0;
-				$this->count = 1;
-			}
+    public function getText()
+    {
+        return $this->text;
+    }
 
-			return true;
-		}
-	}
+    public function getUrl()
+    {
+        $url = @unserialize($this->url);
+        if (!$url) {
+            return '';
+        }
+        return $url;
+    }
 
-	public function getText () {
-		return $this->text;
-	}
+    public function getIcon()
+    {
+        return $this->icon;
+    }
 
-	public function getUrl () {
-		$url = @unserialize($this->url);
-		if ( !$url ) {
-			return '';
-		}
-		return $url;
-	}
+    public function getId()
+    {
+        return $this->id;
+    }
 
-	public function getIcon () {
-		return $this->icon;
-	}
-
-	public function getId () {
-		return $this->id;
-	}
-
-	public function getTitle () {
-		return $this->title;
-	}
+    public function getTitle()
+    {
+        return $this->title;
+    }
 }

@@ -30,7 +30,14 @@ class EventController extends components\Controller {
 	}
 
 	public function actionGetList () {
-		$events = Event::model()->unreaded()->forCurrentUser()->findAll();
+        $eventItemsCount = (int) Yii::app()->redis->hGet(Event::REDIS_HASH_NAME, \Yii::app()->getUser()->getId());
+
+        if ( $eventItemsCount ) {
+		    $events = Event::model()->unreaded()->forCurrentUser()->findAll();
+        }
+        else {
+            $events = [];
+        }
 
 		$view = $this->renderPartial('list',
 			array(

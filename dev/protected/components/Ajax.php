@@ -29,6 +29,7 @@ class Ajax extends CComponent {
 
 			if ( !headers_sent() ) {
 				header($header);
+                header('Content-Type: application/json');
 			}
 
 			echo CJSON::encode(array(

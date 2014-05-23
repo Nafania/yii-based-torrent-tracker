@@ -134,6 +134,13 @@ class SubscriptionsModule extends CWebModule {
 				)
 			));
 
+        Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost',
+      			array(
+      				'blogPostUserSubscription' => array(
+      					'class' => 'application.modules.subscriptions.behaviors.BlogPostUserSubscription'
+      				)
+      			));
+
 		Yii::app()->pd->registerBehavior('PrivateMessage',
 			array(
 				'pmBehavior' => array(

@@ -342,7 +342,6 @@ class EEavBehavior extends CActiveRecordBehavior {
 			$this->attributes->mergeWith($data, FALSE);
 			return $this->getOwner();
 		}
-
 		// Query DB.
 		$data = $this->getLoadEavAttributesCommand($attributes)->query();
 		foreach ( $data as $row ) {

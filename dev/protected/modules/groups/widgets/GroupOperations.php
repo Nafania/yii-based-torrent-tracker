@@ -14,6 +14,7 @@ class GroupOperations extends CWidget {
 		$cs->registerScriptFile(Yii::app()->getModule('groups')->getAssetsUrl() . '/js/groups.js');
 		$cs->registerScriptFile(Yii::app()->getModule('subscriptions')->getAssetsUrl() . '/js/subscriptions.js');
 		$cs->registerScriptFile(Yii::app()->baseUrl . '/js/formValidation.js');
+        $cs->registerCoreScript('yiiactiveform');
 		Yii::app()->getComponent('bootstrap')->registerPackage('loading');
 
 

@@ -12,12 +12,22 @@
 <?php
 
 if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
-	$form = '<form class="form-search navbar-search pull-right" action="' . Yii::app()->createUrl('/torrents/default/index') . '"><div class="input-prepend"><a href="#searchSettings" class="add-on' . ($settingActive ? ' active' : '') . '" data-toggle="modal"><i class="icon-cog' . ($settingActive ? ' icon-white' : '') . '"></i></a>' . CHtml::textField('search',
+	$form = '
+	<form class="form-search navbar-search pull-right" action="' . Yii::app()->createUrl('/torrents/default/index') . '">
+	    <div class="input-prepend">
+	        <a href="#searchSettings" class="add-on' . ($settingActive ? ' active' : '') . '" data-toggle="modal">
+	            <i class="icon-cog' . ($settingActive ? ' icon-white' : '') . '" title="' . Yii::t('torrentsModule.common', 'Расширенный поиск') . '" data-toggle="tooltip" data-placement="bottom"></i></a>' .
+        CHtml::textField('search',
 			$searchVal,
 			array(
 			     'class'       => 'input-medium',
 			     'placeholder' => Yii::t('common', 'Поиск')
-			)) . '</div><div class="input-append"><button type="submit" class="btn"><i class="icon-search"></i></button></div></form>';
+			)) . '
+			</div>
+			<div class="input-append">
+			<button type="submit" class="btn"><i class="icon-search"></i></button>
+			</div>
+		</form>';
 }
 else {
 	$form = '<form class="form-search navbar-search pull-right" action="' . Yii::app()->createUrl('/torrents/default/index') . '">' . CHtml::textField('search',
