@@ -159,5 +159,12 @@ return array(
 				'lifetime' => 30 * 24 * 60 * 60,
 			),
 		),
+        'redis'        => [
+            'class'    => 'application.extensions.redis.ARedisConnection',
+            'hostname' => 'localhost',
+            'port'     => 6379,
+            'database' => 2,
+            'prefix'   => 'SZ:',
+        ],
 	)
 );

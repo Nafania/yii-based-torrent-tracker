@@ -1,8 +1,33 @@
 Changelog
 =========
 
+1.2.21
+------
+
+- Imperavi redactor updated to 9.2.4 (samdark)
+
+1.2.20
+------
+
+- Imperavi redactor updated to 9.2.2 (samdark)
+
+1.2.19
+------
+
+- Imperavi redactor updated to 9.2.1 (samdark)
+
+1.2.18
+------
+
+- Fixed partially committed files (samdark)
+
+1.2.17
+------
+
+- Imperavi redactor, plugins and languages updated to 9.2.0 (samdark)
+
 1.2.16
-----
+------
 
 - Imperavi redactor updated to 9.1.9 (Veaceslav Medvedev)
 - Update plugins (Veaceslav Medvedev)

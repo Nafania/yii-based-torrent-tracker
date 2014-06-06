@@ -2,7 +2,12 @@
 
 $cs = Yii::app()->getClientScript();
 $cs->registerPackage('common');
-$cs->registerCssFile('/css/style.css?14');
+if ( !Yii::app()->getUser()->getIsGuest() ) {
+    $cs->registerPackage('theme-' . Yii::app()->getUser()->getModel()->profile->theme);
+}
+else {
+    $cs->registerPackage('theme-default');
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">

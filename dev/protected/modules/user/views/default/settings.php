@@ -47,6 +47,8 @@ $cs->registerCssFile($url . '/css/auth.css');
                 'autocomplete' => 'off'
             ));
 
+        echo $form->dropDownListRow($profile, 'theme', $profile->getThemes());
+
         echo $form->checkBoxRow($profile, 'disabledNotifies');
         ?>
 

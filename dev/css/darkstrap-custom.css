@@ -1,0 +1,39 @@
+.btn {
+    background: none repeat scroll 0 0 #444444;
+    border-color: #111111;
+    color: #C6C6C6;
+    text-shadow: 0 1px 0 #000000;
+}
+[class^="icon-"], [class*=" icon-"] {
+    background-image: url("../images/glyphicons-halflings-white.png");
+}
+
+#mjmChatRoomTitle {
+    background-color: #2F2F2F !important;
+}
+.redactor_editor {
+    background-color: #373737;
+    border: #444444 !important;
+    border-top: 1px solid #222222;
+    box-shadow: 0 1px 0 #333333 inset;
+}
+.select2-container-multi .select2-choices  {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.3);
+     border: 0 none;
+     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 7px 0 rgba(0, 0, 0, 0.8) inset;
+    background-image: none !important;
+}
+#mjmChatRoom, #mjmChatUsersList {
+    background-color: #2F2F2F !important;
+}
+.redactor_toolbar li a {
+    color: #C6C6C6;
+}
+
+.redactor_toolbar {
+    background-color: #444444 !important;
+}
+
+.userWarnings {
+    background-color: #2F2F2F !important;
+}

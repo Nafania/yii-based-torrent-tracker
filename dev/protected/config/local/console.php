@@ -99,5 +99,12 @@ return array(
 			'class' => 'EConfig',
 			'cache' => 3600,
 		),
+        'redis'        => [
+            'class'    => 'application.extensions.redis.ARedisConnection',
+            'hostname' => 'localhost',
+            'port'     => 6379,
+            'database' => 2,
+            'prefix'   => 'SZ:',
+        ],
 	),
 );

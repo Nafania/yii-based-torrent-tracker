@@ -109,18 +109,6 @@ JS;
                     'link',
                     '|',
                     'image',
-                    '|',
-                    'quote'
-                ),
-                'buttonsCustom' => array(
-                    'quote' => array(
-                        'title' => Yii::t('commentsModule.common', 'Цитата'),
-                        'callback' => 'js:function(buttonName, buttonDOM, buttonObject) {
-					        this.buttonActive(buttonName);
-					        this.insertHtml("<blockquote>" + buttonDOM.data("selection") + "</blockquote>\n");
-					        this.buttonInactive(buttonName);
-					        }',
-                    ),
                 ),
                 'lang' => 'ru',
                 /*'imageUpload'  => Yii::app()->createUrl('files/default/upload'),

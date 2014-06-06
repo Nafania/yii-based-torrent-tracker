@@ -8,6 +8,7 @@
  * @property string  $picture
  * @property string  $torrentPass
  * @property integer $disabledNotifies
+ * @property string $theme
  */
 class UserProfile extends EActiveRecord
 {
@@ -43,7 +44,7 @@ class UserProfile extends EActiveRecord
         return CMap::mergeArray(parent::rules(),
             array(
                 array(
-                    'uid',
+                    'uid, theme',
                     'required'
                 ),
                 array(
@@ -55,6 +56,7 @@ class UserProfile extends EActiveRecord
                     'picture, disabledNotifies',
                     'safe'
                 ),
+                ['theme', 'validateTheme'],
                 // The following rule is used by search().
                 // Please remove those attributes that should not be searched.
                 array(
@@ -63,6 +65,24 @@ class UserProfile extends EActiveRecord
                     'on' => 'search'
                 ),
             ));
+    }
+
+    public function getThemes () {
+        $packages = Yii::app()->getClientScript()->packages;
+
+        $themes = [];
+        foreach ( $packages AS $packageName => $properties ) {
+            if ( strpos($packageName, 'theme-') === 0 ) {
+                $themeName = str_replace('theme-', '', $packageName);
+                $themes[$themeName] = $themeName;
+            }
+        }
+
+        return $themes;
+    }
+
+    public function validateTheme ( $attribute ) {
+        return in_array($this->{$attribute}, $this->getThemes());
     }
 
     /**
@@ -91,6 +111,7 @@ class UserProfile extends EActiveRecord
             'uid' => 'Uid',
             'picture' => Yii::t('userModule.common', 'Аватар'),
             'disabledNotifies' => Yii::t('userModule.common', 'Отключить уведомления на почту'),
+            'theme' => Yii::t('userModule.common', 'Тема оформления'),
         );
     }
 
