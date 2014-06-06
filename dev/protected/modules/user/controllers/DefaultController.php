@@ -261,7 +261,7 @@ class DefaultController extends components\Controller
                 if ($identity->authenticate()) {
                     $UserSocialAccount = new UserSocialAccount();
                     $UserSocialAccount->service = $service;
-                    $UserSocialAccount->id = $identity->id;
+                    $UserSocialAccount->id = $authIdentity->id;
                     $UserSocialAccount->uId = Yii::app()->getUser()->getId();
                     $UserSocialAccount->name = $authIdentity->name;
                     $UserSocialAccount->url = $authIdentity->url;
@@ -341,7 +341,7 @@ class DefaultController extends components\Controller
                         $identity->id = $User->getId();
 
                         $UserSocialAccount->service = $authIdentity->getServiceName();
-                        $UserSocialAccount->id = $identity->id;
+                        $UserSocialAccount->id = $authIdentity->id;
                         $UserSocialAccount->name = $authIdentity->name;
                         $UserSocialAccount->uId = $User->getId();
                         $UserSocialAccount->url = $authIdentity->url;
@@ -367,7 +367,7 @@ class DefaultController extends components\Controller
                         $Profile->attributes = $profileAttributes;
 
                         $UserSocialAccount->service = $service;
-                        $UserSocialAccount->id = $identity->id;
+                        $UserSocialAccount->id = $authIdentity->id;
                         $UserSocialAccount->name = $authIdentity->name;
                         $UserSocialAccount->url = $authIdentity->url;
 

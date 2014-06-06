@@ -118,7 +118,7 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 					// attribute value column
 					// Default is 'value'
 					'valueField'       => 'value',
-					'cacheId'          => 'cache',
+					'cacheId'          => null,
 					// Model FK name
 					// By default taken from primaryKey
 					//'modelTableFk'     => primaryKey,
