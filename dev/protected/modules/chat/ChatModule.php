@@ -13,7 +13,7 @@ class ChatModule extends CWebModule {
 	 */
 	public function getAssetsUrl () {
 		if ( $this->_assetsUrl === null ) {
-			$this->_assetsUrl = Yii::app()->getAssetManager()->publish(Yii::getPathOfAlias('application.modules.chat.assets'), false, -1, defined('YII_DEBUG'));
+			$this->_assetsUrl = Yii::app()->getAssetManager()->publish(Yii::getPathOfAlias('application.modules.chat.assets'), false, -1);
 		}
 		return $this->_assetsUrl;
 	}

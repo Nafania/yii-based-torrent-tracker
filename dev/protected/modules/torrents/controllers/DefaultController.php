@@ -803,7 +803,10 @@ class DefaultController extends components\Controller {
 			}
 
 			if ( $findAttributes ) {
-				$model = models\TorrentGroup::model()->withEavAttributes($findAttributes)->find();
+                /**
+                 * @var models\TorrentGroup $model
+                 */
+                $model = models\TorrentGroup::model()->withEavAttributes($findAttributes)->find('cId = :cId', [':cId' => $TorrentGroup->cId]);
 				if ( $model ) {
 					$firstKey = array_shift(array_keys($findAttributes));
 

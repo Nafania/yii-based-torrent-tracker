@@ -22,6 +22,9 @@ use modules\torrents\models AS models;
  * @property integer                               $uid
  * @property models\Torrent[]                      torrents
  * @property string                                description
+ * @mixin \EEavBehavior
+ * @mixin \GetTorrentTitleBehavior
+ * @mixin \TorrentNameRuleBehavior
  *
  */
 class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
@@ -34,7 +37,7 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 	 *
 	 * @param string $className active record class name.
 	 *
-	 * @return TorrentGroup the static model class
+	 * @return \modules\torrents\models\TorrentGroup the static model class
 	 */
 	public static function model ( $className = __CLASS__ ) {
 		return parent::model($className);

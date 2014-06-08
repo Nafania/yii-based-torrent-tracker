@@ -72,4 +72,20 @@ $(function () {
             socket.disconnect();
         }
     }
+
+    $(document).on('click', '#markAllEventsAsRead', function(e) {
+        e.preventDefault();
+        var elem = $(this);
+
+        $.ajax({
+            url: elem.attr('href'),
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+                $('#eventsList').remove();
+                eventsMenu.find('.badge').remove();
+                eventsMenu.find('.caret').remove();
+            }
+        });
+    });
 });

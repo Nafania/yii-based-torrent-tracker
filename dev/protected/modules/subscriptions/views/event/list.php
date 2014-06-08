@@ -28,6 +28,13 @@ if ( !$eventItems ) {
 		'url'   => '#',
 	);
 }
+else {
+    $eventItems[] = array(
+        'label' => Yii::t('subscriptionsModule.common', 'Отметить все, как прочитанное'),
+        'url'   => Yii::app()->createUrl('/subscriptions/event/read', ['id' => 'all']),
+        'linkOptions' => ['id' => 'markAllEventsAsRead', 'class' => 'btn btn-mini']
+    );
+}
 
 $this->widget('bootstrap.widgets.TbDropdown',
 	array(
