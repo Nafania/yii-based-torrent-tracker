@@ -20,8 +20,7 @@ class FavoritesModule extends \CWebModule {
 		if ( $this->_assetsUrl === null ) {
 			$this->_assetsUrl = Yii::app()->getAssetManager()->publish(Yii::getPathOfAlias('application.modules.favorites.assets'),
 				false,
-				-1,
-				defined('YII_DEBUG'));
+				-1);
 		}
 		return $this->_assetsUrl;
 	}

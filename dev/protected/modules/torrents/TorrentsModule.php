@@ -29,8 +29,7 @@ class TorrentsModule extends \CWebModule
         if ($this->_assetsUrl === null) {
             $this->_assetsUrl = Yii::app()->getAssetManager()->publish(Yii::getPathOfAlias('application.modules.torrents.assets'),
                 false,
-                -1,
-                defined('YII_DEBUG'));
+                -1);
         }
         return $this->_assetsUrl;
     }
