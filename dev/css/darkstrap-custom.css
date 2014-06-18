@@ -37,3 +37,11 @@
 .userWarnings {
     background-color: #2F2F2F !important;
 }
+
+a {
+    color: #C6C6C6;
+}
+
+a:hover, a:focus {
+    color: #fff;
+}
