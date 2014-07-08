@@ -46,6 +46,9 @@ class UpdateReviewsCommand extends CConsoleCommand
             $model = EActiveRecord::model('\modules\torrents\models\TorrentGroup')->populateRecord($row);
 
             foreach ($reviewsData AS $review) {
+                /**
+                 * @var ReviewRelation $ReviewRelation
+                 */
                 $ReviewRelation = EActiveRecord::model('ReviewRelation')->populateRecord($review);
 
                 $params = $ReviewRelation->getParams();

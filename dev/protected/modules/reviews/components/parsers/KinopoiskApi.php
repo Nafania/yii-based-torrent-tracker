@@ -63,11 +63,9 @@ class KinopoiskApi extends ReviewInterface
                     'headers' => $this->_generateHeaders(),
                     'referer' => 'http://www.kinopoisk.ru/',
                     'proxy' => array(
-                        '108.174.179.82:9999',
-                        '200.110.243.150:3128',
-                        '218.108.170.166:80',
-                        '118.97.95.174:8080',
-                        '110.77.136.102:3128',
+                        '119.31.123.207:8000',
+                        '77.120.99.249:3128',
+                        '222.124.198.136:3129'
                     )
                 ),
                 false);
