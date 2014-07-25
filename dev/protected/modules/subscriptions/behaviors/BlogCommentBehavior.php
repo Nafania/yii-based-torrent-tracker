@@ -2,7 +2,7 @@
 /**
  * @method Comment getOwner()
  */
-class BlogCommentBehavior extends CActiveRecordBehavior
+class BlogCommentBehavior extends BaseEventBehavior
 {
     public function afterSave($e)
     {
@@ -49,7 +49,7 @@ class BlogCommentBehavior extends CActiveRecordBehavior
                 $event->uId = $subscription->uId;
                 $event->uniqueType = $icon . $owner->modelName . $blogPost->getPrimaryKey();
 
-                $event->save();
+                $this->saveEvent($event);
             }
         }
         return false;

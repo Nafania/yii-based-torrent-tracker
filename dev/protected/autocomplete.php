@@ -9,6 +9,7 @@
  * @property EConfig                   $config
  * @property EDbHttpSession            $session
  * @property Redis                      $redis
+ * @property RResque                    $resque
  *
  * @method CClientScript getClientScript()
  * @method CHttpRequest getRequest()
