@@ -74,7 +74,7 @@ class OmDbApi extends ReviewInterface
                     if ($movie->Type == 'series') {
                         $data = $this->makeRequest('http://omdbapi.com/?i=' . $movie->imdbID);
                         if ($data->Response != 'False') {
-                            return Yii::t('reviewsModule.omDbApi',
+                            return Yii::t('ReviewsModule.omDbApi',
                                 '<a href="http://www.imdb.com/title/{movieId}/" target="_blank">{rating}, голосов: {votes}, metascore: {metascore}</a>',
                                 array(
                                     '{movieId}' => $data->imdbID,

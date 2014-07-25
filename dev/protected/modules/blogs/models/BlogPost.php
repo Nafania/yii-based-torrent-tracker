@@ -216,7 +216,8 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface
         );
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,
-            'sort' => $sort
+            'sort' => $sort,
+            'pagination' => ['pageVar' => 'page'],
         ));
     }
 

@@ -32,7 +32,7 @@ EOD;
         $return = null;
         $yiiPath = Yii::getPathOfAlias('system');
         $appPath = Yii::getPathOfAlias('application');
-        $resquePath = Yii::getPathOfAlias('application.components.yii-resque');
+        $resquePath = Yii::getPathOfAlias('application.extensions.yii-resque');
 
         if (!isset(Yii::app()->resque)) {
             echo 'resque component cannot be found on your console.php configuration';

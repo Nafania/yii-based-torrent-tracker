@@ -19,11 +19,16 @@ class GroupRatingBehavior extends RatingBehavior {
 		$maxTime = ( $row = $comm->queryRow() ) ? $row['maxTime'] : 0;
 
 		$comm = Yii::app()->getDb()->createCommand('SELECT SUM(rating) AS rating FROM {{ratings}} r LEFT JOIN {{blogPosts}} bb ON ( r.modelName = :modelName AND r.modelId = bb.id), blogs b WHERE bb.blogId = b.id AND b.groupId = :groupId');
-		$comm->bindValue(':modelName', 'BlogPost');
+		$comm->bindValue(':modelName', 'modules_blogs_models_BlogPost');
 		$comm->bindValue(':groupId', $owner->getPrimaryKey());
 		$sumRatings = ( $row = $comm->queryRow() ) ? $row['rating'] : 0;
 
-		$ratingVal = Yii::app()->getModule('ratings')->getRatingCoefficient(15) * $sumRatings * exp(Yii::app()->getModule('ratings')->getRatingCoefficient(16) * ($maxTime - time()));
+        $date1 = new DateTime(date('Y-m-d H:i:s', $maxTime));
+        $date2 = new DateTime();
+
+        $interval = $date1->diff($date2);
+
+		$ratingVal = Yii::app()->getModule('ratings')->getRatingCoefficient(15) * $sumRatings * exp(Yii::app()->getModule('ratings')->getRatingCoefficient(16) * $interval->h);
 
 		$this->saveRating($ratingVal);
 	}

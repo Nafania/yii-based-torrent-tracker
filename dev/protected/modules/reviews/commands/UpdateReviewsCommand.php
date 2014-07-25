@@ -40,10 +40,10 @@ class UpdateReviewsCommand extends CConsoleCommand
 
         $rows = $comm->query();
 
+        $className = (new modules\torrents\models\TorrentGroup())->resolveClassName();
+
         foreach ($rows AS $row) {
             $reviewsData = $data[$row['cId']];
-
-            $model = EActiveRecord::model('\modules\torrents\models\TorrentGroup')->populateRecord($row);
 
             foreach ($reviewsData AS $review) {
                 /**
@@ -68,7 +68,7 @@ class UpdateReviewsCommand extends CConsoleCommand
                     }
                 }
 
-                $class->getReviewData($model, $attrs);
+                $class->getReviewData($attrs, $className, $row['id']);
             }
         }
 

@@ -5,13 +5,24 @@
 ?>
 <div class="media blogsList">
 	<?php
-	$img = \CHtml::image($data->user->profile->getImageUrl(80, 80),
-		$data->user->getName(),
-		array(
-		     'class' => 'media-object img-polaroid',
-		     'style' => 'width:80px'
-		));
-	echo CHtml::link($img, $data->user->getUrl(), array('class' => 'pull-left'));
+	if ( $data->user ) {
+        $img = $data->user->profile->getImageUrl(80, 80);
+        $alt = $data->user->getName();
+        $url = $data->user->getUrl();
+    }
+    else {
+        $img = '/images/no_photo.png';
+        $alt = '';
+        $url = '';
+    }
+	echo CHtml::link(CHtml::image($img,
+            $alt,
+            [
+                'class' => 'media-object img-polaroid',
+                'style' => 'width:80px;height:80px;',
+            ]),
+        $url,
+        ['class' => 'pull-left']);
 	?>
 
 	<div class="media-body">

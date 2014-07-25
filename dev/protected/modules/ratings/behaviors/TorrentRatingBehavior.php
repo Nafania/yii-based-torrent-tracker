@@ -25,7 +25,12 @@ class TorrentRatingBehavior extends RatingBehavior {
 		$comm->bindValue(':modelId', $owner->getPrimaryKey());
 		$lastCommentTime = ($row = $comm->queryRow()) ? $row['ctime'] : 0;
 
-		$ratingVal = ((Yii::app()->getModule('ratings')->getRatingCoefficient(4) * $owner->getDownloadsCount()) / Yii::app()->getModule('ratings')->getRatingCoefficient(0)) * exp(Yii::app()->getModule('ratings')->getRatingCoefficient(2) * ($lastCommentTime - time())) + Yii::app()->getModule('ratings')->getRatingCoefficient(3) * $sumUserRatings + Yii::app()->getModule('ratings')->getRatingCoefficient(1) * $owner->commentsCount;
+        $date1 = new DateTime(date('Y-m-d H:i:s', $lastCommentTime));
+        $date2 = new DateTime();
+
+        $interval = $date1->diff($date2);
+
+		$ratingVal = ((Yii::app()->getModule('ratings')->getRatingCoefficient(4) * $owner->getDownloadsCount()) / Yii::app()->getModule('ratings')->getRatingCoefficient(0)) * exp(Yii::app()->getModule('ratings')->getRatingCoefficient(2) * $interval->h) + Yii::app()->getModule('ratings')->getRatingCoefficient(3) * $sumUserRatings + Yii::app()->getModule('ratings')->getRatingCoefficient(1) * $owner->commentsCount;
 
 		$this->saveRating($ratingVal);
 	}

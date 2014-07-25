@@ -68,7 +68,15 @@
 			         '{date}' => $blogPost->getCtime('d.m.Y H:i')
 			    )) ?>"><?php echo TimeHelper::timeAgoInWords($blogPost->ctime); ?></abbr>
 		    |
-		    <?php echo CHtml::link($blogPost->user->getName(), $blogPost->user->getUrl()); ?>
+            <?php
+            if ( $blogPost->user ) {
+                echo CHtml::link($blogPost->user->getName(), $blogPost->user->getUrl());
+            }
+            else {
+                echo '<i>' . Yii::t('userModule.common', 'Аккаунт удален') . '</i>';
+            }
+            ?>
+
 		    <?php
 		    if ( $tags = $blogPost->getTags() ) {
 			    $tagsStr = '';

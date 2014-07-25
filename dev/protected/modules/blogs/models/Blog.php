@@ -173,10 +173,11 @@ class Blog extends \EActiveRecord {
 			),
 		);
 
-		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                           'sort'     => $sort,
-		                                      ));
+        return new CActiveDataProvider($this, array(
+            'criteria' => $criteria,
+            'sort' => $sort,
+            'pagination' => ['pageVar' => 'page'],
+        ));
 	}
 
 	public function scopes () {

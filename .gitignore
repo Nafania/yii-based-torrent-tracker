@@ -4,3 +4,4 @@
 /dev/protected/runtime/*
 /dev/protected/modules/yiiadmin/data/*
 /dev/protected/engine/*
+/.idea/*

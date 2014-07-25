@@ -6,21 +6,29 @@
  * Time: 15:31
  */
 
-namespace modules\subscriptions\components\resqueWorkers;
+namespace application\modules\subscriptions\components\resqueWorkers;
+
+use Yii;
 
 /**
  * Class SaveEvent
- * @package modules\subscriptions\components\resqueWorkers
+ * @package application\modules\subscriptions\components\resqueWorkers
  *
  * @property array $args
  */
 class SaveEvent {
     public function perform() {
+        Yii::import('application.modules.subscriptions.models.*');
+
         /**
          * @var \Event $event
          */
-        $event = $this->args['event'];
+        $data = $this->args['data'];
 
-        $event->save();
+        foreach ( $data AS $_data ) {
+            $event = new \Event();
+            $event->setAttributes($_data, false);
+            $event->save(false);
+        }
     }
 }

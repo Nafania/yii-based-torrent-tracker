@@ -18,7 +18,7 @@
         <h3 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h3>
 		<p><?php echo Yii::t('groupsModule.common',
 					'Участники группы:') . ' ' . CHtml::link(Yii::t('groupsModule.common',
-						'{n} человек|{n} человека',
+						'{n} человек|{n} человека|{n} человек',
 						$data->groupUsersCount()),
 					array(
 					     '/groups/default/members',

@@ -63,9 +63,9 @@ class KinopoiskApi extends ReviewInterface
                     'headers' => $this->_generateHeaders(),
                     'referer' => 'http://www.kinopoisk.ru/',
                     'proxy' => array(
-                        '119.31.123.207:8000',
-                        '77.120.99.249:3128',
-                        '222.124.198.136:3129'
+                        '93.115.8.229:8089',
+                        '119.46.110.17:8080',
+                        '190.151.10.226:8080',
                     )
                 ),
                 false);
@@ -135,7 +135,7 @@ class KinopoiskApi extends ReviewInterface
             if ($data->kp_rating == 0 || $votes == 0) {
                 return false;
             } else {
-                return Yii::t('reviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/' . $movieId . '/" target="_blank">{rating}, голосов: {votes}</a>', array('{rating}' => $data->kp_rating, '{votes}' => Yii::app()->getNumberFormatter()->formatDecimal($votes)));
+                return Yii::t('ReviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/' . $movieId . '/" target="_blank">{rating}, голосов: {votes}</a>', array('{rating}' => $data->kp_rating, '{votes}' => Yii::app()->getNumberFormatter()->formatDecimal($votes)));
             }
 
         } catch (CException $e) {

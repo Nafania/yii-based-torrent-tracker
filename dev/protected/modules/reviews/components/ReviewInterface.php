@@ -23,39 +23,38 @@ abstract class ReviewInterface
     abstract protected function getApiData($args);
 
     /**
-     * @param EActiveRecord $model
-     * @param               $attrs
-     *
+     * @param $attrs
+     * @param $className
+     * @param $primaryKey
      * @return mixed
      */
-    public function getReviewData(EActiveRecord $model, $attrs)
+    public function getReviewData($attrs, $className, $primaryKey)
     {
-        $review = Review::model()->findByPk(array(
-                'modelId' => $model->getPrimaryKey(),
-                'modelName' => $model->resolveClassName(),
-                'apiName' => $this->getId()
-            ),
-            'mtime > ' . (time() - 1 * 24 * 60 * 60));
+        $row = Yii::app()->db->createCommand('SELECT ratingText FROM reviews WHERE modelId = :pk AND modelName = :name AND apiName = :apiName AND mtime > :mtime')->queryRow(true, [
+                ':pk' => $primaryKey,
+                ':name' => $className,
+                ':apiName' => $this->getId(),
+                ':mtime' => (time() - 1 * 24 * 60 * 60)]
+        );
 
-        if ($review) {
-            return $review->ratingText;
+        if ($row) {
+            return $row['ratingText'];
         }
 
-        return $this->sendData($model, $this->getApiData($attrs));
+        return $this->sendData($this->getApiData($attrs), $className, $primaryKey);
     }
 
     /**
-     * @param EActiveRecord $model
-     * @param               $data
-     *
+     * @param $data
+     * @param $className
+     * @param $primaryKey
      * @return mixed
      */
-    public function sendData(EActiveRecord $model, $data)
+    public function sendData($data, $className, $primaryKey)
     {
-
         $review = Review::model()->findByPk(array(
-            'modelId' => $model->getPrimaryKey(),
-            'modelName' => $model->resolveClassName(),
+            'modelId' => $primaryKey,
+            'modelName' => $className,
             'apiName' => $this->getId()
         ));
 
@@ -69,8 +68,8 @@ abstract class ReviewInterface
             }
         } else {
             $review = new Review();
-            $review->modelId = $model->getPrimaryKey();
-            $review->modelName = $model->resolveClassName();
+            $review->modelId = $primaryKey;
+            $review->modelName = $className;
             $review->apiName = $this->getId();
             $review->mtime = time();
             $review->ratingText = ($data === false ? '' : $data);
@@ -136,7 +135,7 @@ abstract class ReviewInterface
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-	    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
         if (isset($options['referer'])) {
             curl_setopt($ch, CURLOPT_REFERER, $options['referer']);

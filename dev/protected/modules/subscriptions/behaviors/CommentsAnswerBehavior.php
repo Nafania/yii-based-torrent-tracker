@@ -1,61 +1,64 @@
 <?php
+namespace modules\subscriptions\behaviors;
+
+use Event;
+use Yii;
+use ChangesInterface;
 
 /**
  * Class CommentsAnswerBehavior
  *
- * @method Comment getOwner()
+ * @method \Comment getOwner()
  */
-class CommentsAnswerBehavior extends CActiveRecordBehavior {
-	public function afterSave ( $e ) {
-		parent::afterSave($e);
+class CommentsAnswerBehavior extends BaseEventBehavior
+{
+    public function afterSave($e)
+    {
+        parent::afterSave($e);
 
-		$owner = $this->getOwner();
-		$className = $owner->resolveClassName();
+        $owner = $this->getOwner();
+        $className = $owner->resolveClassName();
 
-		if ( !($owner instanceof ChangesInterface) ) {
-			return true;
-		}
+        if (!($owner instanceof ChangesInterface)) {
+            return true;
+        }
 
-		if ( !$owner->getIsNewRecord() || !$owner->getParentId() ) {
-			return true;
-		}
+        if (!$owner->getIsNewRecord() || !$owner->getParentId()) {
+            return true;
+        }
 
-		$ancestors = $owner->ancestors(10)->findAll();
+        $ancestors = $owner->ancestors(10)->findAll();
 
-		$users = array();
-		//TODO not all ancestors return
-		foreach ( $ancestors AS $comment ) {
-			if ( $user = $comment->user ) {
-				$users[] = $user;
-			}
-		}
+        $users = array();
+        //TODO not all ancestors return
+        foreach ($ancestors AS $comment) {
+            if ($user = $comment->user) {
+                $users[] = $user;
+            }
+        }
 
-		$users = array_unique($users);
-		$valid = true;
-		foreach ( $users AS $user ) {
-			if ( $user->getId() == Yii::app()->getUser()->getId() ) {
-				continue;
-			}
+        $users = array_unique($users);
 
-			$url = $owner->getUrl();
-			$icon = $owner->getChangesIcon();
+        $data = [];
 
-			$event = new Event();
-			$event->text = $owner->getChangesText();
-			$event->title = $owner->getChangesTitle();
-			$event->url = $url;
-			$event->icon = $icon;
-			$event->uId = $user->getId();
+        foreach ($users AS $user) {
+            if ($user->getId() == Yii::app()->getUser()->getId()) {
+                continue;
+            }
 
-			$valid = $event->save() && $valid;
-		}
+            $url = $owner->getUrl();
+            $icon = $owner->getChangesIcon();
 
-		if ( $valid ) {
-			return true;
-		}
-		else {
-			return false;
-		}
+            $data[] = [
 
-	}
+                'text' => $owner->getChangesText(),
+                'title' => $owner->getChangesTitle(),
+                'url' => $url,
+                'icon' => $icon,
+                'uId' => $user->getId(),
+            ];
+        }
+
+        $this->saveEvent($data);
+    }
 }

@@ -3,15 +3,26 @@
 /* @var $model modules\blogs\models\Blog */
 ?>
 <div class="media">
-	<?php
-	$img = CHtml::image($model->user->profile->getImageUrl(100, 100),
-		$model->user->getName(),
-		array(
-		     'class' => 'media-object img-polaroid',
-		     'style' => 'width:100px'
-		));
-	echo CHtml::link($img, $model->user->getUrl(), array('class' => 'pull-left'));
-	?>
+    <?php
+    if ( $model->user ) {
+        $img = $model->user->profile->getImageUrl(100, 100);
+        $alt = $model->user->getName();
+        $url = $model->user->getUrl();
+    }
+    else {
+        $img = '/images/no_photo.png';
+        $alt = '';
+        $url = '';
+    }
+    echo CHtml::link(CHtml::image($img,
+            $alt,
+            [
+                'class' => 'media-object img-polaroid',
+                'style' => 'width:100px;height:100px;',
+            ]),
+        $url,
+        ['class' => 'pull-left']);
+    ?>
 
 	<div class="media-body">
         <h1 class="media-heading"><?php echo $model->getTitle(); ?></h1>

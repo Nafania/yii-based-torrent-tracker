@@ -23,7 +23,12 @@ class BlogRatingBehavior extends RatingBehavior {
 		$comm->bindValue(':blogId', $owner->getPrimaryKey());
 		$sumRatings = ( $row = $comm->queryRow() ) ? $row['rating'] : 0;
 
-		$ratingVal = Yii::app()->getModule('ratings')->getRatingCoefficient(13) * $sumRatings * exp(Yii::app()->getModule('ratings')->getRatingCoefficient(14) * ($maxTime - time()));
+        $date1 = new DateTime(date('Y-m-d H:i:s', $maxTime));
+        $date2 = new DateTime();
+
+        $interval = $date1->diff($date2);
+
+		$ratingVal = Yii::app()->getModule('ratings')->getRatingCoefficient(13) * $sumRatings * exp(Yii::app()->getModule('ratings')->getRatingCoefficient(14) * $interval->h);
 
 		$this->saveRating($ratingVal);
 	}

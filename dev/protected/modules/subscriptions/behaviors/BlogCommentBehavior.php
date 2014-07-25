@@ -1,6 +1,12 @@
 <?php
+namespace modules\subscriptions\behaviors;
+
+use modules\blogs\models\BlogPost;
+use Yii;
+use Subscription;
+
 /**
- * @method Comment getOwner()
+ * @method \Comment getOwner()
  */
 class BlogCommentBehavior extends BaseEventBehavior
 {
@@ -15,9 +21,9 @@ class BlogCommentBehavior extends BaseEventBehavior
         }
 
         /**
-         * @var modules\blogs\models\BlogPost $blogPost
+         * @var BlogPost $blogPost
          */
-        $blogPost = modules\blogs\models\BlogPost::model()->findByPk($owner->modelId);
+        $blogPost = BlogPost::model()->findByPk($owner->modelId);
         if (!$blogPost) {
             return false;
         }
@@ -33,25 +39,23 @@ class BlogCommentBehavior extends BaseEventBehavior
 
             foreach ($subscriptions AS $subscription) {
 
-                if ( $owner->ownerId == $subscription->uId ) {
+                if ($owner->ownerId == $subscription->uId) {
                     continue;
                 }
 
-                $event = new Event();
-                $event->text = Yii::t('subscriptionsModule.common',
-                    'Добавлен новый комментарий к записи "{title}"',
-                    array(
-                        '{title}' => $blogPost->getTitle()
-                    ));
-                $event->title = Yii::t('subscriptionsModule.common', 'Новый комменатрий к записи');
-                $event->url = $url;
-                $event->icon = $icon;
-                $event->uId = $subscription->uId;
-                $event->uniqueType = $icon . $owner->modelName . $blogPost->getPrimaryKey();
-
-                $this->saveEvent($event);
+                $this->saveEvent([
+                    'text' => Yii::t('subscriptionsModule.common',
+                            'Добавлен новый комментарий к записи "{title}"',
+                            array(
+                                '{title}' => $blogPost->getTitle()
+                            )),
+                    'title' => Yii::t('subscriptionsModule.common', 'Новый комменатрий к записи'),
+                    'url' => $url,
+                    'icon' => $icon,
+                    'uId' => $subscription->uId,
+                    'uniqueType' => $icon . $owner->modelName . $blogPost->getPrimaryKey(),
+                ]);
             }
         }
-        return false;
     }
 }

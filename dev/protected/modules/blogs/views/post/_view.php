@@ -25,7 +25,15 @@
 			         '{date}' => $data->getCtime('d.m.Y H:i')
 			    )) ?>"><?php echo TimeHelper::timeAgoInWords($data->ctime); ?></abbr>
 		    |
-		    <?php echo CHtml::link($data->user->getName(), $data->user->getUrl()); ?>
+            <?php
+            if ( $data->user ) {
+                echo CHtml::link($data->user->getName(), $data->user->getUrl());
+            }
+            else {
+                echo '<i>' . Yii::t('userModule.common', 'Аккаунт удален') . '</i>';
+            }
+            ?>
+
 		    <?php
 		    if ( $tags = $data->getTags() ) {
 			    $tagsStr = '';

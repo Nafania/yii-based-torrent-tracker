@@ -623,3 +623,11 @@ form div[class*="span"] {
     font-size: 1.2em;
     font-weight: bold;
 }
+.comment {
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 10px;
+}
+
+.latestComments .comment {
+    border-bottom: none;
+}

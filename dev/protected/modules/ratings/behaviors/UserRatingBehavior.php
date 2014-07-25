@@ -24,7 +24,7 @@ class UserRatingBehavior extends RatingBehavior {
 		$sumCommentRatings = ($row = $comm->queryRow()) ? $row['rating'] : 0;
 
 		$comm = $db->createCommand('SELECT SUM(rating) AS rating FROM {{ratings}} r, {{blogPosts}} t WHERE r.modelId = t.id AND r.modelName = :modelName AND t.ownerId = :uId');
-		$comm->bindValue(':modelName', 'BlogPost');
+		$comm->bindValue(':modelName', 'modules_blogs_models_BlogPost');
 		$comm->bindValue(':uId', $owner->getId());
 		$sumBlogPostsRatings = ($row = $comm->queryRow()) ? $row['rating'] : 0;
 

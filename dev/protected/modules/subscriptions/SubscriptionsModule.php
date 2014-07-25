@@ -95,14 +95,14 @@ class SubscriptionsModule extends CWebModule {
 		Yii::app()->pd->registerBehavior('Comment',
 			array(
 				'commentsAnswerBehavior' => array(
-					'class' => 'application.modules.subscriptions.behaviors.CommentsAnswerBehavior'
+					'class' => '\modules\subscriptions\behaviors\CommentsAnswerBehavior'
 				)
 			));
 
 		Yii::app()->pd->registerBehavior('Comment',
 			array(
 				'blogCommentBehavior' => array(
-					'class' => 'application.modules.subscriptions.behaviors.BlogCommentBehavior'
+					'class' => '\modules\subscriptions\behaviors\BlogCommentBehavior'
 				)
 			));
 
@@ -130,7 +130,7 @@ class SubscriptionsModule extends CWebModule {
 		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost',
 			array(
 				'blogPostSubscription' => array(
-					'class' => 'application.modules.subscriptions.behaviors.BlogPostSubscription'
+					'class' => 'modules\subscriptions\behaviors\BlogPostSubscription'
 				)
 			));
 
@@ -166,7 +166,8 @@ class SubscriptionsModule extends CWebModule {
 	private static function _setImport () {
 		Yii::app()->pd->setImport(array(
 			'application.modules.subscriptions.interfaces.*',
-			'application.modules.subscriptions.models.*'
+			'application.modules.subscriptions.models.*',
+            'application.modules.subscriptions.components.resqueWorkers'
 		));
 	}
 

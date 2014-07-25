@@ -8,11 +8,8 @@ if ($includeFiles) {
     }
 }
 
-$yiic=getenv('YII_PATH').'/yii.php';
-$config=getenv('APP_PATH').'/config/production/console.php';
-
-require_once($yiic);
-
+require_once(getenv('APP_PATH').'/config/config.php');
+require_once($yii);
 Yii::createConsoleApplication($config);
 
 # Turn off our amazing library autoload

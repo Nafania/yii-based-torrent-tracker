@@ -1,4 +1,4 @@
-#!/usr/bin/env php
+#!/usr/bin/php
 <?php
-
-require_once(dirname(__FILE__).'/yiic.php');
+require_once(dirname(__FILE__) . '/config/config.php');
+require_once($yiic);

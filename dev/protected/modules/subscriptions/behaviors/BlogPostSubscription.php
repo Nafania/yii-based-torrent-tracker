@@ -1,16 +1,22 @@
 <?php
+namespace modules\subscriptions\behaviors;
+
+use Yii;
+use Subscription;
+use modules\blogs\models\Blog;
+
 /**
  * Class BlogPostSubscription
  * Поведение для создания уведомлений тем, кто подписался на блог при создании поста в этом блоге
  */
-class BlogPostSubscription extends CActiveRecordBehavior {
+class BlogPostSubscription extends BaseEventBehavior {
 	public function afterSave ( $e ) {
 		parent::afterSave($e);
 		/**
-		 * @var $owner modules\blogs\models\BlogPost
+		 * @var $owner BlogPost
 		 */
 		$owner = $this->getOwner();
-		$blog = modules\blogs\models\Blog::model()->findByPk($owner->blogId);
+		$blog = Blog::model()->findByPk($owner->blogId);
 
 		if ( $owner->getIsNewRecord() && $blog ) {
 			$subscriptions = Subscription::model()->findAllByAttributes(array(
@@ -20,6 +26,8 @@ class BlogPostSubscription extends CActiveRecordBehavior {
 			$url = $owner->getUrl();
 			$icon = 'list';
 
+            $data = [];
+
 			foreach ( $subscriptions AS $subscription ) {
 				/**
 				 * Если автор поста является подписчиком, то не шлем ему уведомление
@@ -27,19 +35,22 @@ class BlogPostSubscription extends CActiveRecordBehavior {
 				if ( $owner->ownerId == $subscription->uId ) {
 					continue;
 				}
-				$event = new Event();
-				$event->text = Yii::t('subscriptionsModule.common',
-					'Добавлен новый пост в блог "{title}", за которым вы следите',
-					array(
-					     '{title}' => $blog->getTitle()
-					));
-				$event->title = Yii::t('subscriptionsModule.common', 'Новый пост в блоге');
-				$event->url = $url;
-				$event->icon = $icon;
-				$event->uId = $subscription->uId;
 
-				$event->save();
+                $data[] = [
+
+                    'text' => Yii::t('subscriptionsModule.common',
+                            'Добавлен новый пост в блог "{title}", за которым вы следите',
+                            array(
+                                '{title}' => $blog->getTitle()
+                            )),
+                    'title' => Yii::t('subscriptionsModule.common', 'Новый пост в блоге'),
+                    'url' => $url,
+                    'icon' => $icon,
+                    'uId' => $subscription->uId,
+                ];
 			}
+
+            $this->saveEvent($data);
 		}
 	}
 }
