@@ -12,7 +12,7 @@ use Yii;
 
 class UpdateReviewAfterSaveBehavior extends \CActiveRecordBehavior {
 
-    public function afterSave () {
+    public function afterSave ($event) {
         if ( $this->getOwner()->getIsNewRecord() ) {
             Yii::app()->resque->createJob('update_reviews', 'application\modules\reviews\components\resqueWorkers\UpdateReview', ['attributes' => $this->getOwner()->attributes]);
         }
