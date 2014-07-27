@@ -13,6 +13,8 @@
  * @property integer $parentId
  * @property string  $modelName
  * @property integer $modelId
+ *
+ * @mixin TorrentCommentsRelationsBehavior
  */
 class Comment extends EActiveRecord implements ChangesInterface, modules\tracking\components\Trackable
 {

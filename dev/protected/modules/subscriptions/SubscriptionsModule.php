@@ -87,10 +87,24 @@ class SubscriptionsModule extends CWebModule {
 	private static function _addBehaviors () {
 		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup',
 			array(
-				'changesBehavior' => array(
-					'class' => 'application.modules.subscriptions.behaviors.ChangesBehavior'
+				'torrentGroupAfterUploadAutoSubscribeBehavior' => array(
+					'class' => '\modules\subscriptions\behaviors\TorrentGroupAfterUploadAutoSubscribeBehavior'
 				)
 			));
+
+        Yii::app()->pd->registerBehavior('modules\torrents\models\Torrent',
+            array(
+                'torrentAfterUploadAutoSubscribeBehavior' => array(
+                    'class' => '\modules\subscriptions\behaviors\TorrentAfterUploadAutoSubscribeBehavior'
+                )
+            ));
+
+        Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup',
+            array(
+                'changesBehavior' => array(
+                    'class' => 'application.modules.subscriptions.behaviors.ChangesBehavior'
+                )
+            ));
 
 		Yii::app()->pd->registerBehavior('Comment',
 			array(
@@ -151,7 +165,7 @@ class SubscriptionsModule extends CWebModule {
 		Yii::app()->pd->registerBehavior('Comment',
 			array(
 				'torrentCommentBehavior' => array(
-					'class' => 'application.modules.subscriptions.behaviors.TorrentCommentBehavior'
+					'class' => 'modules\subscriptions\behaviors\TorrentCommentBehavior'
 				)
 			));
 

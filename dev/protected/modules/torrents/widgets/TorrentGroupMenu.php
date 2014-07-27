@@ -1,7 +1,10 @@
 <?php
 
 class TorrentGroupMenu extends CWidget {
-	public $model;
+    /**
+     * @var modules\torrents\models\TorrentGroup
+     */
+    public $model;
 
 	public function run () {
 		Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('subscriptions')->getAssetsUrl() . '/js/subscriptions.js');
@@ -15,7 +18,7 @@ class TorrentGroupMenu extends CWidget {
 	}
 
 	private function _getItems () {
-		if ( Subscription::check($this->model) ) {
+		if ( Subscription::check($this->model->resolveClassName(), $this->model->getPrimaryKey()) ) {
 			$subscribeItem = array(
 				'label'       => '<i class="icon-eye-close"></i>',
 				'url'         => array('/subscriptions/default/delete'),
@@ -27,7 +30,9 @@ class TorrentGroupMenu extends CWidget {
 					'data-id'        => $this->model->getId(),
 					'data-action'    => 'subscription',
 					'title'          => Yii::t('torrentsModule.common',
-							'Перестать следить за этой группой торрентов')
+							'Перестать получать уведомления о новых торрентах в этой группе торрентов'),
+                    'data-alt-title' => Yii::t('torrentsModule.common',
+                            'Получать уведомления о новых торрентах в этой группе торрентов')
 				),
 				'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.delete'),
 			);
@@ -44,11 +49,52 @@ class TorrentGroupMenu extends CWidget {
 					'data-id'        => $this->model->getId(),
 					'data-action'    => 'subscription',
 					'title'          => Yii::t('torrentsModule.common',
-							'Следить за этой группой торрентов')
+							'Получать уведомления о новых торрентах в этой группе торрентов'),
+                    'data-alt-title' => Yii::t('torrentsModule.common',
+                            'Перестать получать уведомления о новых торрентах в этой группе торрентов')
 				),
 				'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.create'),
 			);
 		}
+
+        if ( Subscription::check($this->model->resolveClassName() . '_comments', $this->model->getPrimaryKey()) ) {
+            $subscribeCommentsItem = [
+                'label'       => '<i class="icon-comment icon-white" data-alt-class="icon-comment"></i>',
+                'url'         => ['/subscriptions/default/delete'],
+                'linkOptions' => [
+                    'class'          => 'btn',
+                    'data-toggle'    => 'tooltip',
+                    'data-placement' => 'top',
+                    'data-model'     => $this->model->resolveClassName() . '_comments',
+                    'data-id'        => $this->model->getPrimaryKey(),
+                    'data-action'    => 'subscription',
+                    'title'          => Yii::t('torrentsModule.common',
+                            'Перестать получать уведомления о комментариях в этой группе торрентов'),
+                    'data-alt-title' => Yii::t('torrentsModule.common',
+                            'Получать уведомления о комментариях в этой группе торрентов')
+                ],
+                'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.delete'),
+            ];
+        }
+        else {
+            $subscribeCommentsItem = [
+                'label'       => '<i class="icon-comment" data-alt-class="icon-comment icon-white"></i>',
+                'url'         => ['/subscriptions/default/create'],
+                'linkOptions' => [
+                    'class'          => 'btn',
+                    'data-toggle'    => 'tooltip',
+                    'data-placement' => 'top',
+                    'data-model'     => $this->model->resolveClassName() . '_comments',
+                    'data-id'        => $this->model->getPrimaryKey(),
+                    'data-action'    => 'subscription',
+                    'title'          => Yii::t('torrentsModule.common',
+                            'Получать уведомления о комментариях в этой группе торрентов'),
+                    'data-alt-title' => Yii::t('torrentsModule.common',
+                            'Перестать получать уведомления о комментариях в этой группе торрентов')
+                ],
+                'visible'     => Yii::app()->getUser()->checkAccess('subscriptions.default.create'),
+            ];
+        }
 
 		if ( Yii::app()->getUser()->checkAccess('favorites.default.delete') && $this->model->isFavorited() ) {
 			$favoriteItem = array(
@@ -105,6 +151,7 @@ class TorrentGroupMenu extends CWidget {
 				'visible'     => Yii::app()->getUser()->checkAccess('torrents.default.createTorrent'),
 			),
 			$subscribeItem,
+            $subscribeCommentsItem,
 			$favoriteItem,
 			array(
 				'label'       => '<i class="icon-edit"></i>',

@@ -38,7 +38,7 @@ class SubscriptionButton extends TbButton
 
         $this->buttonType = 'link';
 
-        if (Subscription::check($this->model)) {
+        if (Subscription::check($this->model->resolveClassName(), $this->model->getPrimaryKey())) {
             $this->icon = 'icon-eye-close';
             $this->label = '';
             $this->url = array('/subscriptions/default/delete');

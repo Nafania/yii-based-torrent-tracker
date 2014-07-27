@@ -27,7 +27,7 @@ if ( Yii::app()->user->checkAccess('createPostInGroupMemberBlog',
 ?>
 
 <?php
-if ( Subscription::check($group) ) {
+if ( Subscription::check($group->resolveClassName(), $group->getPrimaryKey()) ) {
 	$this->widget('bootstrap.widgets.TbButton',
 		array(
 		     'buttonType'  => 'link',

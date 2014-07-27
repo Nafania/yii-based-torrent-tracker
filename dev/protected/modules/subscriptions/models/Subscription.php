@@ -141,13 +141,18 @@ class Subscription extends EActiveRecord {
 		);
 	}
 
-	public static function check ( EActiveRecord $model ) {
+    /**
+     * @param string $modelName
+     * @param integer $primaryKey
+     * @return bool|CActiveRecord
+     */
+    public static function check ( $modelName, $primaryKey ) {
 		if ( Yii::app()->getUser()->getIsGuest() ) {
 			return false;
 		}
 		return self::model()->findByPk(array(
-		                                    'modelId'   => $model->getPrimaryKey(),
-		                                    'modelName' => $model->resolveClassName(),
+		                                    'modelId'   => $primaryKey,
+		                                    'modelName' => $modelName,
 		                                    'uId'       => Yii::app()->getUser()->getId()
 		                               ));
 	}

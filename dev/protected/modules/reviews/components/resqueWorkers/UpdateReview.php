@@ -26,21 +26,13 @@ class UpdateReview {
 
         $attributes = $this->args['attributes'];
 
-        $sql = 'SELECT * FROM {{reviewsRelations}}';
+        $sql = 'SELECT * FROM {{reviewsRelations}} WHERE cId = :cId';
         $db = Yii::app()->getDb();
         $comm = $db->createCommand($sql);
-        $rows = $comm->query();
 
-        $data = array();
-        foreach ($rows AS $row) {
-            $data[$row['cId']][] = $row;
-        }
-
-        $reviewsData = $data[$attributes['cId']];
-
-        foreach ($reviewsData AS $review) {
+        foreach ($comm->query([':cId' => $attributes['cId']]) AS $review) {
             /**
-             * @var ReviewRelation $ReviewRelation
+             * @var \ReviewRelation $ReviewRelation
              */
             $ReviewRelation = EActiveRecord::model('ReviewRelation')->populateRecord($review);
 

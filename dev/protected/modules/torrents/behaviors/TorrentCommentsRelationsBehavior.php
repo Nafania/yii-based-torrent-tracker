@@ -42,7 +42,11 @@ class TorrentCommentsRelationsBehavior extends CActiveRecordBehavior {
 		return $Torrent->torrentGroup;
 	}
 
-	public function getTorrent () {
+    /**
+     * @return models\Torrent
+     * @throws CHttpException
+     */
+    public function getTorrent () {
 		Yii::import('application.modules.torrents.models.*');
 		if ( $this->getOwner()->torrent ) {
 			return $this->getOwner()->torrent;

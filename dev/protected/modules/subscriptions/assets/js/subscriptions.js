@@ -17,14 +17,39 @@ $(document).on('click', 'a[data-action=subscription]', function (e) {
         dataType: 'json',
         type: 'POST',
         success: function (data) {
-            if (elem.children('i').hasClass('icon-eye-open')) {
-                elem.attr('href', url.replace('create', 'delete'));
-                elem.children('i').attr('class', 'icon-eye-close');
+            var icon = elem.children('i'), iconClass = icon.attr('class'), newClass, altTitle = elem.attr('data-alt-title'), title = elem.attr('data-original-title');
+
+            if ( url.indexOf('/delete') != -1 ) {
+                elem.attr('href', url.replace('delete', 'create'));
+
+                if ( icon.attr('data-alt-class') ) {
+                    newClass = icon.attr('data-alt-class');
+                    icon.attr('class', newClass);
+                    icon.attr('data-alt-class', iconClass);
+                }
+                else {
+                    icon.attr('class', 'icon-eye-open');
+                }
             }
             else {
-                elem.attr('href', url.replace('delete', 'create'));
-                elem.children('i').attr('class', 'icon-eye-open');
+                elem.attr('href', url.replace('create', 'delete'));
+
+                if ( icon.attr('data-alt-class') ) {
+                    newClass = icon.attr('data-alt-class');
+                    icon.attr('class', newClass);
+                    icon.attr('data-alt-class', iconClass);
+                }
+                else {
+                    icon.attr('class', 'icon-eye-close');
+                }
             }
+
+            if ( altTitle ) {
+                elem.tooltip('hide');
+                elem.attr('data-original-title', altTitle);
+                elem.attr('data-alt-title', title);
+            }
+
             $('.top-right').notify({
                 message: { html: data.message },
                 type: 'success'

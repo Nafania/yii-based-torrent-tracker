@@ -98,6 +98,40 @@ class Event extends EActiveRecord
         );
     }
 
+
+
+    protected function beforeSave()
+    {
+        if (parent::beforeSave()) {
+
+            if ($this->getIsNewRecord() && $this->uniqueType) {
+                $oldEvent = self::model()->findByAttributes(array(
+                    'uniqueType' => $this->uniqueType,
+                    'uId' => $this->uId,
+                    'unread' => self::EVENT_UNREAD
+                ));
+
+                if ($oldEvent) {
+                    $oldEvent->saveCounters(array('count' => 1));
+
+                    return false;
+                }
+            }
+
+            $this->url = serialize($this->url);
+            $this->icon = ($this->icon ? $this->icon : 'envelope');
+
+            if ($this->getIsNewRecord()) {
+                $this->ctime = time();
+                $this->unread = self::EVENT_UNREAD;
+                $this->notified = 0;
+                $this->count = 1;
+            }
+
+            return true;
+        }
+    }
+
     protected function afterSave()
     {
         parent::afterSave();
@@ -144,38 +178,6 @@ class Event extends EActiveRecord
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,
         ));
-    }
-
-    protected function beforeSave()
-    {
-        if (parent::beforeSave()) {
-
-            if ($this->getIsNewRecord() && $this->uniqueType) {
-                $oldEvent = self::model()->findByAttributes(array(
-                    'uniqueType' => $this->uniqueType,
-                    'uId' => $this->uId,
-                    'unread' => self::EVENT_UNREAD
-                ));
-
-                if ($oldEvent) {
-                    $oldEvent->saveCounters(array('count' => 1));
-
-                    return false;
-                }
-            }
-
-            $this->url = serialize($this->url);
-            $this->icon = ($this->icon ? $this->icon : 'envelope');
-
-            if ($this->getIsNewRecord()) {
-                $this->ctime = time();
-                $this->unread = self::EVENT_UNREAD;
-                $this->notified = 0;
-                $this->count = 1;
-            }
-
-            return true;
-        }
     }
 
     public function getText()
