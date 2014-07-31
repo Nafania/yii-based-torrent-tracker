@@ -42,7 +42,7 @@ class OmDbApi extends ReviewInterface
 
     protected function getApiData($args)
     {
-        $title = (isset($args['t']) ? rawurlencode($args['t']) : '');
+        $title = (isset($args['t']) ? rawurlencode(str_replace('"', '', $args['t'])) : '');
         $year = (isset($args['y']) ? (int)$args['y'] : 0);
         $type = (isset($args['mt']) ? $args['mt'] : '');
 
