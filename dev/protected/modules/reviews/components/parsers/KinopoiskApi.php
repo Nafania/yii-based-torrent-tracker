@@ -62,11 +62,7 @@ class KinopoiskApi extends ReviewInterface
                     'useragent' => $this->_generateUserAgent(),
                     'headers' => $this->_generateHeaders(),
                     'referer' => 'http://www.kinopoisk.ru/',
-                    'proxy' => array(
-                        '93.115.8.229:8089',
-                        '119.46.110.17:8080',
-                        '190.151.10.226:8080',
-                    )
+                    'proxy' => Yii::app()->config->get('reviewsModule.proxies'),
                 ),
                 false);
 
