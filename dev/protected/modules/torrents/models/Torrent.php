@@ -162,6 +162,7 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
             'mtime' => Yii::t('torrentsModule.common', 'Время изменения'),
             'info_hash' => Yii::t('torrentsModule.common', 'Торрент файл'),
             'title' => Yii::t('torrentsModule.common', 'Название'),
+            'uid' => Yii::t('torrentsModule.common', 'Пользователь'),
         );
     }
 

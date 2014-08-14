@@ -174,6 +174,14 @@ $groupGridColumns[] = array(
     'htmlOptions' => array('style' => 'display:none')
 );
 
+if ( Yii::app()->getUser()->checkAccess('canViewTorrentOwner') ) {
+    $groupGridColumns[] = [
+        'name' => 'uid',
+        'value' => function($data) { return ( $data->user ? CHtml::link($data->user->getName(), $data->user->getUrl()) : '-' );},
+        'type' => 'raw'
+    ];
+}
+
 ?>
 
 <?php $this->widget('bootstrap.widgets.TbGroupGridView',
