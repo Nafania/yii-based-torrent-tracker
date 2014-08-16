@@ -106,5 +106,12 @@ return array(
             'database' => 2,
             'prefix'   => 'SZ:',
         ],
+
+        'resque' => [
+            'class' => 'ext.yii-resque.RResque',
+            'server' => 'localhost', // Redis server address
+            'port' => '6379', // Redis server port
+            'database' => 3 // Redis database number
+        ],
 	),
 );
