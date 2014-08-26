@@ -20,7 +20,7 @@ class DefaultController extends components\Controller {
 		return true;
 	}
 
-	public function actionCreate ( $uId = 0 ) {
+	public function actionCreate ( $uId = null ) {
 		$title = Yii::t('pmsModule.common', 'Создание личного сообщения');
 		$this->breadcrumbs[] = $title;
 		$this->pageTitle = $title;
