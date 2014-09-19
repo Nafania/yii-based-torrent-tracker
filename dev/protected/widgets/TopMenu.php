@@ -5,6 +5,10 @@ class TopMenu extends CWidget {
 		$categories = Category::model()->findAll();
 		$searchData = Yii::app()->getUser()->getSavedSearchData('modules_torrents_models_TorrentGroup');
 
+        foreach ( ['category', 'tags', 'notTags', 'search', 'sort', 'period'] AS $val ) {
+            $searchData[$val] = ( !empty($searchData[$val]) ? $searchData[$val] : '' );
+        }
+
 		$selectedCategories = Yii::app()->getRequest()->getParam('category', $searchData['category']);
 		$selectedTags = Yii::app()->getRequest()->getParam('tags', $searchData['tags']);
 		$notTags = Yii::app()->getRequest()->getParam('notTags', $searchData['notTags']);
