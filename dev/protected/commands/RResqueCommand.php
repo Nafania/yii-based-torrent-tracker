@@ -52,24 +52,32 @@ EOD;
 
         $command = 'nohup sh -c "PREFIX='.$prefix.' QUEUE='.$queue.' COUNT='.$count.' REDIS_BACKEND='.$host.' REDIS_BACKEND_DB='.$db.' REDIS_AUTH='.$auth.' INTERVAL='.$interval.' VERBOSE='.$verbose.' INCLUDE_FILES='.$includeFiles.' YII_PATH='.$yiiPath.' APP_PATH='.$appPath.' php '.$resquePath.'/bin/'.$script.'" >> '.$appPath.'/runtime/yii_resque_log.log 2>&1 &';
 
-        exec($command, $return);
+        exec($command, $return, $return_var);
 
-        return $return;
+        return $return_var;
     }
 
     public function actionStart($queue = '*', $interval = 5, $verbose = 1, $count = 5)
     {
-        $this->runCommand($queue, $interval, $verbose, $count, 'resque');
+        return $this->runCommand($queue, $interval, $verbose, $count, 'resque');
     }
 
     public function actionStartrecurring($queue = '*', $interval = 5, $verbose = 1, $count = 1)
     {
-        $this->runCommand($queue, $interval, $verbose, $count, 'resque-scheduler');
+        return $this->runCommand($queue, $interval, $verbose, $count, 'resque-scheduler');
     }
 
     public function actionStop($quit = null)
     {
+        $return = null;
         $quit_string = $quit ? '-s QUIT': '-9';
-        exec("ps uxe | grep '".escapeshellarg(Yii::app()->basePath)."' | grep 'resque' | grep -v grep | awk {'print $2'} | xargs kill $quit_string");
+        exec("ps uxe | grep '".escapeshellarg(Yii::app()->basePath)."' | grep 'resque' | grep -v grep | grep -v rresque | awk {'print $2'} | xargs kill $quit_string", $return, $return_var);
+
+        return $return_var;
+    }
+
+    public function actionRestart() {
+        $this->actionStop();
+        $this->actionStart();
     }
 }
