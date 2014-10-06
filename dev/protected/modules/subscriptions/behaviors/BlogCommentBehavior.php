@@ -16,7 +16,7 @@ class BlogCommentBehavior extends BaseEventBehavior
 
         $owner = $this->getOwner();
 
-        if ($owner->modelName != 'modules_blogs_models_BlogPost') {
+        if ($owner->modelName != \CHtml::modelName(new BlogPost())) {
             return false;
         }
 
@@ -30,7 +30,7 @@ class BlogCommentBehavior extends BaseEventBehavior
 
         if ($owner->getIsNewRecord() && $blogPost) {
             $subscriptions = Subscription::model()->findAllByAttributes(array(
-                'modelName' => 'modules_blogs_models_BlogPost',
+                'modelName' => \CHtml::modelName($blogPost),
                 'modelId' => $blogPost->getId()
             ));
 
