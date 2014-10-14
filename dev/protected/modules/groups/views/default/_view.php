@@ -26,7 +26,9 @@
 					)) ?>,
 			<?php echo Yii::t('groupsModule.common',
 				'Тип: {statusTitle}',
-				array('{statusTitle}' => $data->getTypeLabel())) ?>
+				array('{statusTitle}' => $data->getTypeLabel())) ?>,
+
+            <?= Yii::t('groupsModule.common', 'Опубликовано записей: {num} шт.', ['{num}' => CHtml::link(Yii::app()->groupManager->getPostsCount($data), $data->getUrl())]) ?>
 
 		</p>
         <p class="pull-left"><?php echo StringHelper::cutStr($data->getDescription()); ?></p>

@@ -27,6 +27,7 @@
 
 	<div class="media-body">
         <h3 class="media-heading"><?php echo CHtml::link($data->getTitle(), $data->getUrl()) ?></h3>
+        <p><?= Yii::t('blogsModule.common', 'Опубликовано записей: {num} шт.', ['{num}' => CHtml::link(Yii::app()->blogManager->getPostsCount($data), $data->getUrl())]) ?></p>
 
         <p><?php echo \StringHelper::cutStr($data->getDescription()); ?></p>
 

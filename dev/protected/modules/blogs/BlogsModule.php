@@ -14,6 +14,7 @@ class BlogsModule extends \CWebModule {
 
 
 	public static function register () {
+        self::_registerComponent();
 		self::_addUrlRules();
 		self::_setImport();
 		self::_addModelsRelations();
@@ -21,6 +22,14 @@ class BlogsModule extends \CWebModule {
 
 		Yii::app()->pd->addAdminModule('blogs', 'Models management');
 	}
+
+    private static function _registerComponent () {
+   		Yii::app()->pd->registerApplicationComponents([
+                'blogManager' => [
+                    'class' => '\modules\blogs\components\BlogManager',
+                ]
+            ]);
+   	}
 
 	private static function _addModelsRelations () {
 

@@ -32,6 +32,7 @@ class GroupsModule extends CWebModule {
 		self::_addUrlRules();
 		self::_addRelations();
 		self::_registerBehaviors();
+        self::_registerComponent();
 
 		Yii::app()->pd->addAdminModule('groups', 'Models management');
 	}
@@ -47,6 +48,14 @@ class GroupsModule extends CWebModule {
 		                                 'groups/<controller:\w+>/<action:\w+>/*' => 'groups/<controller>/<action>',
 		                            ));
 	}
+
+    private static function _registerComponent () {
+   		Yii::app()->pd->registerApplicationComponents([
+                'groupManager' => [
+                    'class' => '\modules\groups\components\GroupManager',
+                ]
+            ]);
+   	}
 
 	private static function _addRelations () {
 		Yii::app()->pd->addRelations('GroupUser',

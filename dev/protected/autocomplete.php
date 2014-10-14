@@ -10,6 +10,8 @@
  * @property EDbHttpSession            $session
  * @property Redis                      $redis
  * @property RResque                    $resque
+ * @property \modules\groups\components\GroupManager $groupManager
+ * @property \modules\blogs\components\BlogManager $blogManager
  *
  * @method CClientScript getClientScript()
  * @method CHttpRequest getRequest()

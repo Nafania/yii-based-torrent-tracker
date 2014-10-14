@@ -14,6 +14,8 @@
  * @property integer $ctime
  * @property integer $rating
  * @property integer $hidden
+ *
+ * @method integer postsCount()
  */
 class Group extends EActiveRecord
 {

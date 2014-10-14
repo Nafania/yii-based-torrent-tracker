@@ -11,7 +11,7 @@ $tid = $comment->getTorrentId();
 
 	<?php
 	if ( $comment->user ) {
-		$img = $comment->user->profile->getImageUrl(32, 32);
+		$img = $comment->user->profile->getImageUrl(50, 50);
 		$alt = $comment->user->getName();
 		$url = $comment->user->getUrl();
 	}
@@ -24,7 +24,7 @@ $tid = $comment->getTorrentId();
 			$alt,
 			array(
 				'class' => 'media-object img-polaroid',
-				'style' => 'width:32px;height:32px;',
+				'style' => 'width:50px;height:50px;',
 			)),
 		$url,
 		array('class' => 'pull-left'));
