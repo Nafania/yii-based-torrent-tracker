@@ -32,6 +32,9 @@ class AnswerWidget extends CWidget
         if (!$this->modelName || !$this->modelId) {
             throw new CException('Not enough data');
         }
+
+        $cs = Yii::app()->getClientScript();
+      	$cs->registerScriptFile(Yii::app()->getModule('comments')->getAssetsUrl() . '/imperavi.plugin.quote.js');
     }
 
     public function run()
