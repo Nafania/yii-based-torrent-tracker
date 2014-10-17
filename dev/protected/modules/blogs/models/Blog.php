@@ -17,7 +17,7 @@ use CMap;
  * @property string  $description
  * @property integer $groupId
  */
-class Blog extends \EActiveRecord {
+class Blog extends \EActiveRecord implements \WebInterface {
 	public $cacheTime = 3600;
 
 	/**
@@ -245,10 +245,27 @@ class Blog extends \EActiveRecord {
 	}
 
 	public function getUrl () {
-		return array(
-			'/blogs/default/view',
-			'id'    => $this->getId(),
-			'title' => $this->getSlugTitle(),
-		);
+        if ( $this->groupId ) {
+            return [
+                '/groups/default/view',
+                'id' => $this->groupId,
+                'title' => $this->group->getSlugTitle(),
+            ];
+        }
+        else {
+            return [
+                '/blogs/default/view',
+                'id' => $this->getId(),
+                'title' => $this->getSlugTitle(),
+            ];
+        }
 	}
+
+
+    public function getPluralNames () {
+        return [
+            Yii::t('blogsModule.common', 'Блог'),
+            Yii::t('blogsModule.common', 'Блоги'),
+        ];
+    }
 }

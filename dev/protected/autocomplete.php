@@ -24,3 +24,12 @@
 class CApplication
 {
 }
+
+/**
+ * Class User
+ *
+ * @property Subscription[] subscriptions
+ */
+class User {
+
+}

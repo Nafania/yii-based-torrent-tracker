@@ -24,7 +24,7 @@ use CHtmlPurifier;
  * @property integer $pinned
  * @property Blog    blog
  */
-class BlogPost extends \EActiveRecord implements \ChangesInterface
+class BlogPost extends \EActiveRecord implements \ChangesInterface, \WebInterface
 {
     const HIDDEN = 1;
     const NOT_HIDDEN = 0;
@@ -397,5 +397,13 @@ class BlogPost extends \EActiveRecord implements \ChangesInterface
 
             $this->withEavAttributes(array($search));
         }
+    }
+
+
+    public function getPluralNames () {
+        return [
+            Yii::t('blogsModule.common', 'Пост в блоге'),
+            Yii::t('blogsModule.common', 'Посты в блоге'),
+        ];
     }
 }

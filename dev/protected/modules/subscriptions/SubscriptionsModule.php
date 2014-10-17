@@ -62,6 +62,7 @@ class SubscriptionsModule extends CWebModule {
 			'yiiadmin/subscriptions/backend/<action:\w+>/*' => 'subscriptions/subscriptionsBackend/<action>',
 			'yiiadmin/subscriptions/backend/*'              => 'subscriptions/subscriptionsBackend',
 
+                'subscriptions/' => 'subscriptions/default/index',
 			'subscriptions/event/<action:\w+>/*'            => 'subscriptions/event/<action>',
 			'subscriptions/<action:\w+>/*'                  => 'subscriptions/default/<action>',
 			'subscriptions/<controller:\w+>/<action:\w+>/*' => 'subscriptions/<controller>/<action>',
@@ -82,6 +83,15 @@ class SubscriptionsModule extends CWebModule {
 				)
 			),
 			'application.modules.subscriptions.models.*');
+
+        Yii::app()->pd->addRelations('User',
+      			'subscriptions',
+      			array(
+      				CActiveRecord::HAS_MANY,
+      				'Subscription',
+      				'uId',
+      			),
+      			'application.modules.subscriptions.models.*');
 	}
 
 	private static function _addBehaviors () {

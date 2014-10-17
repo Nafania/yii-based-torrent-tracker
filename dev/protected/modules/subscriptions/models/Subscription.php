@@ -74,7 +74,7 @@ class Subscription extends EActiveRecord {
 		return array(
 			'ctime'     => Yii::t('subscriptionsModule.common', 'Добавлено'),
 			'modelId'   => Yii::t('subscriptionsModule.common', 'Model Id'),
-			'modelName' => Yii::t('subscriptionsModule.common', 'Model Name'),
+			'modelName' => Yii::t('subscriptionsModule.common', 'Название'),
 			'uId'       => Yii::t('subscriptionsModule.common', 'User id'),
 		);
 	}
@@ -96,6 +96,12 @@ class Subscription extends EActiveRecord {
 
 		return new CActiveDataProvider($this, array(
 		                                           'criteria' => $criteria,
+                'sort' => [
+                    'defaultOrder' => 'ctime DESC'
+                ],
+                'pagination' => [
+                    'pageVar' => 'page'
+                ]
 		                                      ));
 	}
 
@@ -140,6 +146,19 @@ class Subscription extends EActiveRecord {
 			'uId'
 		);
 	}
+
+    public function getSubscriptionModelInstance () {
+        /**
+         * TODO: Костыль
+         */
+        if ( $this->modelName == 'modules_torrents_models_TorrentGroup_comments' ) {
+            return new \modules\torrents\models\TorrentGroup;
+        }
+        else {
+            $modelName = EActiveRecord::classNameToNamespace($this->modelName);
+            return new $modelName;
+        }
+    }
 
     /**
      * @param string $modelName

@@ -28,7 +28,7 @@ use modules\torrents\models AS models;
  * @mixin \FavoritesBehavior
  *
  */
-class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
+class TorrentGroup extends \EActiveRecord implements \ChangesInterface, \WebInterface {
 	private $eavAttributes;
 
 	public $cacheTime = 3600;
@@ -384,6 +384,10 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 		return $count;
 	}
 
+    public function getTitle () {
+        return $this->title;
+    }
+
 
 	public function getPeriodCriteria ( $period, $alias = '' ) {
 		$criteria = new CDbCriteria();
@@ -420,4 +424,11 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface {
 
 		return $criteria;
 	}
+
+    public function getPluralNames () {
+        return [
+            Yii::t('torrentsModule.common', 'Группа торрентов'),
+            Yii::t('torrentsModule.common', 'Группы торрентов'),
+        ];
+    }
 }

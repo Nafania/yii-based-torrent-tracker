@@ -17,7 +17,7 @@
  *
  * @method integer postsCount()
  */
-class Group extends EActiveRecord
+class Group extends EActiveRecord implements WebInterface
 {
     public $cacheTime = 3600;
 
@@ -375,6 +375,14 @@ class Group extends EActiveRecord
                 'idUser' => Yii::app()->getUser()->getId(),
             ),
             'status = ' . GroupUser::STATUS_APPROVED . ' OR status = ' . GroupUser::STATUS_INVITED . ' OR status = ' . GroupUser::STATUS_INVITE_DECLINED);
+    }
+
+
+    public function getPluralNames () {
+        return [
+            Yii::t('groupsModule.common', 'Группа'),
+            Yii::t('groupsModule.common', 'Группы'),
+        ];
     }
 
 }

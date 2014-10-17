@@ -116,8 +116,7 @@ class TopMenu extends CWidget {
 								'url'   => Yii::app()->getUser()->getUrl(),
 							),
 							array(
-								'label' => Yii::t('pmsModule.common',
-										'Личные сообщения'),
+                                'label' => Yii::t('pmsModule.common', 'Личные сообщения'),
 								'url'   => array('/pms/default/index'),
 							),
 							array(
@@ -133,6 +132,11 @@ class TopMenu extends CWidget {
 								'url'     => array('/favorites/default/index'),
 								'visible' => Yii::app()->getUser()->checkAccess('favorites.default.index'),
 							),
+                            [
+                                'label' => Yii::t('subscriptionsModule.common', 'Подписки'),
+                                'url' => ['/subscriptions/default/index'],
+                                'visible' => Yii::app()->getUser()->checkAccess('subscriptions.default.index'),
+                            ],
 							array(
 								'label' => Yii::t('userModule.common', 'Настройки'),
 								'url'   => array('/user/default/settings'),

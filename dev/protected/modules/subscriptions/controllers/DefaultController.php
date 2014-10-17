@@ -57,6 +57,34 @@ class DefaultController extends components\Controller {
 		}
 	}
 
+    public function actionIndex()
+    {
+        $model = new Subscription();
+
+        $model->unsetAttributes(); // clear any default values
+        $model->setScenario('search');
+
+        $attributes = Yii::app()->getRequest()->getQuery('Subscription', '');
+
+        $model->attributes = $attributes;
+        $model->uId = Yii::app()->getUser()->getId();
+
+        $dataProvider = $model->search();
+
+        $dataProvider->pagination->pageSize = 20;
+
+        \Ajax::renderAjax(
+            'index',
+            [
+                'dataProvider' => $dataProvider,
+
+            ],
+            false,
+            false,
+            true
+        );
+    }
+
 
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.
