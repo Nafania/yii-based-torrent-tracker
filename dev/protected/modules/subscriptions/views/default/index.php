@@ -12,6 +12,10 @@
 
 $title = Yii::t('subscriptionsModule.common', 'Мои подписки');
 $this->pageTitle = $title;
+$this->breadcrumbs[] = $title;
+
+
+echo '<h1>' . $title . '</h1>';
 
 $this->widget(
     'bootstrap.widgets.TbGridView',
