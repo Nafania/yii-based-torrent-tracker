@@ -33,6 +33,10 @@ class EConfig extends CApplicationComponent
         }
     }
 
+    /**
+     * @param $key
+     * @throws CException
+     */
     public function get($key)
     {
         if (isset($this->data[$key])) {

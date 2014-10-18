@@ -1,4 +1,8 @@
 <?php
+/**
+ * @var integer $pageSize
+ */
+
 $cs = Yii::app()->getClientScript();
 $cs->registerScript('pageSize', "$('#pageSize').change(function(){if ( typeof $.fn.yiiGridView != 'undefined' ) { $.fn.yiiGridView.update('torrents-grid',{ data:{pageSize: $('#pageSize').val() }}); } else { $.fn.yiiListView.update('torrents-list',{ data:{pageSize: $('#pageSize').val() }});}});");
 $cs->registerLinkTag('alternate', 'application/rss+xml', Yii::app()->createAbsoluteUrl('torrents/rss.xml'));
