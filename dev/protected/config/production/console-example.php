@@ -1,5 +1,5 @@
 <?php
-$yiic = dirname(__FILE__) . '/../../../../../../../yii-1.1.15.022a51/framework/yiic.php';
+$yiic = '/usr/share/php/lib/yii-1.1.15.022a51/framework/yiic.php';
 
 return array(
 	// preloading 'log' component

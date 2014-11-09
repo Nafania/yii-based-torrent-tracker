@@ -1,5 +1,5 @@
 <?php
-$yii = 'Z:\home\yii-1.1.14.f0fee9\framework\yii.php';
+$yii = '/usr/share/php/lib/yii-1.1.15.022a51/framework/yii.php';
 
 return array(
 
