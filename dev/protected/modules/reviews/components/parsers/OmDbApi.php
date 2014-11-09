@@ -41,6 +41,19 @@ class OmDbApi extends ReviewInterface
     }
 
     /**
+     * @return array
+     */
+    public function getReturnParams()
+    {
+        return [
+            'imdbID' => Yii::t('reviewsModule.omDbApi', 'imdbID'),
+            'imdbRating' => Yii::t('reviewsModule.omDbApi', 'imdbRating'),
+            'imdbVotes' => Yii::t('reviewsModule.omDbApi', 'imdbVotes'),
+            'Metascore' => Yii::t('reviewsModule.omDbApi', 'Metascore'),
+        ];
+    }
+
+    /**
      * @param array $params
      * @return string
      */

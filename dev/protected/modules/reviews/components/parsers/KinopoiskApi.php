@@ -40,6 +40,18 @@ class KinopoiskApi extends ReviewInterface
 
     }
 
+    /**
+     * @return array
+     */
+    public function getReturnParams()
+    {
+        return [
+            'imdbID' => Yii::t('reviewsModule.kinopoiskApi', 'movieId'),
+            'imdbRating' => Yii::t('reviewsModule.kinopoiskApi', 'rating'),
+            'imdbVotes' => Yii::t('reviewsModule.kinopoiskApi', 'votes'),
+        ];
+    }
+
     public function returnReviewString($params)
     {
         return Yii::t('ReviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/{movieId}/" target="_blank">{rating}, голосов: {votes}</a>',

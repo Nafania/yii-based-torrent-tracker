@@ -29,6 +29,14 @@ abstract class ReviewInterface
     abstract public function returnReviewString( $params );
 
     /**
+     * Метод должен возвращать массив параметров параметр => описание
+     * которые получает по апи
+     *
+     * @return array
+     */
+    abstract public function getReturnParams();
+
+    /**
      * @param $attrs
      * @param $className
      * @param $primaryKey

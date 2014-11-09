@@ -31,6 +31,20 @@ class GameSpotApi extends ReviewInterface {
 
 	}
 
+    /**
+     * @return array
+     */
+    public function getReturnParams()
+    {
+        return [
+            'url' => Yii::t('reviewsModule.gameSpotApi', 'Url рейтинга'),
+            'reviewerScore' => Yii::t('reviewsModule.gameSpotApi', 'reviewerScore'),
+            'usersScore' => Yii::t('reviewsModule.gameSpotApi', 'usersScore'),
+            'word' => Yii::t('reviewsModule.gameSpotApi', 'word'),
+            'usersCount' => Yii::t('reviewsModule.gameSpotApi', 'usersCount'),
+        ];
+    }
+
 
     public function returnReviewString ( $params ) {
         $ret = '<a href="' . $params['url'] . '" target="_blank">';
