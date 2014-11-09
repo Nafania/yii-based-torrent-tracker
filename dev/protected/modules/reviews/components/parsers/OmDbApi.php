@@ -40,6 +40,25 @@ class OmDbApi extends ReviewInterface
 
     }
 
+    /**
+     * @param array $params
+     * @return string
+     */
+    public function returnReviewString ( $params ) {
+        return Yii::t('ReviewsModule.omDbApi',
+            '<a href="http://www.imdb.com/title/{movieId}/" target="_blank">{rating}, голосов: {votes}, metascore: {metascore}</a>',
+            [
+                '{movieId}' => $params['imdbID'],
+                '{rating}' => Yii::app()->getNumberFormatter()->formatDecimal($params['imdbRating']),
+                '{votes}' => $params['imdbVotes'],
+                '{metascore}' => ($params['Metascore'] == 'N/A' ? $params['Metascore'] : $params['Metascore'] . '/100'),
+            ]);
+    }
+
+    /**
+     * @param array $args
+     * @return array|bool
+     */
     protected function getApiData($args)
     {
         $title = (isset($args['t']) ? rawurlencode(str_replace('"', '', $args['t'])) : '');
@@ -59,29 +78,25 @@ class OmDbApi extends ReviewInterface
 
             $contents = $this->makeRequest($url);
 
-            if ($type == 'M' && $contents->Response != 'False') {
-                return Yii::t('ReviewsModule.omDbApi',
-                    '<a href="http://www.imdb.com/title/{movieId}/" target="_blank">{rating}, голосов: {votes}, metascore: {metascore}</a>',
-                    array(
-                        '{movieId}' => $contents->imdbID,
-                        '{rating}' => $contents->imdbRating,
-                        '{votes}' => $contents->imdbVotes,
-                        '{metascore}' => ($contents->Metascore == 'N/A' ? $contents->Metascore : $contents->Metascore . '/100'),
-                    ));
+            if ($type == 'M' && $contents->Response != 'False' && $contents->imdbID !== null ) {
+                return [
+                    'imdbID' => $contents->imdbID,
+                    'imdbRating' => (float) $contents->imdbRating,
+                    'imdbVotes' => $contents->imdbVotes,
+                    'Metascore' => $contents->Metascore,
+                ];
 
             } elseif ($type == 'S' && $contents->Response != 'False') {
                 foreach ($contents->Search AS $movie) {
                     if ($movie->Type == 'series') {
                         $data = $this->makeRequest('http://omdbapi.com/?i=' . $movie->imdbID);
-                        if ($data->Response != 'False') {
-                            return Yii::t('ReviewsModule.omDbApi',
-                                '<a href="http://www.imdb.com/title/{movieId}/" target="_blank">{rating}, голосов: {votes}, metascore: {metascore}</a>',
-                                array(
-                                    '{movieId}' => $data->imdbID,
-                                    '{rating}' => $data->imdbRating,
-                                    '{votes}' => $data->imdbVotes,
-                                    '{metascore}' => ($data->Metascore == 'N/A' ? $data->Metascore : $data->Metascore . '/100'),
-                                ));
+                        if ($data->Response != 'False' && $contents->imdbID !== null ) {
+                            return [
+                                'imdbID' => $contents->imdbID,
+                                'imdbRating' => (float) $contents->imdbRating,
+                                'imdbVotes' => $contents->imdbVotes,
+                                'Metascore' => $contents->Metascore,
+                            ];
                         }
                     }
                 }

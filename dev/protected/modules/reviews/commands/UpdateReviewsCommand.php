@@ -52,6 +52,10 @@ class UpdateReviewsCommand extends CConsoleCommand
                 $ReviewRelation = EActiveRecord::model('ReviewRelation')->populateRecord($review);
 
                 $params = $ReviewRelation->getParams();
+
+                /**
+                 * @var $class ReviewInterface
+                 */
                 $class = new $ReviewRelation->apiName;
 
                 $attrs = $params;

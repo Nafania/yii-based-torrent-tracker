@@ -8,7 +8,7 @@
  * @property string    $modelName
  * @property string    $apiName
  * @property integer   $mtime
- * @property string    $ratingText
+ * @property string    $params
  */
 class Review extends EActiveRecord {
 
