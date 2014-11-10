@@ -1,10 +1,6 @@
 <?php
 /* @var $this OperationController|TaskController|RoleController */
 /* @var $dataProvider AuthItemDataProvider */
-
-$this->breadcrumbs = array(
-	$this->capitalize($this->getTypeText(true)),
-);
 ?>
 
 <h1><?php echo $this->capitalize($this->getTypeText(true)); ?></h1>

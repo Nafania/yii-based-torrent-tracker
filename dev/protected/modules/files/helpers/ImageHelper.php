@@ -57,7 +57,6 @@ class ImageHelper {
 
 		$thumbName = 'thumb_' . $prefix . '_' . $pathInfo['filename'] . '_' . $width . '_' . $height . '.' . $pathInfo['extension'];
 
-
 		if ( !file_exists($thumbsPath . $thumbName) ) {
 			Yii::app()->image->load($img)->thumb($width, $height)->save($thumbsPath . $thumbName, false, $quality);
 		}

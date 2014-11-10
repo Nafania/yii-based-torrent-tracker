@@ -16,7 +16,6 @@ $form = $this->beginWidget('CActiveForm',
 	<?php if ( $model->hasErrors() ): ?>
     <p class="errornote"><?php echo YiiadminModule::t('Пожалуйста, исправьте ошибки, указанные ниже.'); ?></p>
 	<?php endif; ?>
-
         <div class="column span-16">
             <h3><?php echo Yii::t(get_class($model), get_class($model)) ?></h3>
             <fieldset class="module">
@@ -26,7 +25,7 @@ $form = $this->beginWidget('CActiveForm',
 					echo 'errors';
 				} ?>">
                     <div class="column span-4"><?php echo $form->labelEx($model, 'name'); ?></div>
-                    <div class="column span-flexible">
+                    <div class="column span">
 						<?php echo $form->textField($model, 'name'); ?>
                         <ul class="errorlist">
                             <li><?php echo $form->error($model, 'name'); ?></li>
@@ -38,7 +37,7 @@ $form = $this->beginWidget('CActiveForm',
 					echo 'errors';
 				} ?>">
                     <div class="column span-4"><?php echo $form->labelEx($model, 'image'); ?></div>
-                    <div class="column span-flexible">
+                    <div class="column span">
 						<?php echo $form->fileField($model, 'image'); ?>
                         <ul class="errorlist">
                             <li><?php echo $form->error($model, 'image'); ?></li>
@@ -50,7 +49,7 @@ $form = $this->beginWidget('CActiveForm',
 					echo 'errors';
 				} ?>">
                     <div class="column span-4"><?php echo $form->labelEx($model, 'description'); ?></div>
-                    <div class="column span-flexible">
+                    <div class="column span">
 						<?php echo $form->textArea($model, 'description'); ?>
                         <ul class="errorlist">
                             <li><?php echo $form->error($model, 'description'); ?></li>
@@ -60,45 +59,86 @@ $form = $this->beginWidget('CActiveForm',
             </fieldset>
 
         </div>
-		<?php
-		if ( Yii::app()->getModule('categoryattributes') ) {
-			Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('categoryattributes')->getAssetsUrl() . '/js/categoryAttributesList.js', CClientScript::POS_END);
+	<?php
+	if ( Yii::app()->getModule('categoryattributes') ) {
+		Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('categoryattributes')->getAssetsUrl() . '/js/categoryAttributesList.js', CClientScript::POS_END);
 
-			?>
-            <div class="container">
-                <div class="column span-16">
-                    <h3><?php echo Yii::t('CategoryAttributesModule', 'Атрибуты') ?></h3>
-                    <fieldset class="module">
-
-                        <table class="categoryAttributes">
-                            <thead>
-                            <tr>
-                                <td><?php echo Yii::t('CategoryAttributesModule', 'Атрибуты категории') ?></td>
-                                <td><?php echo Yii::t('CategoryAttributesModule', 'Доступные атрибуты') ?></td>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr valign="top">
-                                <td>
-	                                <?php echo $form->dropDownList($model, 'categoryAttributes', CHtml::listData(Attribute::model()->includeIds($model->categoryAttributes)->findAll(), 'id', 'title'), array(
-	                                                                                                                                                               'multiple' => 'multiple',
-	                                                                                                                                                               'id' => 'categoryAttributes'
-	                                                                                                                                                          )) ?>
-
-                                </td>
-                                <td>
-	                                <?php echo CHtml::dropDownList('allAttributes[]', 0, CHtml::listData(Attribute::model()->forCat($model->getId())->excludeIds($model->categoryAttributes)->findAll(), 'id', 'title'), array(	                                                                                                                                                               'multiple' => 'multiple',
-	                                                                                                                                                               'id' => 'allAttributes'
-	                                                                                                                                                          )) ?>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                </div>
-            </div>
-			<?php
-		}
 		?>
+           <div class="container">
+               <div class="column span-16">
+                   <h3><?php echo Yii::t('CategoryAttributesModule', 'Атрибуты') ?></h3>
+                   <fieldset class="module">
+
+                       <table class="categoryAttributes">
+                           <thead>
+                           <tr>
+                               <td><?php echo Yii::t('CategoryAttributesModule', 'Атрибуты категории') ?></td>
+                               <td><?php echo Yii::t('CategoryAttributesModule', 'Доступные атрибуты') ?></td>
+                           </tr>
+                           </thead>
+                           <tbody>
+                           <tr valign="top">
+                               <td>
+                                <?php echo $form->dropDownList($model, 'categoryAttributes', CHtml::listData(Attribute::model()->includeIds($model->categoryAttributes)->findAll(), 'id', 'title'), array(
+                                                                                                                                                               'multiple' => 'multiple',
+                                                                                                                                                               'id' => 'categoryAttributes'
+                                                                                                                                                          )) ?>
+
+                               </td>
+                               <td>
+                                <?php echo CHtml::dropDownList('allAttributes[]', 0, CHtml::listData(Attribute::model()->forCat($model->getId())->excludeIds($model->categoryAttributes)->findAll(), 'id', 'title'), array(	                                                                                                                                                               'multiple' => 'multiple',
+                                                                                                                                                               'id' => 'allAttributes'
+                                                                                                                                                          )) ?>
+                               </td>
+                           </tr>
+                           </tbody>
+                       </table>
+               </div>
+           </div>
+		<?php
+	}
+	?>
+	<?php
+	if ( Yii::app()->getModule('torrents') ) {
+		Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/js/categoryAttributesList.js', CClientScript::POS_END);
+
+		?>
+           <div class="container">
+               <div class="column span-16">
+                   <h3><?php echo Yii::t('torrentsModule.backend', 'Формирование названия') ?></h3>
+                   <fieldset class="module">
+
+                       <table class="categoryAttributes">
+                           <thead>
+                           <tr>
+                               <td><?php echo Yii::t('torrentsModule.backend', 'Атрибуты для названия') ?></td>
+                               <td><?php echo Yii::t('torrentsModule.backend', 'Доступные атрибуты') ?></td>
+                           </tr>
+                           </thead>
+                           <tbody>
+                           <tr valign="top">
+                               <td>
+                                <?php echo $form->dropDownList($model, 'torrentsNameRules', CHtml::listData(Attribute::model()->includeIds($model->torrentsNameRules)->findAll(), 'id', 'title'), array(
+                                                                                                                                                               'multiple' => 'multiple',
+                                                                                                                                                               'id' => 'torrentsNameRules'
+                                                                                                                                                          )) ?>
+
+                               </td>
+                               <td>
+                                <?php echo CHtml::dropDownList('allTorrentsNameRules[]', 0, CHtml::listData(Attribute::model()->forCat($model->getId())->excludeIds($model->torrentsNameRules)->findAll(), 'id', 'title'), array(	                                                                                                                                                               'multiple' => 'multiple',
+                                                                                                                                                               'id' => 'allTorrentsNameRules'
+                                                                                                                                                          )) ?>
+                               </td>
+                           </tr>
+                           </tbody>
+                       </table>
+               </div>
+           </div>
+		<?php
+	}
+	?>
+
+
 
         <div class="module footer">
             <ul class="submit-row">

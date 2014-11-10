@@ -1,11 +1,10 @@
-a:focus {
+a:focus, .btn:focus {
     outline: none;
 }
 
 .accordion-heading .accordion-toggle {
     display: inline;
 }
-
 
 .accordion-heading {
     padding: 5px;
@@ -19,12 +18,12 @@ a:focus {
     padding: 8px 10px 8px 15px;
 }
 
-.media-body > p img {
-    width: 100px;
+.comment .img-polaroid {
+    max-width: 100px;
 }
 
 footer > div {
-    border-top:1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 body {
@@ -33,4 +32,602 @@ body {
 
 .modal > form {
     margin: 0;
+}
+
+.newTorrents .ui-tabs, .ui-tabs-panel {
+    padding: 1em 0 !important;
+}
+
+/*.attributeDescription {
+    font-size: 9px;
+    font-weight: bold;
+    vertical-align: text-bottom;
+}*/
+
+.attributeDescription:after {
+    content: "?";
+    font-size: 9px;
+    font-weight: bold;
+    vertical-align: text-bottom;
+    margin-left: 5px;
+}
+
+.fancybox.youtube:after {
+    content: url("/images/media_playback_start.png");
+    position: relative;
+    left: -70px;
+    top: 10px;
+}
+
+.commentsBlock {
+    margin-bottom: 20px;
+}
+
+.commentText.rating-1 {
+    opacity: 0.8;
+}
+
+.commentText.rating-2 {
+    opacity: 0.7;
+}
+
+.commentText.rating-3 {
+    opacity: 0.6;
+}
+
+.commentText.rating-4 {
+    opacity: 0.5;
+}
+
+.commentText.rating-5 {
+    opacity: 0.4;
+}
+
+.commentText.rating-6 {
+    opacity: 0.3;
+}
+
+.commentText.rating-7 {
+    opacity: 0.375;
+}
+
+.commentText.rating-8 {
+    opacity: 0.3;
+}
+
+.commentText.rating-9 {
+    opacity: 0.2;
+}
+
+.commentText.rating-10 {
+    opacity: 0.1;
+}
+
+.dl-horizontal dd {
+    margin-bottom: 5px;
+}
+
+.dl-horizontal dd:last-child {
+    margin-bottom: 0;
+}
+
+.errorMessage {
+    color: red;
+}
+
+.sorter a.asc:after {
+    border-bottom: 4px solid #000000;
+    border-top: medium none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    content: "";
+    display: inline-block;
+    height: 0;
+    vertical-align: top;
+    width: 0;
+    margin: 5px 0 0 5px;
+}
+
+.sorter a.desc:after {
+    border-right: 4px solid transparent;
+    border-top: 4px solid #000000;
+    border-left: 4px solid transparent;
+    content: "";
+    display: inline-block;
+    height: 0;
+    vertical-align: top;
+    width: 0;
+    margin: 5px 0 0 5px;
+
+}
+
+.commentContainer {
+    margin-top: 20px;
+}
+
+#fileList-grid {
+    padding-top: 0;
+}
+
+.torrentGroupRating .progress {
+    height: 3px;
+    margin-top: 10px;
+    margin-bottom: 0;
+    width: 83px;
+}
+
+.torrentGroupRating {
+    width: 84px;
+}
+
+.notifications {
+    width: 300px;
+}
+
+.torrentGroupOperations {
+    margin-top: 10px;
+    margin-left: 0 !important;
+}
+
+.torrentGroupOperations a {
+    display: inline !important;
+}
+
+.torrentGroupOperations li {
+    text-align: center;
+}
+
+.torrentGroupOperations li:first-child {
+    text-align: left;
+}
+
+.torrentGroupOperations li:last-child {
+    text-align: right;
+}
+
+.commentReply {
+    display: inline-block;
+    border-bottom: 1px dashed;
+}
+
+.commentReply:hover, .commentReply:focus {
+    text-decoration: none;
+}
+
+#blogPostsListView {
+    padding-top: 0;
+}
+
+.list-view {
+    padding-top: 0;
+}
+
+.commentOptions a {
+    display: none;
+}
+.commentOptions a {
+    margin-left: 10px;
+}
+
+.nav-justified {
+    width: 100%;
+    border-bottom: 0;
+}
+
+.nav-justified > li {
+    float: none;
+}
+
+.nav-justified > li > a {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.nav-justified > li {
+    display: table-cell;
+    width: 1%;
+}
+
+.nav-justified > li > a {
+    margin-bottom: 0;
+}
+
+.nav-justified > .active > a,
+.nav-justified > .active > a:hover,
+.nav-justified > .active > a:focus {
+    border: 1px solid #dddddd;
+}
+
+.dropdown-menu li .tooltip {
+    min-width: 300px;
+}
+
+.torrentImage {
+    display: block;
+}
+
+.torrentImage > img {
+    width: 100%;
+}
+
+.attribute label, label.attributeDescription {
+    display: inline-block;
+}
+
+.select2-container.span4 {
+    float: none;
+    margin-left: 0;
+}
+
+.blogsList h3.media-heading {
+    line-height: 25px;
+}
+
+.list-view .media:not(:last-of-type) {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EEEEEE;
+}
+
+#groupsListView h3.media-heading {
+    margin-bottom: 5px;
+    line-height: 20px;
+}
+
+/*.groupOperations {
+    display: none;
+}*/
+
+#groupsListView .pull-right {
+
+}
+
+.groupView .pull-right {
+}
+
+.attributeDescription.checkbox {
+    margin-top: 10px;
+    position: relative;
+    top: 4px;
+    padding-left: 0;
+}
+
+.categoriesList .span1 {
+    padding-left: 0;
+    margin-left: 20px;
+    width: 110px;
+}
+
+.add-on.active {
+    background-image: linear-gradient(to bottom, #0088CC, #0044CC);
+    background-repeat: repeat-x;
+    color: #fff;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+}
+
+.searchSettings .span3, .searchSettings .span2 {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+#searchSettings [class*="span"] {
+    float: left !important;
+}
+
+#searchSettings .checkbox {
+    min-height: 20px;
+}
+#searchSettings .control-group {
+    margin-bottom: 5px;
+}
+
+.list-view-loading {
+    background-position: top right;
+}
+
+/*.torrentsList {
+    max-height: 216px;
+    overflow-y: auto;
+}*/
+
+.footer {
+    margin-top: 10px;
+    border-top: 1px solid #EEEEEE;
+    border-image: none;
+}
+
+.torrentView:after {
+    clear: none;
+}
+
+.banBlock2 {
+    padding-left: 5px;
+    overflow-y: hidden;
+}
+
+.banBlock1 {
+    margin: -15px 0 10px 0;
+    height: auto;
+}
+
+.banBlock3 {
+    margin-top: 10px;
+}
+
+.banBlock5 {
+    margin-top: 10px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.fileList-view {
+    padding-top: 0;
+}
+
+.fileList-view th, .fileList-view td {
+    padding: 2px;
+}
+
+form div[class*="span"] {
+    float: none !important;
+    margin-left: 0 !important;
+}
+
+.messagesTree .pmContainer:not(:first-child) {
+    margin-left: 10px;
+}
+
+.pmContainer .well {
+    margin-bottom: 5px;
+}
+
+.pmContainer .well {
+    padding: 10px;
+}
+
+.pmContainer h6 {
+    width: 100%;
+}
+
+.navbar .brand {
+    padding-top: 4px;
+    padding-bottom: 5px;
+}
+
+.userRating {
+    font-size: 0.8em;
+    position: relative;
+    top: -0.7em;
+    left: 0.2em;
+}
+
+.userRating.positive {
+    color: #468847;
+}
+
+.userRating.positive:before {
+    content: "+";
+}
+
+.userRating.negative {
+    color: #B94A48;
+}
+
+.userRating.negative:before {
+    /*content: "-";*/
+}
+
+.userRating.neutral {
+    color: #999999;
+}
+
+.fa-vkontakte {
+
+}
+
+.btn-vkontakte {
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #50739a;
+    *background-color: #426187;
+    background-image: -moz-linear-gradient(top, #5a7fa6, #426187);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#5a7fa6), to(#426187));
+    background-image: -webkit-linear-gradient(top, #5a7fa6, #426187);
+    background-image: -o-linear-gradient(top, #5a7fa6, #426187);
+    background-image: linear-gradient(to bottom, #5a7fa6, #426187);
+    background-repeat: repeat-x;
+    border-color: #426187 #426187 #293c54;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5a7fa6', endColorstr='#ff426187', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.btn-vkontakte:hover,
+.btn-vkontakte:focus,
+.btn-vkontakte:active,
+.btn-vkontakte.active,
+.btn-vkontakte.disabled,
+.btn-vkontakte[disabled] {
+    color: #ffffff;
+    background-color: #426187;
+    *background-color: #3a5576;
+}
+
+.btn-vkontakte:active,
+.btn-vkontakte.active {
+    background-color: #314865  \9;
+}
+
+.fa-vkontakte:before {
+    content: "\f189";
+}
+
+.btn-google {
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #d34332;
+    *background-color: #c53727;
+    background-image: -moz-linear-gradient(top, #dd4b39, #c53727);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#dd4b39), to(#c53727));
+    background-image: -webkit-linear-gradient(top, #dd4b39, #c53727);
+    background-image: -o-linear-gradient(top, #dd4b39, #c53727);
+    background-image: linear-gradient(to bottom, #dd4b39, #c53727);
+    background-repeat: repeat-x;
+    border-color: #c53727 #c53727 #85251a;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffdd4b39', endColorstr='#ffc53727', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+.btn-google:hover,
+.btn-google:focus,
+.btn-google:active,
+.btn-google.active,
+.btn-google.disabled,
+.btn-google[disabled] {
+    color: #ffffff;
+    background-color: #c53727;
+    *background-color: #b03123;
+}
+
+.btn-google:active,
+.btn-google.active {
+    background-color: #9a2b1f  \9;
+}
+
+.fa-google:before {
+    content: "\f0d5";
+}
+
+.social-button {
+    width: 15px;
+}
+
+#report-form textarea {
+    width: 98%;
+}
+
+.commentDeleted {
+    font-style: italic;
+    opacity: 0.3;
+}
+
+.yashare-auto-init {
+    float: right;
+    position: absolute;
+    top: 67px;
+    right: 20px;
+}
+
+#torrents-grid > table td, #torrents-grid > table th {
+    vertical-align: middle;
+    text-align: center;
+}
+#torrents-grid > table td:nth-child(3), #torrents-grid > table th:nth-child(3), #torrents-grid > table td:nth-child(1), #torrents-grid > table th:nth-child(1) {
+    vertical-align: middle;
+    text-align: left;
+}
+
+#torrents-grid > table td .progress { margin-bottom: 0}
+
+#pageSize {
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+#pageSizeBtn {
+    padding-top: 4px;
+}
+
+.container-fluid {
+    margin-bottom: 40px;
+}
+
+@media (max-width: 930px) {
+    .yashare-auto-init {
+        position: fixed;
+        bottom: 5px;
+        right: auto;
+        left: 5px;
+        float: none;
+        z-index: 10;
+        top: auto;
+    }
+}
+
+.labelTorrent, .labelComment {
+    font-size: 9px;
+    line-height: 9px;
+    vertical-align: top;
+}
+
+.latestComments .commentContainer:not(:last-of-type), .latestTorrents .media:not(:last-of-type) {
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.moduleContainer {
+    padding: 10px;
+}
+
+.latestPosts {
+    padding: 0;
+}
+
+.latestComments .commentContainer:not(:last-of-type) {
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.latestTorrents .media:not(:last-of-type) {
+    padding-bottom: 5px;
+}
+
+.userWarnings {
+    position: relative;
+    top:-90px;
+    left: -30px;
+    background: #fff;
+    display: inline-block;
+    height: 20px;
+    padding: 0 5px;
+    text-align: center;
+    max-width: 200px;
+}
+.userWarnings .tooltip-inner, .userWarnings .tooltip {
+    min-width: 300px;
+}
+
+.userWarnings i {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.commentsBlock .commentText {
+    max-height: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.commentsBlock .commentText:hover {
+    height: auto;
+    max-height:inherit;
+    overflow: visible;
+}
+
+.latestPosts iframe {
+    width: auto !important;
+    height: auto !important;
+}
+
+.torrentGridHeader {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+.comment {
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 10px;
+}
+
+.latestComments .comment {
+    border-bottom: none;
 }

@@ -1,0 +1,12 @@
+{
+    "name": "mjmChat",
+    "version": "1.0.0",
+    "description": "Chat room",
+    "main": "app.js",
+    "author": "Mohammad Javad Masoudian (MJM)",
+    "private": true,
+    "dependencies": {
+        "socket.io": "latest",
+        "redis": "latest"
+    }
+}

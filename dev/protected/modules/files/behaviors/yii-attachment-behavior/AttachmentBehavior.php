@@ -39,6 +39,7 @@
  * @private string $filename
  * @private integer $filesize
  * @private string $parsedPath
+ * @method EActiveRecord getOwner()
  * */
 class AttachmentBehavior extends CActiveRecordBehavior {
 
@@ -86,16 +87,6 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 
 	private $file_extension, $filename;
 
-	private $holdAttributeName = 'holdAttribute';
-
-	public function getHoldAttribute () {
-		return $this->getOwner()->{$this->holdAttributeName};
-	}
-
-	public function setHoldAttribute ( $value ) {
-		$this->getOwner()->{$this->holdAttributeName} = $value;
-	}
-
 	/**
 	 * getter method for the attachment.
 	 * if you call it like a property ($model->Attachment) it will return the base size.
@@ -139,11 +130,11 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 	 * @return string image src
 	 */
 	public function getImageUrl ( $width = 0, $height = 0, $absolutePath = false ) {
-		if ( $this->Owner->{$this->attribute} ) {
-			$src = $this->Owner->{$this->attribute};
-		}
-		elseif ( $this->fallback_image ) {
-			$src = $this->fallback_image;
+		$width = (!$width ? false : $width);
+		$height = (!$height ? false : $height);
+
+		if ( $this->getOwner()->{$this->attribute} ) {
+			$src = $this->getOwner()->{$this->attribute};
 		}
 		else {
 			$src = '';
@@ -154,15 +145,26 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				Yii::import('application.modules.files.helpers.*');
 				$src = ImageHelper::adaptiveThumb($width, $height, $src);
 			} catch ( Exception $exc ) {
+				$this->getOwner()->saveAttributes(array($this->attribute => ''));
+				Yii::log('Cant convert image ' . $this->getImagePath() . ' with error ' . $exc->getMessage(),
+					'warning');
+			}
+		}
+		elseif ( (!$width || !$height) && $src ) {
+			try {
+				Yii::import('application.modules.files.helpers.*');
+				$src = ImageHelper::thumb($width, $height, $src);
+			} catch ( Exception $exc ) {
+				$this->getOwner()->saveAttributes(array($this->attribute => ''));
 				Yii::log('Cant convert image ' . $this->getImagePath() . ' with error ' . $exc->getMessage(),
 					'warning');
 			}
 		}
 		else {
-			$src = '/' . $src;
+			$src = ($src ? '/' . $src : $this->fallback_image);
 		}
 
-		return Yii::app()->getBaseUrl($absolutePath) . $src;
+		return Yii::app()->getBaseUrl($absolutePath) . '/' . ltrim($src, '/');
 	}
 
 	/*
@@ -172,75 +174,83 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		$dir = $this->getParsedPath();
 
 		if ( !is_dir($dir) ) {
-			mkdir($dir, 0777, true);
+			@mkdir($dir, 0777, true);
 		}
 		return $dir;
+	}
+
+	public function getFullAttachmentPath () {
+		/**
+		 * берем версию из базы, потому что новая при сохранении стирается
+		 */
+		return Yii::getPathOfAlias('webroot') . '/' . $this->getOwner()->findByPk($this->getOwner()->primaryKey)->{$this->attribute};
 	}
 
 	/**
 	 * check if we have an attachment
 	 */
 	public function hasAttachment () {
-		return file_exists($this->Owner->{$this->attribute});
+		if ( $this->getOwner()->getIsNewRecord() ) {
+			return false;
+		}
+		/**
+		 * берем версию из базы, потому что новая при сохранении стирается
+		 */
+		return $this->getOwner()->findByPk($this->getOwner()->primaryKey)->{$this->attribute};
 	}
 
 	/**
 	 * deletes the attachment
 	 */
 	public function deleteAttachment () {
-		if ( file_exists($this->Owner->{$this->attribute}) ) {
-			unlink($this->Owner->{$this->attribute});
-		}
-		preg_match('/\.(.*)$/', $this->Owner->{$this->attribute}, $matches);
-		$this->file_extension = end($matches);
-		if ( !empty($this->styles) ) {
-			$this->path = str_replace('.:ext', '-:custom.:ext', $this->path);
-			foreach ( $this->styles as $style => $size ) {
-				$path = $this->getParsedPath($style);
-				if ( file_exists($path) ) {
-					unlink($path);
+		if ( $this->hasAttachment() ) {
+			@unlink($this->getFullAttachmentPath());
+
+			preg_match('/\.(.*)$/', $this->Owner->{$this->attribute}, $matches);
+			$this->file_extension = end($matches);
+			if ( !empty($this->styles) ) {
+				$this->path = str_replace('.:ext', '-:custom.:ext', $this->path);
+				foreach ( $this->styles as $style => $size ) {
+					$path = $this->getParsedPath($style);
+					if ( file_exists($path) ) {
+						unlink($path);
+					}
 				}
 			}
 		}
-	}
-
-	public function afterDelete ( $event ) {
-		$this->deleteAttachment();
-	}
-
-	public function beforeValidate ( $e ) {
-		parent::beforeValidate($e);
-
-		if ( CUploadedFile::getInstance($this->getOwner(), $this->attribute) ) {
-			$this->getOwner()->{$this->attribute} = md5(time());
-		}
-		return true;
 	}
 
 	public function beforeSave ( $e ) {
-		$this->getOwner()->{$this->holdAttributeName} = $this->getOwner()->{$this->attribute};
-		unset($this->getOwner()->{$this->attribute});
+		parent::beforeSave($e);
+
+		$file = CUploadedFile::getInstance($this->getOwner(), $this->attribute);
+
+		if ( !empty($file->name) ) {
+			$this->deleteAttachment();
+		}
+		else {
+			unset($this->getOwner()->{$this->attribute});
+		}
 
 		return true;
 	}
 
+	/**
+	 * @param CModelEvent $e
+	 *
+	 * @return bool|void
+	 */
+	public function afterSave ( $e ) {
+		parent::afterSave($e);
 
-	public function afterSave ( $event ) {
-		$file = AttachmentUploadedFile::getInstance($this->getOwner(), $this->attribute);
-		if ( !is_null($file) ) {
-			if ( !$this->Owner->isNewRecord ) {
-				//delete previous attachment
-				if ( file_exists($this->getOwner()->{$this->attribute}) ) {
-					unlink($this->getOwner()->{$this->attribute});
-				}
-			}
-			else {
-				$this->Owner->isNewRecord = false;
-			}
-			preg_match('/\.(.*)$/', $file->name, $matches);
-			$this->file_extension = end($matches);
-			$this->filename = $file->name;
-			$path = $this->parsedPath;
+		$owner = $this->getOwner();
+
+		$file = CUploadedFile::getInstance($this->getOwner(), $this->attribute);
+
+		if ( !empty($file->name) ) {
+			$this->file_extension = mb_strtolower($file->getExtensionName());
+			$this->filename = $file->getName();
+			$path = $this->getParsedPath();
 
 			preg_match('|^(.*[\\\/])|', $path, $match);
 			$folder = end($match);
@@ -248,40 +258,59 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 				mkdir($folder, 0777, true);
 			}
 
-			$file->saveAs($path, false);
-			$file_type = filetype($path);
-			$this->Owner->saveAttributes(array($this->attribute => $path));
-			$attributes = $this->Owner->attributes;
-
-			if ( array_key_exists('file_size', $attributes) ) {
-				$this->Owner->saveAttributes(array('file_size' => filesize($path)));
-			}
-			if ( array_key_exists('file_type', $attributes) ) {
-				$this->Owner->saveAttributes(array('file_type' => mime_content_type($path)));
-			}
-			if ( array_key_exists('extension', $attributes) ) {
-				$this->Owner->saveAttributes(array('extension' => $this->file_extension));
+			if ( $file->saveAs(Yii::getPathOfAlias('webroot') . '/' . $path) ) {
+				/**
+				 * зачем менять флаг isNewRecord читайте тут http://code.google.com/p/yii/issues/detail?id=1603
+				 */
+				$owner->{$this->attribute} = $path;
+				$isNewRecord = $owner->isNewRecord;
+				$owner->isNewRecord = false;
+				$owner->saveAttributes(array($this->attribute => $path));
+				$owner->isNewRecord = $isNewRecord;
+				//exit();
 			}
 		}
+
 		return true;
+	}
+
+	public function beforeValidate ( $e ) {
+		parent::beforeValidate($e);
+		//CVarDumper::dump($this->getOwner(), 3, true);exit();
+
+		if ( $file = CUploadedFile::getInstance($this->getOwner(), $this->attribute) ) {
+			$this->getOwner()->{$this->attribute} = $file;
+
+			$validator = CValidator::createValidator('file',
+				$this->getOwner(),
+				$this->attribute,
+				array(
+					'allowEmpty' => $this->allowEmpty,
+					'types'      => $this->types,
+					'mimeTypes'  => $this->mimeTypes,
+					'maxFiles'   => $this->maxFiles,
+					'maxSize'    => $this->maxSize,
+					'minSize'    => $this->minSize
+				));
+			$this->getOwner()->getValidatorList()->insertAt(0, $validator);
+
+			return true;
+		}
+		else {
+			return true;
+		}
 	}
 
 	public function afterValidate ( $e ) {
 		parent::afterValidate($e);
-		//CVarDumper::dump($this->getOwner(), 3, true);exit();
 
-		$CFileValidator = new CFileValidator();
-		$CFileValidator->allowEmpty = $this->allowEmpty;
-		$CFileValidator->types = $this->types;
-		$CFileValidator->mimeTypes = $this->mimeTypes;
-		$CFileValidator->maxFiles = $this->maxFiles;
-		$CFileValidator->maxSize = $this->maxSize;
-		$CFileValidator->minSize = $this->minSize;
+		/**
+		 * удаляем атрибут после валидации за тем, чтобы не произошло авто сохранения, а сработало наше сохранение из
+		 * afterSave($e)
+		 */
+		unset($this->getOwner()->{$this->attribute});
 
-		$CFileValidator->attributes = array($this->attribute);
-		$CFileValidator->validate($this->getOwner());
-
-		return ($this->getOwner()->getError($this->attribute)) ? false : true;
+		return true;
 	}
 
 	public function getParsedPath ( $custom = '' ) {
@@ -292,16 +321,18 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 			':ext',
 			':filename',
 			':fileNameMd5',
-			':custom'
+			':custom',
+			':firstTwoCharsMd5'
 		);
 		$replacement = array(
 			$this->folder,
-			get_class($this->Owner),
+			$this->getOwner()->resolveClassName(),
 			$this->Owner->primaryKey,
 			$this->file_extension,
 			$this->filename,
 			md5($this->filename),
 			$custom,
+			substr(md5($this->filename), 0, 2),
 		);
 		if ( preg_match_all('/:\\{([^\\}]+)\\}/', $this->path, $matches, PREG_SET_ORDER) ) {
 			foreach ( $matches as $match ) {
@@ -319,44 +350,61 @@ class AttachmentBehavior extends CActiveRecordBehavior {
 		return str_replace($needle, $replacement, $this->path);
 	}
 
+	/**
+	 * @return array|CActiveRecord[]
+	 */
+	public function getFiles () {
+		$owner = $this->getOwner();
+
+		$pk = $owner->getPrimaryKey();
+
+		if ( $pk ) {
+			$files = File::model()->findAllByAttributes(array(
+				'modelName' => $owner->resolveClassName(),
+				'modelId'   => $pk
+			));
+
+			if ( $files ) {
+				return $files;
+			}
+		}
+		else {
+			if ( $sessionFiles = Yii::app()->getUser()->getState(File::STATE_NAME) ) {
+				$files = array();
+				foreach ( $sessionFiles AS $file ) {
+					$model = File::model()->findByAttributes(array(
+						'modelName' => $file['modelName'],
+						'title'     => $file['title']
+					));
+					if ( $model ) {
+						$files[] = $model;
+					}
+				}
+
+				return $files;
+			}
+		}
+
+		return array();
+	}
+
+	/**
+	 * @param CEvent $e
+	 */
+	public function afterDelete( $e ) {
+		parent::afterDelete($e);
+
+		foreach ( $this->getFiles() AS $file ) {
+			$file->delete();
+		}
+	}
+
 
 	public function UnsafeAttribute ( $name, $value ) {
 		var_dump(true);
 		exit;
 		if ( $name != $this->attribute ) {
 			parent::onUnsafeAttribute($name, $value);
-		}
-	}
-}
-
-class AttachmentUploadedFile {
-	public $name, $_error;
-
-	public static function getInstance ( $model, $attribute ) {
-		$c = new AttachmentUploadedFile;
-		$c->modelName = get_class($model);
-		if ( empty($_FILES[$c->modelName]) || empty($_FILES[$c->modelName]['name'][$attribute]) ) {
-			return null;
-		}
-		$c->name = $_FILES[$c->modelName]['name'][$attribute];
-		$c->file_name = $_FILES[$c->modelName]['tmp_name'][$attribute];
-		if ( !file_exists($c->file_name) ) {
-			return null;
-		}
-		return $c;
-	}
-
-	public function saveAs ( $file ) {
-		if ( $this->_error == UPLOAD_ERR_OK ) {
-			if ( is_uploaded_file($this->file_name) ) {
-				return move_uploaded_file($this->file_name, $file);
-			}
-			else {
-				return rename($this->file_name, $file);
-			}
-		}
-		else {
-			return false;
 		}
 	}
 }

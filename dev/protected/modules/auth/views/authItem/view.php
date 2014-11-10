@@ -6,11 +6,6 @@
 /* @var $formModel AddAuthItemForm */
 /* @var $form TbActiveForm */
 /* @var $childOptions array */
-
-$this->breadcrumbs = array(
-	$this->capitalize($this->getTypeText(true)) => array('index'),
-	$item->description,
-);
 ?>
 
 <div class="title-row clearfix">
@@ -38,7 +33,7 @@ $this->breadcrumbs = array(
 			'name' => 'description',
 			'label' => Yii::t('AuthModule.main', 'Description'),
 		),
-		/*
+
         array(
 			'name' => 'bizrule',
 			'label' => Yii::t('AuthModule.main', 'Business rule'),
@@ -47,7 +42,6 @@ $this->breadcrumbs = array(
 			'name' => 'data',
 			'label' => Yii::t('AuthModule.main', 'Data'),
 		),
-		*/
     ),
 )); ?>
 

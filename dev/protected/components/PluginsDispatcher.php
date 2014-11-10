@@ -1,4 +1,6 @@
 <?php
+//Yii::setPathOfAlias('modules', realpath(dirname(__FILE__) . '/protected') . '/modules');
+
 class PluginsDispatcher extends CApplicationComponent {
 	/**
 	 * @var array
@@ -9,6 +11,8 @@ class PluginsDispatcher extends CApplicationComponent {
 	 * @var array
 	 */
 	static $_modules = array();
+
+	const CACHE_KEY = 'PluginsDispatcher';
 
 	/**
 	 * init method
@@ -23,25 +27,35 @@ class PluginsDispatcher extends CApplicationComponent {
 	 * Collect all modules
 	 */
 	private static function _getModulesList () {
-		$modulesDir = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR;
-		$handle = opendir($modulesDir);
+		if ( $modules = Yii::app()->cache->get(self::CACHE_KEY . 'ModulesList') ) {
+			self::$_modules = $modules;
+		}
+		else {
+			$modulesDir = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR;
+			$handle = opendir($modulesDir);
 
-		while ( false !== ($file = readdir($handle)) ) {
-			if ( $file != "." && $file != ".." && is_dir($modulesDir . $file) ) {
-				$configPath = $modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
-				if ( file_exists($configPath) ) {
-					$config = new CConfiguration($modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
-					self::$_modules[$file] = $config->toArray();
+			while ( false !== ($file = readdir($handle)) ) {
+				if ( $file != "." && $file != ".." && is_dir($modulesDir . $file) ) {
+					$configPath = $modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+					if ( file_exists($configPath) ) {
+						$config = new CConfiguration($modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+						self::$_modules[$file] = $config->toArray();
+					}
 				}
 			}
+			closedir($handle);
+
+			Yii::app()->cache->set(self::CACHE_KEY . 'ModulesList', self::$_modules, 0);
 		}
-		closedir($handle);
 	}
 
 	/**
 	 * Load all modules and register them
 	 */
 	public static function load () {
+		Yii::setPathOfAlias('modules', realpath(dirname(__FILE__) . '/..') . '/modules');
+		Yii::setPathOfAlias('components', realpath(dirname(__FILE__)));
+
 		Yii::trace('PluginsDispatcher load started', 'PluginsDispatcher');
 
 		self::_getModulesList();
@@ -52,14 +66,24 @@ class PluginsDispatcher extends CApplicationComponent {
 			}
 
 			Yii::import($data['class']);
-			$moduleName = explode('.', $data['class']);
-			$moduleName = array_pop($moduleName);
+
+			if ( strpos($data['class'], '\\') !== false ) {
+				$className = $data['class'];
+			}
+			else {
+				$className = explode('.', $data['class']);
+				$className = array_pop($className);
+			}
 
 			Yii::trace('PluginsDispatcher getting module ' . $moduleTitle . ' data', 'PluginsDispatcher');
 
-			if ( method_exists($moduleName, 'register') ) {
+			if ( method_exists($className, 'register') ) {
 				Yii::trace('PluginsDispatcher register module ' . $moduleTitle, 'PluginsDispatcher');
-				$moduleName::register();
+				$className::register();
+				Yii::app()->getMessages()->extensionPaths = CMap::mergeArray(Yii::app()->getMessages()->extensionPaths,
+					array(
+					     $moduleTitle . 'Module' => 'application.modules.' . $moduleTitle . '.messages'
+					));
 
 			}
 			else {
@@ -67,10 +91,26 @@ class PluginsDispatcher extends CApplicationComponent {
 			}
 		}
 		Yii::app()->setModules(self::$_modules);
-
 		Yii::app()->getMessages()->basePath = Yii::getPathOfAlias('application.messages');
-
 		Yii::trace('PluginsDispatcher load finished', 'PluginsDispatcher');
+	}
+
+	public function addPluginData ( $type ) {
+		$params = func_get_args();
+		array_shift($params);
+		switch ( $type ) {
+			case 'behaviors':
+				$data = $this->getPluginData('behaviors', $params[0]);
+				$this->plugins[$type][$params[0]] = CMap::mergeArray($data ? $data : array(), $params[1]);
+				break;
+		}
+		//$this->plugins[$type][] = $data;
+	}
+
+	public function getPluginData ( $type ) {
+		$params = func_get_args();
+		array_shift($params);
+		return (isset($this->plugins[$type][$params[0]]) ? $this->plugins[$type][$params[0]] : null);
 	}
 
 	/**
@@ -82,7 +122,7 @@ class PluginsDispatcher extends CApplicationComponent {
 	public function registerBehavior ( $modelName, $behavior ) {
 		Yii::trace('PluginsDispatcher register behavior ' . key($behavior) . ' for ' . $modelName, 'PluginsDispatcher');
 
-		$this->plugins['behaviors'][$modelName] = CMap::mergeArray($this->plugins['behaviors'][$modelName], $behavior);
+		$this->addPluginData('behaviors', $modelName, $behavior);
 	}
 
 	/**
@@ -103,11 +143,11 @@ class PluginsDispatcher extends CApplicationComponent {
 			return array();
 		}
 
-		if ( empty($this->plugins['behaviors'][$componentName]) ) {
+		$behaviors = $this->getPluginData('behaviors', $componentName);
+
+		if ( !$behaviors ) {
 			return array();
 		}
-
-		$behaviors = $this->plugins['behaviors'][$componentName];
 
 		Yii::trace('PluginsDispatcher attach behaviors ' . implode(', ',
 				array_keys($behaviors)) . ' for ' . $componentName,
@@ -248,7 +288,6 @@ class PluginsDispatcher extends CApplicationComponent {
 	 * Adds model rules
 	 *
 	 * @param string $modelName
-	 * @param array  $rules
 	 */
 	public function addModelRules ( $modelName ) {
 		$rules = func_get_args();
@@ -279,10 +318,32 @@ class PluginsDispatcher extends CApplicationComponent {
 			return $modelRules;
 		}
 
-		foreach ( $this->plugins['modelRules'][$modelName] AS $key => $rule ) {
-				$modelRules[] = $rule;
+		foreach ( $this->plugins['modelRules'][$modelName] AS $rule ) {
+			$modelRules[] = $rule;
 		}
 
 		return $modelRules;
+	}
+
+	/**
+	 * Add to import path
+	 */
+	public function setImport ( array $import ) {
+		Yii::app()->setImport($import);
+	}
+
+	/**
+	 * @param array $path
+	 *
+	 * @return bool
+	 */
+	public function addCommandsPath ( $path ) {
+		$app = Yii::app();
+
+		if ( !property_exists($app, 'commandMap') ) {
+			return false;
+		}
+
+		$app->commandRunner->addCommands(Yii::getPathOfAlias($path));
 	}
 }

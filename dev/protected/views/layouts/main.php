@@ -1,167 +1,96 @@
 <?php /* @var $this Controller */
-Yii::app()->getClientScript()->registerPackage('common');
-Yii::app()->getClientScript()->registerCssFile('/css/style.css');
+
+$cs = Yii::app()->getClientScript();
+$cs->registerPackage('common');
+if ( !Yii::app()->getUser()->getIsGuest() ) {
+    $cs->registerPackage('theme-' . Yii::app()->getUser()->getModel()->profile->theme);
+}
+else {
+    $cs->registerPackage('theme-default');
+}
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="language" content="en" />
-
-	<title><?php echo CHtml::encode($this->pageTitle); ?></title>
+    <meta name="language" content="ru" />
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<title><?php echo $this->pageTitle; ?></title>
 </head>
 
 <body>
-
-		<?php $this->widget('bootstrap.widgets.TbNavbar',
-			array(
-			     'type'     => null,
-			     'fixed'    => false,
-			     // null or 'inverse'
-			     'brand'    => false,
-			     //'brandUrl' => '#',
-			     'collapse' => true,
-			     // requires bootstrap-responsive.css
-			     'items'    => array(
-				     array(
-					     'class'       => 'bootstrap.widgets.TbMenu',
-					     'encodeLabel' => false,
-					     'items'       => array(
-						     array(
-							     'label'   => '<img style="width:18px;height: 18px;" src="http://placehold.it/18x18">
-							     <span class="badge badge-info">1</span>',
-							     'url'     => '#',
-							     'visible' => !Yii::app()->getUser()->getIsGuest(),
-							     'items'   => array(
-								     array(
-									     'label' => 'Друзья',
-									     'url'   => '#',
-								     ),
-								     array(
-									     'label' => 'Профиль',
-									     'url'   => '#'
-								     ),
-								     array(
-									     'label' => 'Настройки',
-									     'url'   => '#'
-								     ),
-								     array(
-									     'label' => 'Закладки',
-									     'url'   => '#'
-								     ),
-								     array(
-									     'label' => 'Выход',
-									     'url'   => array('/user/default/logout'),
-								     ),
-
-							     ),
-						     ),
-						     array(
-							     'label'   => 'Лента  <span class="badge badge-success">2</span> ',
-							     'url'     => '#',
-							     'visible' => !Yii::app()->getUser()->getIsGuest(),
-							     'items'   => array(
-								     array(
-									     'label' => '<i class="icon-envelope"></i> Новое сообщение',
-									     'url'   => '#',
-								     ),
-								     array(
-									     'label' => '<i class="icon-download-alt"></i> Добавлен новый торрент',
-									     'url'   => '#'
-								     ),
-								     array(
-									     'label' => '<i class="icon-user"></i> Вас добавили в друзья',
-									     'url'   => '#'
-								     ),
-								     array(
-									     'label' => '<i class="icon-tag"></i> Вы получили новый значок',
-									     'url'   => '#'
-								     ),
-
-							     ),
-						     ),
-						     '---',
-						     array(
-							     'label' => 'Home',
-							     'url'   => '/',
-						     ),
-						     array(
-							     'label' => 'Torrents',
-							     'url'   => array('/torrents/default/index'),
-						     ),
-						     array(
-							     'label' => 'Upload',
-							     'url'   => array('/torrents/default/create'),
-						     ),
-						     array(
-							     'label' => 'Rules',
-							     'url'   => '#'
-						     ),
-						     array(
-							     'label' => 'FAQ',
-							     'url'   => '#'
-						     ),
-						     array(
-							     'label'       => Yii::t('userModule.common', 'Login'),
-							     'url'         => array('/user/default/login'),
-							     'linkOptions' => array(
-								     'data-toggle' => 'modal',
-								     'data-target' => '#loginModal',
-							     ),
-							     'visible' => Yii::app()->getUser()->getIsGuest(),
-						     ),
-						     array(
-							     'label'       => Yii::t('userModule.common', 'Register'),
-							     'url'         => array('/user/default/register'),
-							     'linkOptions' => array(
-								     'data-toggle' => 'modal',
-								     'data-target' => '#registerModal',
-							     ),
-							     'visible' => Yii::app()->getUser()->getIsGuest(),
-						     ),
-					     ),
-				     ),
-				     '<form class="navbar-search pull-right" action="' . Yii::app()->createUrl('/torrents/default/index/') . '">' . CHtml::textField('search',
-					     Yii::app()->getRequest()->getParam('search'),
-					     array(
-					          'class'       => 'search-query span2',
-					          'placeholder' => Yii::t('common', 'Search')
-					     )) . '</form>',
-
-			     ),
-			));?>
-		</div><!-- mainmenu -->
-	<?php
+<?php $this->widget('application.widgets.TopMenu'); ?>
+<?php
+$this->widget('application.widgets.YaShare', array());
+?>
+<?php
 
 	if ( isset($this->breadcrumbs) ):
 		$this->widget('bootstrap.widgets.TbBreadcrumbs', array(
-  'links'=>$this->breadcrumbs,
-  ));
+			'encodeLabel' => false,
+            'links'=>$this->breadcrumbs,
+    ));
 		?><!-- breadcrumbs -->
-		<?php endif?>
+<?php endif ?>
 
-		<?php
-		$this->widget('bootstrap.widgets.TbAlert',
-			array(
-			     'block'     => true,
-			     'fade'      => true,
-			     'closeText' => '×',
-			     'alerts'    => array( // configurations per alert type
-				     'success',
-				     'info',
-				     'warning',
-				     'error',
-				     'danger'
-				     // success, info, warning, error or danger
-			     ),
-			));
+<?php
+$this->widget('bootstrap.widgets.TbAlert',
+	array(
+		'block'     => true,
+		'fade'      => true,
+		'closeText' => '×',
+		'alerts'    => array( // configurations per alert type
+		                      'success',
+		                      'info',
+		                      'warning',
+		                      'error',
+		                      'danger'
+		                      // success, info, warning, error or danger
+		),
+	));
 
-		?>
-		<section class="container-fluid">
-	    <div class="row-fluid">
-				<?php echo $content; ?>
-		</div>
-	</section>
+?>
+<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+	array('systemName' => 'header'))
+?>
+
+<section class="container-fluid">
+	<div class="row-fluid">
+		<?php echo $content; ?>
+	</div>
+
+
+	<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+		array('systemName' => 'footer'))
+	?>
+
+	<div class="row-fluid footer">
+
+     <div class="span4">
+         <h4>Стримзон - пришел, увидел и скачал!</h4>
+         Что может быть проще, чем качать торренты с нашего трекера? Все торренты бесплатно, без регистрации и смс. Просто найдите нужную вам раздачу через поиск торрентов, кликните на Скачать торрент, запустится ваш любимый торрент-клиент и торрент начнет качаться.
+     </div>
+
+     <div class="span4">
+         <h4>StreamZone - лучший торрент-трекер рунета</h4>
+         Добро пожаловать на торрент-трекер StreamZone (стримзон). Наш торрент-трекер является лучшим торрент-трекером 2011 года по версии сайта uptracker. Это подверждается большим количеством качественных торрентов на нашем сайте. Все торренты проверяются на качество и соотвествие описанию торрента. Для того, чтобы скачать торрент бесплатно не нужны никакие смс. Все торренты бесплатно и без регистрации.
+     </div>
+
+     <div class="span4">
+         <h4>Streamzone - большой выбор и скорость!</h4>
+         На нашем трекере представлено множество качественных торрентов на любой вкус и цвет. Вы также можете сами загружать торренты на наш сайт. Однако администрация этого сайта не несет никакой ответственности за действия пользователей. На сервере хранятся только торрент файлы. Это значит, что мы не храним никаких нелегальных материалов.
+     </div>
+
+ </div>
+</section>
 <?php $this->widget('application.modules.user.widgets.UserMenu'); ?>
+<?php $this->widget('application.modules.chat.widgets.MjmChat'); ?>
+<?php $this->widget('application.widgets.AnalyticsWidget'); ?>
+<?php $this->widget('application.modules.advertisement.widgets.AdsBlockWidget',
+	array('systemName' => 'footerCode'))
+?>
+<?php
+echo $this->clips['afterContent'];
+?>
 </body>
 </html>

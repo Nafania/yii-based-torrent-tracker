@@ -11,57 +11,65 @@
  */
 return array(
 
-	'font-awesome' => array(
+	'font-awesome'     => array(
 		'baseUrl' => $this->enableCdn ? '//netdna.bootstrapcdn.com/font-awesome/3.0.2/' : $this->getAssetsUrl(),
-		'css' => array($this->minifyCss ? 'css/font-awesome.min.css' : 'css/font-awesome.css'),
+		'css'     => array($this->minifyCss ? 'css/font-awesome.min.css' : 'css/font-awesome.css'),
 	),
 	'font-awesome-ie7' => array(
 		'baseUrl' => $this->enableCdn ? '//netdna.bootstrapcdn.com/font-awesome/3.0.2/' : $this->getAssetsUrl(),
-		'css' => array('css/font-awesome-ie7.min.css'),
+		'css'     => array('css/font-awesome-ie7.min.css'),
 		// only minified version exists in our assets and CDN serves minified version anyway
 	),
-	'bootstrap.js' => array(
+	'bootstrap.js'     => array(
 		'baseUrl' => $this->enableCdn ? '//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/' : $this->getAssetsUrl() . '/bootstrap/',
-		'js' => array($this->minifyCss ? 'js/bootstrap.min.js' : 'js/bootstrap.js'),
+		'js'      => array($this->minifyCss ? 'js/bootstrap.min.js' : 'js/bootstrap.js'),
 		'depends' => array('jquery'),
 	),
-	'bootstrap-yii' => array(
+	'bootstrap-yii'    => array(
 		'baseUrl' => $this->getAssetsUrl(),
-		'css' => array('css/bootstrap-yii.css'),
+		'css'     => array('css/bootstrap-yii.css'),
 	),
-	'jquery-css' => array(
+	'jquery-css'       => array(
 		'baseUrl' => $this->getAssetsUrl(),
-		'css' => array('css/jquery-ui-bootstrap.css'),
+		'css'     => array('css/jquery-ui-bootstrap.css'),
 	),
-	'bootbox' => array(
+	'bootbox'          => array(
 		'baseUrl' => $this->getAssetsUrl(),
-		'js' => array('js/bootstrap.bootbox.min.js'),
+		'js'      => array('js/bootstrap.bootbox.min.js'),
 	),
-	'notify' => array(
+	'notify'           => array(
 		'baseUrl' => $this->getAssetsUrl(),
-		'css' => array('css/bootstrap-notify.css'),
-		'js' => array('js/bootstrap.notify.js')
+		'css'     => array('css/bootstrap-notify.css'),
+		'js'      => array('js/bootstrap.notify.js')
 	),
 
 	//widgets start
-	'datepicker' => array(
+	'datepicker'       => array(
 		'depends' => array('jquery'),
 		'baseUrl' => $this->enableCdn ? '//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.0.2/' : $this->getAssetsUrl(),
-		'css' => array($this->minifyCss ? 'css/bootstrap-datepicker.min.css' : 'css/bootstrap-datepicker.css'),
-		'js' => array($this->minifyCss ? 'js/bootstrap-datepicker.min.js' : 'js/bootstrap-datepicker.js')
+		'css'     => array($this->minifyCss ? 'css/bootstrap-datepicker.min.css' : 'css/bootstrap-datepicker.css'),
+		'js'      => array($this->minifyCss ? 'js/bootstrap-datepicker.min.js' : 'js/bootstrap-datepicker.js')
 	),
-	'date' => array(
+	'date'             => array(
 		'baseUrl' => $this->enableCdn ? '//cdnjs.cloudflare.com/ajax/libs/datejs/1.0/' : $this->getAssetsUrl() . '/js/',
-		'js' => array('date.min.js')
+		'js'      => array('date.min.js')
 	),
-	'x-editable' => array(
+	'x-editable'       => array(
 		'baseUrl' => $this->getAssetsUrl(),
-		'css' => array($this->minifyCss ? 'css/bootstrap-editable.min.css' : 'css/bootstrap-editable.css'),
-		'js' => array($this->minifyCss ? 'js/bootstrap-editable.min.js' : 'js/bootstrap-editable.js'),
+		'css'     => array($this->minifyCss ? 'css/bootstrap-editable.min.css' : 'css/bootstrap-editable.css'),
+		'js'      => array($this->minifyCss ? 'js/bootstrap-editable.min.js' : 'js/bootstrap-editable.js'),
 		'depends' => array('jquery')
 	),
-	'moment' => array(
+	'moment'           => array(
 		'baseUrl' => $this->getAssetsUrl(),
-		'js' => 'moment.min.js',
+		'js'      => 'moment.min.js',
+	),
+	'loading'          => array(
+		'baseUrl' => $this->getAssetsUrl(),
+		'css'     => array('css/loading.css'),
+	),
+	'social-buttons'   => array(
+		'baseUrl' => $this->getAssetsUrl(),
+		'css'     => array('css/social-buttons.css'),
 	),
 );

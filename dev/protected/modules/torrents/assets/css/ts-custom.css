@@ -1,0 +1,27 @@
+.tv-player {
+    width: 960px;
+    height: 540px;
+    background-color: #000;
+}
+
+.tv-loading {
+    padding-top: 232px;
+    background-color: #000000;
+    font: bold 16px sans-serif;
+    color: #FFF;
+    width: 960px;
+    text-align: center;
+}
+
+.torrentstream-container {
+    height: 100%;
+}
+
+.ts-content {
+    height: 100%;
+    width: 100%;
+}
+
+#watchOnline {
+    overflow: hidden;
+}

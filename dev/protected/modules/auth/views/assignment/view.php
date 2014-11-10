@@ -5,11 +5,6 @@
 /* @var $formModel AddAuthItemForm */
 /* @var $form TbActiveForm */
 /* @var $assignmentOptions array */
-
-$this->breadcrumbs = array(
-    Yii::t('AuthModule.main', 'Assignments') => array('index'),
-    CHtml::value($model, $this->module->userNameColumn),
-);
 ?>
 
 <h1><?php echo CHtml::encode(CHtml::value($model, $this->module->userNameColumn)); ?>

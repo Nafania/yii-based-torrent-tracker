@@ -113,6 +113,10 @@ class StaticPage extends EActiveRecord {
 	}
 
 	public function getUrl () {
+		return $this->url;
+	}
+
+	public function getFullUrl () {
 		return Yii::app()->createUrl('staticpages/default/index', array('view' => $this->url));
 	}
 

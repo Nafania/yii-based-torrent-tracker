@@ -10,6 +10,14 @@ class StaticpagesBackendController extends YAdminController {
 		parent::init();
 	}
 
+	public function actions () {
+		return array(
+			'toggle' => array(
+				'class' => 'application.modules.yiiadmin.actions.ActionToggle'
+			)
+		);
+	}
+
 	public function actionIndex () {
 		$this->breadcrumbs[] = Yii::t('staticpagesModule.common', 'Управление статичными страницами');
 		$this->pageTitle = Yii::t('staticpagesModule.common', 'Управление статичными страницами');

@@ -1,0 +1,245 @@
+#mjmChatBlock {
+    position: fixed;
+    top: 50px;
+    right: 0;
+}
+
+#mjmChatSlectRoom {
+    display: block;
+    margin-right: 36px;
+    padding: 6px 0 7px 10px;
+}
+
+#mjmChatRooms {
+    display: none;
+    background-color: #FFFFFF;
+    border-right: 3px solid #C9E0ED;
+    box-shadow: -2px 1px 5px -2px;
+    margin: 2px 0 0;
+    padding: 0;
+    width: 160px;
+    max-height: 300px;
+    overflow: auto;
+}
+
+#mjmChatRooms li {
+    cursor: pointer;
+    padding: 5px 8px;
+    font-family: tahoma;
+}
+
+#mjmChatRooms li:hover {
+    background-color: #C9E0ED;
+}
+
+#mjmChatRoom {
+    width: 600px;
+    height: 420px;
+    top: 150px;
+    right: -580px;
+    box-shadow: 1px -1px 6px -1px;
+    background-color: #FFFFFF;
+    position: fixed;
+    z-index: 10;
+}
+
+#mjmChatRoomHead {
+    background-color: #C9E0ED;
+    border-bottom: 1px solid #C6C6C6;
+    height: 20px;
+    width: 100%;
+    font-family: tahoma;
+    font-weight: bold;
+}
+
+#mjmChatRoomClose, #mjmChatRoomMinimize {
+    cursor: pointer;
+    display: block;
+    float: right;
+    font-size: 11px;
+    height: 15px;
+    text-align: center;
+    width: 15px;
+    margin-top: 2px;
+}
+
+#mjmChatRoomClose {
+    margin-right: 5px;
+}
+
+#mjmChatRoomMinimize {
+    display: block;
+    font-size: 18px;
+    margin-top: -1px;
+}
+
+#mjmChatRoomTitle {
+    cursor: pointer;
+    width: 30px;
+    float: left;
+}
+
+#mjmChatRoomBody {
+    height: 345px;
+    width: 100%;
+}
+
+#chatMessages {
+    width: 410px;
+}
+
+#mjmChatUsersList {
+    background-color: #FBFBFB;
+    border-left: 1px solid #D2D2D2;
+    width: 149px;
+}
+
+#chatMessages, #mjmChatUsersList {
+    float: left;
+    height: 100%;
+    list-style-type: none;
+    margin: 0;
+    overflow: auto;
+}
+
+#mjmChatUsersList {
+    padding: 5px;
+}
+
+#mjmChatRoomSend {
+    height: 40px;
+    padding: 5px;
+    border-top: 1px solid #C6C6C6;
+    clear: both;
+}
+
+#mjmChatMessage {
+    float: left;
+    height: 40px;
+    margin: 0;
+    width: 435px;
+}
+
+#mjmChatSend {
+    cursor: pointer;
+    float: right;
+    height: 48px;
+    padding: 0;
+    width: 100px;
+    margin-left: 5px;
+}
+
+.mjmChatEvent, .mjmChatMyUser {
+    color: silver;
+}
+
+.mjmChatEvent {
+    font-family: tahoma;
+    font-size: 11px;
+    font-style: italic;
+}
+
+.chatHighlight {
+    background-color: #FCF8E3;
+}
+
+#chatMessages .media-heading {
+    line-height: 10px;
+}
+
+#chatMessages .media {
+    margin: 5px 0 5px 0;
+    padding: 5px;
+    border-bottom: 1px solid #EEEEEE;
+}
+
+#chatMessages .comment {
+    padding-top: 5px;
+}
+
+.chatDown {
+    right: -450px;
+}
+
+.chatUp {
+    right: 0 !important;
+}
+
+.chatWrapper {
+    float: left;
+    width: 100%;
+}
+
+#mjmChatRoomBody, #mjmChatRoomSend {
+    margin-left: 30px;
+}
+
+#mjmChatRoomTitle {
+    float: left;
+    margin-left: -100%;
+    width: 25px;
+    background-color: #C9E0ED;
+    height: 100%;
+}
+
+#mjmChatRoomTitle > span {
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+
+    /* also accepts left, right, top, bottom coordinates; not required, but a good idea for styling */
+    -webkit-transform-origin: 50% 50%;
+    -moz-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    -o-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+
+    /* Should be unset in IE9+ I think. */
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+
+    display: block;
+
+    font-weight: bold;
+
+    width: 555px;
+    margin-left: -265px;
+
+
+}
+
+@media screen and (max-width: 620px) {
+    #mjmChatRoom {
+        width: 500px;
+    }
+    #chatMessages {
+        width: 380px;
+    }
+    #mjmChatUsersList {
+        width: 100px;
+    }
+    #mjmChatMessage {
+        width: 340px;
+    }
+    #mjmChatRoom, .chatDown {
+        right: -475px;
+    }
+
+}
+
+@media screen and (max-height: 600px) {
+    #mjmChatRoomBody {
+        height: 260px;
+    }
+    #mjmChatRoom {
+        height: 330px;
+        top:15px;
+    }
+
+
+    #mjmChatRoomTitle > span {
+        margin-left: -230px;
+        width: 480px;
+    }
+}

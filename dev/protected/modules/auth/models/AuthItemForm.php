@@ -1,17 +1,16 @@
 <?php
 /**
  * AuthItemForm class file.
- * @author Christoffer Niska <ChristofferNiska@gmail.com>
+ * @author    Christoffer Niska <ChristofferNiska@gmail.com>
  * @copyright Copyright &copy; Christoffer Niska 2012-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package auth.models
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @package   auth.models
  */
 
 /**
  * Form model for updating an authorization item.
  */
-class AuthItemForm extends CFormModel
-{
+class AuthItemForm extends CFormModel {
 	/**
 	 * @var string item name.
 	 */
@@ -37,8 +36,7 @@ class AuthItemForm extends CFormModel
 	 * Returns the attribute labels.
 	 * @return array attribute labels (name=>label)
 	 */
-	public function attributeLabels()
-	{
+	public function attributeLabels () {
 		return array(
 			'name' => Yii::t('AuthModule.main', 'System name'),
 			'description' => Yii::t('AuthModule.main', 'Description'),
@@ -52,12 +50,26 @@ class AuthItemForm extends CFormModel
 	 * Returns the validation rules for attributes.
 	 * @return array validation rules.
 	 */
-	public function rules()
-	{
+	public function rules () {
 		return array(
-			array('description, type', 'required'),
-			array('name', 'required', 'on' => 'create'),
-			array('name', 'length', 'max' => 64),
+			array(
+				'description, type',
+				'required'
+			),
+			array(
+				'name',
+				'required',
+				'on' => 'create'
+			),
+			array(
+				'name',
+				'length',
+				'max' => 64
+			),
+			array(
+				'bizrule',
+				'safe'
+			),
 		);
 	}
 }

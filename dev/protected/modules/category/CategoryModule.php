@@ -21,6 +21,7 @@ class CategoryModule extends CWebModule {
 		self::_addUrlRules();
 		self::_addBehaviors();
 		self::_addRelations();
+		self::_setImport();
 	}
 
 	private static function _addUrlRules () {
@@ -33,7 +34,7 @@ class CategoryModule extends CWebModule {
 		                            ));
 	}
 
-	private function _addBehaviors () {
+	private static function _addBehaviors () {
 		Yii::app()->pd->registerBehavior('Category',
 			array(
 			     'nestedSetBehavior' => array(
@@ -46,9 +47,9 @@ class CategoryModule extends CWebModule {
 			));
 	}
 
-	private function _addRelations() {
+	private static function _addRelations () {
 
-		Yii::app()->pd->addRelations('TorrentGroup',
+		Yii::app()->pd->addRelations('modules\torrents\models\TorrentGroup',
 			'category',
 			array(
 			     CActiveRecord::BELONGS_TO,
@@ -65,5 +66,9 @@ class CategoryModule extends CWebModule {
 			     'cId'
 			),
 			'application.modules.category.models.*');
+	}
+
+	private static function _setImport () {
+		Yii::app()->pd->setImport(array('application.modules.category.models.*'));
 	}
 }

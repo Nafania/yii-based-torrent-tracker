@@ -1,58 +1,67 @@
 <?php
 /**
  * AssignmentController class file.
- * @author Christoffer Niska <ChristofferNiska@gmail.com>
+ * @author    Christoffer Niska <ChristofferNiska@gmail.com>
  * @copyright Copyright &copy; Christoffer Niska 2012-
- * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
- * @package auth.controllers
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD License
+ * @package   auth.controllers
  */
 
 /**
  * Controller for assignment related actions.
  */
-class AssignmentController extends AuthController
-{
+class AssignmentController extends AuthController {
 	/**
 	 * Displays the a list of all the assignments.
 	 */
-	public function actionIndex()
-	{
-		$dataProvider = new CActiveDataProvider($this->module->userClass);
+	public function actionIndex () {
+		$this->breadcrumbs[] = Yii::t('AuthModule.main', 'Assignments');
 
-		$this->render('index', array(
-			'dataProvider' => $dataProvider
-		));
+		$model = new $this->module->userClass;
+		$model->setScenario('adminSearch');
+		$model->unsetAttributes();
+
+		if ( isset($_GET[$model->resolveClassName($model)]) ) {
+			$model->setAttributes($_GET[$model->resolveClassName($model)]);
+		}
+
+		$this->render('index',
+			array(
+				'model' => $model,
+			));
 	}
 
 	/**
 	 * Displays the assignments for the user with the given id.
+	 *
 	 * @param string $id the user id.
 	 */
-	public function actionView($id)
-	{
+	public function actionView ( $id ) {
 		$formModel = new AddAuthItemForm();
+
 
 		/* @var $am CAuthManager|AuthBehavior */
 		$am = Yii::app()->getAuthManager();
 
-		if (isset($_POST['AddAuthItemForm']))
-		{
+		if ( isset($_POST['AddAuthItemForm']) ) {
 			$formModel->attributes = $_POST['AddAuthItemForm'];
-			if ($formModel->validate())
-			{
-				if (!$am->isAssigned($formModel->items, $id))
-				{
+			if ( $formModel->validate() ) {
+				if ( !$am->isAssigned($formModel->items, $id) ) {
 					$am->assign($formModel->items, $id);
-					if ($am instanceof CPhpAuthManager)
+					if ( $am instanceof CPhpAuthManager ) {
 						$am->save();
+					}
 
-					if ($am instanceof ICachedAuthManager)
+					if ( $am instanceof ICachedAuthManager ) {
 						$am->flushAccess($formModel->items, $id);
+					}
 				}
 			}
 		}
 
 		$model = CActiveRecord::model($this->module->userClass)->findByPk($id);
+
+		$this->breadcrumbs[] = CHtml::value($model, $this->module->userNameColumn);
 
 		$assignments = $am->getAuthAssignments($id);
 		$authItems = $am->getItemsPermissions(array_keys($assignments));
@@ -60,55 +69,63 @@ class AssignmentController extends AuthController
 		$authItemDp->setAuthItems($authItems);
 
 		$assignmentOptions = $this->getAssignmentOptions($id);
-		if (!empty($assignmentOptions))
-			$assignmentOptions = array_merge(array('' => Yii::t('AuthModule.main', 'Select item') . ' ...'), $assignmentOptions);
+		if ( !empty($assignmentOptions) ) {
+			$assignmentOptions = array_merge(array('' => Yii::t('AuthModule.main', 'Select item') . ' ...'),
+				$assignmentOptions);
+		}
 
-		$this->render('view', array(
-			'model' => $model,
-			'authItemDp' => $authItemDp,
-			'formModel' => $formModel,
-			'assignmentOptions' => $assignmentOptions,
-		));
+		$this->render('view',
+			array(
+				'model'             => $model,
+				'authItemDp'        => $authItemDp,
+				'formModel'         => $formModel,
+				'assignmentOptions' => $assignmentOptions,
+			));
 	}
 
 	/**
 	 * Revokes an assignment from the given user.
 	 * @throws CHttpException if the request is invalid.
 	 */
-	public function actionRevoke()
-	{
-		if (isset($_GET['itemName'], $_GET['userId']))
-		{
+	public function actionRevoke () {
+		if ( isset($_GET['itemName'], $_GET['userId']) ) {
 			$itemName = $_GET['itemName'];
 			$userId = $_GET['userId'];
 
 			/* @var $am CAuthManager|AuthBehavior */
 			$am = Yii::app()->getAuthManager();
 
-			if ($am->isAssigned($itemName, $userId))
-			{
+			if ( $am->isAssigned($itemName, $userId) ) {
 				$am->revoke($itemName, $userId);
-				if ($am instanceof CPhpAuthManager)
+				if ( $am instanceof CPhpAuthManager ) {
 					$am->save();
+				}
 
-				if ($am instanceof ICachedAuthManager)
+				if ( $am instanceof ICachedAuthManager ) {
 					$am->flushAccess($itemName, $userId);
+				}
 			}
 
-			if (!isset($_POST['ajax']))
-				$this->redirect(array('view', 'id' => $userId));
+			if ( !isset($_POST['ajax']) ) {
+				$this->redirect(array(
+					'view',
+					'id' => $userId
+				));
+			}
 		}
-		else
+		else {
 			throw new CHttpException(400, Yii::t('AuthModule.main', 'Invalid request.'));
+		}
 	}
 
 	/**
 	 * Returns a list of possible assignments for the user with the given id.
+	 *
 	 * @param string $userId the user id.
+	 *
 	 * @return array the assignment options.
 	 */
-	protected function getAssignmentOptions($userId)
-	{
+	protected function getAssignmentOptions ( $userId ) {
 		$options = array();
 
 		/* @var $am CAuthManager|AuthBehavior */
@@ -119,10 +136,10 @@ class AssignmentController extends AuthController
 
 		/* @var $authItems CAuthItem[] */
 		$authItems = $am->getAuthItems();
-		foreach ($authItems as $itemName => $item)
-		{
-			if (!in_array($itemName, $assignedItems))
+		foreach ( $authItems as $itemName => $item ) {
+			if ( !in_array($itemName, $assignedItems) ) {
 				$options[$this->capitalize($this->getItemTypeText($item->type, true))][$itemName] = $item->description;
+			}
 		}
 
 		return $options;

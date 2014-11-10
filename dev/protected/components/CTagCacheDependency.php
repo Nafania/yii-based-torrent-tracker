@@ -35,13 +35,13 @@ class CTagCacheDependency extends CCacheDependency
      * This method returns the integer(timestamp).
      * @return mixed the data needed to determine if dependency has been changed.
      */
-    protected function generateDependentData()
+    public function generateDependentData()
     {
         if($this->tag!==null)
         {
 	        $t = $this->cache->get($this->tag);
 	        if ($t === false) {
-		        $t = time();
+		        $t = microtime(true);
 		        $this->cache->set($this->tag, $t);
 	        }
             return $t;

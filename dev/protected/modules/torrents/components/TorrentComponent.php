@@ -1,4 +1,6 @@
 <?php
+namespace modules\torrents\components;
+use Exception;
 /**
  * Torrent
  *
@@ -72,7 +74,7 @@ class TorrentComponent {
 	 */
 	static public $errors = array();
 
-	private $info;
+	//private $info;
 
 	/** Read and decode torrent file/data OR build a torrent from source folder/file(s)
 	 * Supported signatures:
@@ -356,7 +358,7 @@ class TorrentComponent {
 	public function send ( $filename = null ) {
 		$data = (string) $this;
 		header('Content-Type: application/x-bittorrent');
-		header('Content-Disposition: attachment; filename="' . (is_null($filename) ? $this->info['name'] . '.torrent' : $filename) . '"');
+		header('Content-Disposition: attachment;filename*=UTF-8\'\'' . urlencode(is_null($filename) ? $this->info['name'] . '.torrent' : $filename));
 		header('Content-transfer-encoding: binary');
 		header('Content-length: ' . strlen($data));
 		echo($data);

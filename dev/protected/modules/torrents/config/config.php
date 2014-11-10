@@ -1,4 +1,4 @@
 <?php
 return array(
-	'class' => 'application.modules.torrents.TorrentsModule'
+	'class' => 'modules\torrents\TorrentsModule'
 );

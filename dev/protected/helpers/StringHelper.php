@@ -36,6 +36,13 @@ class StringHelper {
 	}
 
 	static function cutStr ( $str, $n = 500, $end_char = '&#8230;' ) {
+		$Tidy = new Tidy();
+
+		if ( $pos = strpos($str, '<cut />') ) {
+			$str = mb_substr($str, 0, $pos);
+			$str = $Tidy->repairString($str, array('clean' => true, 'show-body-only'=>true,), 'utf8');
+			return $str . $end_char;
+		}
 		if ( mb_strlen($str) < $n ) {
 			return $str;
 		}
@@ -60,6 +67,7 @@ class StringHelper {
 
 			if ( mb_strlen($out) >= $n ) {
 				$out = trim($out);
+				$out = $Tidy->repairString($out, array('clean' => true, 'show-body-only'=>true,), 'utf8');
 				return (mb_strlen($out) == mb_strlen($str)) ? $out : $out . $end_char;
 			}
 		}
@@ -87,23 +95,4 @@ class StringHelper {
 
 		return $beg . $ellipsis . $end;
 	}
-
-	static function makeClickable ( $text ) {
-		$preg_autolinks = array(
-			'pattern' => array(
-				"'[\w\+]+://[A-z0-9\.\?\+\-/_=&%#:;]+[\w/=]+'sie",
-				"'([^/])(www\.[A-z0-9\.\?\+\-/_=&%#:;]+[\w/=]+)'sie",
-				"'[\w]+[\w\-\.]+@[\w\-\.]+\.[\w]+'si",
-			),
-			'replacement' => array(
-				"'<a href=\"\\0\" target=\"_blank\">\\0</a>'",
-				"'<a href=\"http://\\2\" target=\"_blank\">http://\\2</a>'",
-				'<a href="mailto:$0">$0</a>',
-			),
-		);
-
-		return preg_replace($preg_autolinks['pattern'], $preg_autolinks['replacement'], $text);
-	}
-
 }
-?>

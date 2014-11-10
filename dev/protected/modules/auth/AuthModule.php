@@ -37,7 +37,7 @@ class AuthModule extends CWebModule {
 	 * @var string the application layout.
 	 * Change this if you wish to use a different layout with the module.
 	 */
-	public $appLayout = 'application.views.layouts.main';
+	public $defaultLayout = 'application.views.layouts.main';
 	/**
 	 * @var array map of flash message keys to use for the module.
 	 */
@@ -112,20 +112,18 @@ class AuthModule extends CWebModule {
 		if ( parent::beforeControllerAction($controller, $action) ) {
 			$user = Yii::app()->getUser();
 
-			if ( $user instanceof AuthWebUser ) {
-				if ( $user->isAdmin ) {
-					return true;
-				}
-				else {
-					$user->loginRequired();
-				}
-			}
-			else {
-				throw new CException('WebUser component is not an instance of AuthWebUser.');
-			}
-		}
-		throw new CHttpException(401, Yii::t('AuthModule.main', 'Access denied.'));
-	}
+            if ($user instanceof AuthWebUser) {
+                if ($user->isAdmin) {
+                    return true;
+                } elseif ($user->isGuest) {
+                    $user->loginRequired();
+                }
+            } else {
+                throw new CException('WebUser component is not an instance of AuthWebUser.');
+            }
+        }
+        throw new CHttpException(401, Yii::t('AuthModule.main', 'Access denied.'));
+    }
 
 	/**
 	 * Returns the URL to the published assets folder.
@@ -148,12 +146,13 @@ class AuthModule extends CWebModule {
 	 * @return string the version.
 	 */
 	public function getVersion () {
-		return '1.6.0';
+        return '1.7.0';
 	}
 
 	public static function register () {
-		Yii::app()->pd->addAdminModule('auth');
 		self::_addModuleRoute();
+		self::_setImport();
+		Yii::app()->pd->addAdminModule('auth');
 	}
 
 	private static function _addModuleRoute () {
@@ -161,5 +160,9 @@ class AuthModule extends CWebModule {
 		                                 'yiiadmin/auth' => 'auth',
 		                                 'yiiadmin/auth/<controller:\w+>/<action:\w+>' => '/auth/<controller>/<action>',
 		                            ));
+	}
+
+	private static function _setImport() {
+		Yii::app()->pd->setImport(array('application.modules.auth.components.*'));
 	}
 }

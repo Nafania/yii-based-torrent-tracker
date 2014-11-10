@@ -4,11 +4,14 @@
  * This is the model class for table "users".
  *
  * The followings are the available columns in table 'users':
- * @property integer $id
- * @property string  $name
- * @property string  $email
- * @property string  $password
- * @property string  $resetHash
+ * @property integer     $id
+ * @property string      $name
+ * @property string      $email
+ * @property string      $password
+ * @property string      $resetHash
+ * @property UserProfile $profile
+ * @property integer     $emailConfirmed
+ * @property integer     $active
  */
 class User extends EActiveRecord {
 
@@ -18,10 +21,13 @@ class User extends EActiveRecord {
 
 	public $rememberMe;
 
+	public $cacheTime = 3600;
+
 	const FLASH_SUCCESS = 'success';
 	const FLASH_NOTICE = 'notice';
 	const FLASH_WARNING = 'warning';
 	const FLASH_ERROR = 'error';
+	const FLASH_INFO = 'info';
 
 	const USER_ACTIVE = 1;
 	const USER_NOT_ACTIVE = 0;
@@ -39,10 +45,6 @@ class User extends EActiveRecord {
 	}
 
 	public function init () {
-		if ( !defined('CRYPT_BLOWFISH') || !CRYPT_BLOWFISH ) {
-			throw new CHttpException(500, "This application requires that PHP was compiled with Blowfish support for crypt().");
-		}
-
 		parent::init();
 	}
 
@@ -105,21 +107,38 @@ class User extends EActiveRecord {
 			),
 
 			/*
-			* restore form
+			* update form
 			*/
 			array(
-				'email',
+				'email, name',
 				'required',
-				'on' => 'createRequest'
+				'on' => 'update'
 			),
-
+			array(
+				'email',
+				'unique',
+				'on' => 'update'
+			),
+			/*
+			 * socialLogin
+			 */
+			array(
+				'name',
+				'required',
+				'on' => 'socialLogin'
+			),
+			array(
+				'email',
+				'unique',
+				'on' => 'socialLogin'
+			),
 			/*
 			* base rules
 			*/
 			array(
 				'name, email, password',
 				'length',
-				'max'=> 255
+				'max' => 255
 			),
 
 			array(
@@ -129,8 +148,34 @@ class User extends EActiveRecord {
 
 			array(
 				'email',
-				'email'
+				'email',
+				'checkMX' => true,
 			),
+			/**
+			 * имя должно быть не менее чем 2 символа и не более чем 50
+			 */
+			array(
+				'name',
+				'length',
+				'min' => 2,
+				'max' => 50,
+			),
+			/**
+			 * регексп, для ограничения символов в имени
+			 */
+			array(
+				'name',
+				'match',
+				'pattern' => '/^([а-яa-z0-9-_ ])+$/iu',
+				'message' => Yii::t('userModule.common',
+						'Вы можете использовать буквы, цифры, пробел, тире и подчеркивание.'),
+			),
+
+			array(
+				'name,active,email,id',
+				'safe',
+				'on' => 'adminSearch',
+			)
 		);
 	}
 
@@ -140,7 +185,19 @@ class User extends EActiveRecord {
 	public function relations () {
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
-		return array();
+		return CMap::mergeArray(parent::relations(),
+			array(
+				'profile'        => array(
+					self::HAS_ONE,
+					'UserProfile',
+					'uid'
+				),
+				'socialAccounts' => array(
+					self::HAS_MANY,
+					'UserSocialAccount',
+					'uId'
+				),
+			));
 	}
 
 	/**
@@ -149,10 +206,11 @@ class User extends EActiveRecord {
 	public function attributeLabels () {
 		return array(
 			'id'               => 'ID',
-			'name'             => Yii::t('userModule.common', 'ФИО'),
+			'name'             => Yii::t('userModule.common', 'Имя'),
 			'email'            => Yii::t('userModule.common', 'Email адрес'),
 			'password'         => Yii::t('userModule.common', 'Пароль'),
 			'originalPassword' => Yii::t('userModule.common', 'Пароль'),
+			'rememberMe'       => Yii::t('userModule.common', 'Запомнить меня'),
 		);
 	}
 
@@ -169,10 +227,11 @@ class User extends EActiveRecord {
 		$criteria->compare('id', $this->id);
 		$criteria->compare('name', $this->name, true);
 		$criteria->compare('email', $this->email, true);
+		$criteria->compare('active', $this->active);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria'=> $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 
@@ -187,16 +246,17 @@ class User extends EActiveRecord {
 			if ( !$this->_identity->authenticate() ) {
 				switch ( $this->_identity->errorCode ) {
 					case UserIdentity::ERROR_EMAIL_INVALID:
-						$this->addError('email', Yii::t('userModule.common', 'Email not found in database'));
+						$this->addError('email',
+							Yii::t('userModule.common', 'Указанный email не найден в базе данных'));
 						break;
 					case UserIdentity::ERROR_USER_NOT_ACTIVE:
-						$this->addError('email', Yii::t('userModule.common', 'User account deactivated'));
+						$this->addError('email', Yii::t('userModule.common', 'Этот аккаунт был отключен'));
 						break;
 					case UserIdentity::ERROR_PASSWORD_INVALID:
-						$this->addError('password', Yii::t('userModule.common', 'Incorrect password.'));
+						$this->addError('password', Yii::t('userModule.common', 'Неверный пароль'));
 						break;
 					default:
-						$this->addError('password', Yii::t('userModule.common', 'Incorrect email or password.'));
+						$this->addError('password', Yii::t('userModule.common', 'Неверный email адрес или пароль'));
 						break;
 				}
 			}
@@ -205,7 +265,6 @@ class User extends EActiveRecord {
 
 	public function beforeSave () {
 		switch ( $this->scenario ) {
-			case 'createRequest':
 			case 'register':
 				$this->originalPassword = $this->password;
 				$this->password = $this->hashPassword($this->password);
@@ -220,24 +279,86 @@ class User extends EActiveRecord {
 				$this->password = $this->hashPassword($this->password);
 				$this->resetHash = '';
 				break;
+
+			case 'update':
+				$old = User::model()->findByPk($this->getId());
+
+				/**
+				 * пароль не изменяется, удаляем его
+				 */
+				if ( $old->password === $this->password ) {
+					unset($this->password);
+				}
+
+				if ( $this->password ) {
+					$this->originalPassword = $this->password;
+					$this->password = $this->hashPassword($this->password);
+				}
+				else {
+					unset($this->password);
+				}
+
+				/**
+				 * если меняется Email, то меняем статус на неподтвержденный
+				 */
+				if ( $old->getEmail() <> $this->getEmail() ) {
+					$this->emailConfirmed = 0;
+				}
+
+				break;
 		}
 
 		if ( $this->getIsNewRecord() ) {
 			$this->ctime = time();
 			$this->active = self::USER_ACTIVE;
+
+			if ( !$this->name ) {
+				list($this->name) = explode('@', $this->email);
+				if ( $this->name == 'admin' ) {
+					$this->name = 'admin' . rand(0, 10000);
+				}
+			}
 		}
 
 		return parent::beforeSave();
 	}
 
-	public function afterSave () {
+	protected function afterSave () {
+		parent::afterSave();
+
 		switch ( $this->scenario ) {
-			case 'createRequest':
 			case 'register':
 				$this->password = $this->originalPassword;
 				$this->sendCreate();
 				break;
 		}
+	}
+
+	protected function beforeValidate () {
+		if ( parent::beforeValidate() ) {
+
+            switch ( $this->scenario ) {
+                case 'socialLogin':
+                    $this->name = preg_replace('/[^а-яa-z0-9-_ ]/iu', '', $this->name);
+                break;
+            }
+
+			if ( $this->getId() != 1 && trim(mb_strtolower($this->getName())) == 'admin' ) {
+				$this->addError('name', 'There is can be only one admin! You shall not pass!');
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public function beforeDelete () {
+		if ( parent::beforeDelete() ) {
+			Yii::app()->getUser()->logout();
+
+			return true;
+		}
+		return false;
 	}
 
 
@@ -251,12 +372,100 @@ class User extends EActiveRecord {
 			$this->_identity->authenticate();
 		}
 		if ( $this->_identity->errorCode === UserIdentity::ERROR_NONE ) {
-			$duration = $this->rememberMe ? 3600 * 24 * 30 : 0; // 30 days
-			Yii::app()->user->login($this->_identity, $duration);
-			return true;
+			$duration = ($this->rememberMe ? 30 * 24 * 60 * 60 : 0); // 30 days
+			return Yii::app()->user->login($this->_identity, $duration);
 		}
 		else {
 			return false;
+		}
+	}
+
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function ban () {
+		$this->active = self::USER_NOT_ACTIVE;
+		if ( $this->save(false) ) {
+
+			$db = $this->getDbConnection();
+			$comm = $db->createCommand('DELETE FROM {{sessions}} WHERE uId = :uId');
+			$comm->bindValue(':uId', $this->getId());
+			$comm->execute();
+
+			$this->sendBanEmail();
+
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant ban user'));
+		}
+	}
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function unBan () {
+		$this->active = self::USER_ACTIVE;
+		if ( $this->save(false) ) {
+			$this->sendUnBanEmail();
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant ban user'));
+		}
+	}
+
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function sendUnBanEmail () {
+		Yii::import('ext.mail.*');
+
+		$message = new YiiMailMessage;
+		$message->view = 'application.modules.user.views.mail.unBan';
+		$message->setBody(array('model' => $this), 'text/html');
+
+		$message->subject = Yii::t('userModule.common',
+			'Ваш аккаунт на сайте {siteName} включен',
+			array('{siteName}' => Yii::app()->config->get('base.siteName')));
+		$message->from = Yii::app()->config->get('base.fromEmail');
+		$message->to = $this->email;
+
+		if ( Yii::app()->mail->send($message) ) {
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
+		}
+	}
+
+	/**
+	 * @return bool
+	 * @throws CException
+	 */
+	public function sendBanEmail () {
+		Yii::import('ext.mail.*');
+
+		$message = new YiiMailMessage;
+		$message->view = 'application.modules.user.views.mail.ban';
+		$message->setBody(array('model' => $this), 'text/html');
+
+		$message->subject = Yii::t('userModule.common',
+			'Ваш аккаунт на сайте {siteName} отключен',
+			array('{siteName}' => Yii::app()->config->get('base.siteName')));
+		$message->from = Yii::app()->config->get('base.fromEmail');
+		$message->to = $this->email;
+
+		if ( Yii::app()->mail->send($message) ) {
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 
@@ -277,7 +486,7 @@ class User extends EActiveRecord {
 			return true;
 		}
 		else {
-			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 
@@ -298,7 +507,7 @@ class User extends EActiveRecord {
 			return true;
 		}
 		else {
-			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 
@@ -319,7 +528,39 @@ class User extends EActiveRecord {
 			return true;
 		}
 		else {
-			throw new CHttpException(502, Yii::t('userModule.common', 'Cant send mail'));
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
+		}
+	}
+
+	public function sendConfirmEmail () {
+		Yii::import('ext.mail.*');
+
+		$code = md5(time() . $this->getId() . time());
+
+		$message = new YiiMailMessage;
+		$message->view = 'application.modules.user.views.mail.confirmEmail';
+		$message->setBody(array(
+				'model' => $this,
+				'code'  => $code
+			),
+			'text/html');
+
+		$message->subject = Yii::t('userModule.common',
+			'Подтверждение вашего email адреса на {siteName}',
+			array('{siteName}' => Yii::app()->config->get('base.siteName')));
+		$message->from = Yii::app()->config->get('base.fromEmail');
+		$message->to = $this->email;
+
+		if ( Yii::app()->mail->send($message) ) {
+			$UserConfirmCode = new UserConfirmCode();
+			$UserConfirmCode->uId = $this->getId();
+			$UserConfirmCode->confirmCode = $code;
+			$UserConfirmCode->save(false);
+
+			return true;
+		}
+		else {
+			throw new CException(Yii::t('userModule.common', 'Cant send mail'));
 		}
 	}
 
@@ -331,7 +572,18 @@ class User extends EActiveRecord {
 	 * @return boolean whether the password is valid
 	 */
 	public function validatePassword ( $password ) {
-		return crypt($password, $this->password) === $this->password;
+		if ( !$this->password ) {
+			return false;
+		}
+		//if ($row['pass'] != md5($row['secret'] . $password . $row['secret'])) {
+		if ( strpos($this->password, 'md5:') !== false ) {
+			$linePos = strpos($this->password, '|');
+			$pass = mb_substr($this->password, 4, $linePos - 4);
+			$secret = mb_substr($this->password, $linePos + 1);
+			//var_dump($pass, $secret);
+			return $pass == md5($secret . $password . $secret);
+		}
+		return CPasswordHelper::verifyPassword($password, $this->password);
 	}
 
 	/**
@@ -342,41 +594,7 @@ class User extends EActiveRecord {
 	 * @return string hash
 	 */
 	public function hashPassword ( $password ) {
-		return crypt($password, $this->generateSalt());
-	}
-
-	/**
-	 * Generates a salt that can be used to generate a password hash.
-	 *
-	 * The {@link http://php.net/manual/en/function.crypt.php PHP `crypt()` built-in function}
-	 * requires, for the Blowfish hash algorithm, a salt string in a specific format:
-	 *  - "$2a$"
-	 *  - a two digit cost parameter
-	 *  - "$"
-	 *  - 22 characters from the alphabet "./0-9A-Za-z".
-	 *
-	 * @param int cost parameter for Blowfish hash algorithm
-	 *
-	 * @return string the salt
-	 */
-	protected function generateSalt ( $cost = 10 ) {
-		if ( !is_numeric($cost) || $cost < 4 || $cost > 31 ) {
-			throw new CException(Yii::t('userModule.common', 'Cost parameter must be between 4 and 31.'));
-		}
-		// Get some pseudo-random data from mt_rand().
-		$rand = '';
-		for ( $i = 0; $i < 8; ++$i ) {
-			$rand .= pack('S', mt_rand(0, 0xffff));
-		}
-		// Add the microtime for a little more entropy.
-		$rand .= microtime();
-		// Mix the bits cryptographically.
-		$rand = sha1($rand, true);
-		// Form the prefix that specifies hash algorithm type and cost parameter.
-		$salt = '$2a$' . str_pad((int) $cost, 2, '0', STR_PAD_RIGHT) . '$';
-		// Append the random salt string in the required base64 format.
-		$salt .= strtr(substr(base64_encode($rand), 0, 22), array('+'=> '.'));
-		return $salt;
+		return CPasswordHelper::hashPassword($password);
 	}
 
 	public function generatePassword ( $length = 8 ) {
@@ -384,5 +602,32 @@ class User extends EActiveRecord {
 		$pass = substr(str_shuffle($chars), 0, $length);
 
 		return $pass;
+	}
+
+	public function getId () {
+		return $this->id;
+	}
+
+	public function getName () {
+		return $this->name;
+	}
+
+	public function getEmail () {
+		return $this->email;
+	}
+
+	public function getUrl () {
+		return array(
+			'/user/default/view',
+			'id'   => $this->getId(),
+			'name' => $this->getName(),
+		);
+	}
+
+	public function getCtime ( $format = false ) {
+		if ( $format ) {
+			return date($format, $this->ctime);
+		}
+		return $this->ctime;
 	}
 }

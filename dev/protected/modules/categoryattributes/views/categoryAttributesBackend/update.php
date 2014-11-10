@@ -51,5 +51,6 @@ echo '<h1>' . Yii::t('CategoryAttributesModule', 'Редактирование �
 $this->renderPartial('_form', array(
                                    'model' => $model,
                                    'chars' => $chars,
-                                   'counter' => $counter
+                                   'counter' => $counter,
+                                   'validators' => $validators
                               ));

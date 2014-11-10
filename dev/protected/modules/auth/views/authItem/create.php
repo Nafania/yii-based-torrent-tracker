@@ -2,11 +2,6 @@
 /* @var $this OperationController|TaskController|RoleController */
 /* @var $model AuthItemForm */
 /* @var $form TbActiveForm */
-
-$this->breadcrumbs = array(
-	$this->capitalize($this->getTypeText(true)) => array('index'),
-	Yii::t('AuthModule.main', 'New {type}', array('{type}' => $this->getTypeText())),
-);
 ?>
 
 <h1><?php echo Yii::t('AuthModule.main', 'New {type}', array('{type}' => $this->getTypeText())); ?></h1>
@@ -22,6 +17,12 @@ echo $form->textField($model, 'name'); ?>
 
 <?php echo $form->label($model, 'description');
 echo $form->textField($model, 'description'); ?>
+
+<?php echo $form->label($model, 'bizrule');
+echo $form->textField($model, 'bizrule'); ?>
+
+<?php echo $form->label($model, 'data');
+echo $form->textField($model, 'data'); ?>
 
 <div class="form-actions">
 	<?php echo CHtml::submitButton(Yii::t('AuthModule.main', 'Create')); ?>

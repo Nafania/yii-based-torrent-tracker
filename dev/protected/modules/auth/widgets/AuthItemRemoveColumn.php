@@ -46,7 +46,7 @@ class AuthItemRemoveColumn extends AuthItemColumn
 		}
 		else if ($am->hasChild($this->itemName, $data['name']))
 		{
-			echo CHtml::link(Yii::t('AuthModule.main', 'Remove'), array('removeParent', 'itemName' => $this->itemName, 'parentName' => $data['name']),  array('rel' => 'tooltip', 'title' => Yii::t('AuthModule.main', 'Remove')));
+			echo CHtml::link(Yii::t('AuthModule.main', 'Remove'), array('removeChild', 'itemName' => $this->itemName, 'childName' => $data['name']),  array('rel' => 'tooltip', 'title' => Yii::t('AuthModule.main', 'Remove')));
 
 			/*$this->grid->controller->widget('bootstrap.widgets.TbButton', array(
 				'type' => 'link',

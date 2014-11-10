@@ -3,7 +3,7 @@ class EActiveRecord extends CActiveRecord {
 
 	public $cacheTime = 0;
 
-	public function init() {
+	public function init () {
 		parent::init();
 
 		return Yii::app()->pd->loadEvents($this);
@@ -13,27 +13,40 @@ class EActiveRecord extends CActiveRecord {
 		return Yii::app()->pd->loadBehaviors($this);
 	}
 
-	public function relations() {
+	public function relations () {
 		return Yii::app()->pd->loadRelations($this);
 	}
 
-	public function rules() {
+	public function rules () {
 		return Yii::app()->pd->loadModelRules($this);
 	}
 
 	protected function afterSave () {
 		if ( $this->cacheTime ) {
-			Yii::trace('Model ' . get_class($this) . ' cache cleared');
-			Yii::app()->cache->set(get_class($this), time(), 0);
+			Yii::trace('Model ' . get_class($this) . ' cache cleared at ' . date('d.m.Y H:i:s'));
+			Yii::app()->cache->set($this->getCacheKey(), microtime(true), 0);
 		}
 
 		parent::afterSave();
 	}
 
+	protected function beforeCount () {
+		if ( $this->cacheTime ) {
+			$dependency = new CTagCacheDependency($this->getCacheKey());
+			$this->cache($this->cacheTime, $dependency);
+			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds at ' . date('d.m.Y H:i:s') . ' last change at ' . date('d.m.Y H:i:s',
+				$dependency->generateDependentData()));
+		}
+
+		return parent::beforeCount();
+	}
+
 	protected function beforeFind () {
 		if ( $this->cacheTime ) {
-			$this->cache($this->cacheTime, new CTagCacheDependency(get_class($this)));
-			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds');
+			$dependency = new CTagCacheDependency($this->getCacheKey());
+			$this->cache($this->cacheTime, $dependency);
+			Yii::trace('Model ' . get_class($this) . ' cached for ' . $this->cacheTime . ' seconds at ' . date('d.m.Y H:i:s') . ' last change at ' . date('d.m.Y H:i:s',
+				$dependency->generateDependentData()));
 		}
 
 		return parent::beforeFind();
@@ -41,10 +54,26 @@ class EActiveRecord extends CActiveRecord {
 
 	protected function afterDelete () {
 		if ( $this->cacheTime ) {
-			Yii::app()->cache->set(get_class($this), time(), 0);
-			Yii::trace('Model ' . get_class($this) . ' cache cleared');
+			Yii::app()->cache->set($this->getCacheKey(), microtime(true), 0);
+			Yii::trace('Model ' . get_class($this) . ' cache cleared at ' . date('d.m.Y H:i:s'));
 		}
 
-		return parent::afterDelete();
+		parent::afterDelete();
+	}
+
+	public function getCacheKey () {
+		return 'EActiveRecordModelCache' . get_class($this);
+	}
+
+	public function resolveClassName () {
+		$name = get_class($this);
+		return str_replace('\\', '_', $name);
+	}
+
+	public static function classNameToNamespace ( $class ) {
+		if ( is_object($class) ) {
+			$class = get_class($class);
+		}
+		return str_replace('_', '\\', $class);
 	}
 }

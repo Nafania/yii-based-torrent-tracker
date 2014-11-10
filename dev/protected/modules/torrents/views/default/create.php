@@ -1,4 +1,4 @@
-<h1>Create Torrent</h1>
+<h1><?php echo Yii::t('torrentsModule.common', 'Загрузка торрента'); ?></h1>
 
 <?php echo $this->renderPartial('_form',
 	array(

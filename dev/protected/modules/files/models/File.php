@@ -14,7 +14,9 @@
  * @property integer $modelId
  * @property integer $ctime
  */
-class File extends CActiveRecord {
+class File extends EActiveRecord {
+
+	public $cacheTime = 3600;
 
 	public $file;
 
@@ -44,7 +46,7 @@ class File extends CActiveRecord {
 	public function rules () {
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
-		return array(
+		return CMap::mergeArray(parent::rules(), array(
 
 			array(
 				'file, description',
@@ -70,16 +72,7 @@ class File extends CActiveRecord {
 				'safe',
 				'on' => 'search'
 			),
-		);
-	}
-
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations () {
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array();
+		));
 	}
 
 	/**
@@ -116,8 +109,8 @@ class File extends CActiveRecord {
 		$criteria->compare('modelId', $this->modelId);
 
 		return new CActiveDataProvider($this, array(
-		                                           'criteria' => $criteria,
-		                                      ));
+			'criteria' => $criteria,
+		));
 	}
 
 	protected function beforeSave () {
@@ -178,11 +171,34 @@ class File extends CActiveRecord {
 		}
 	}
 
+	/**
+	 * Delete file and file's directory if it contains only this file
+	 *
+	 * @param bool $file
+	 *
+	 * @return bool
+	 */
 	public function deleteFile ( $file = false ) {
 		if ( !$file ) {
 			$file = $this->getFilePath(true);
 		}
-		return unlink($file);
+
+		if ( $_files = Yii::app()->getUser()->getState(self::STATE_NAME) ) {
+			foreach ( $_files AS $key => $_file ) {
+				if ( $_file['modelName'] == $this->modelName && $_file['title'] == $this->title ) {
+					unset($_files[$key]);
+				}
+			}
+			Yii::app()->getUser()->setState(self::STATE_NAME, $_files);
+		}
+
+		$dir = pathinfo($file, PATHINFO_DIRNAME);
+
+		if ( (count(scandir($dir)) == 3) || (count(scandir($dir)) == 2) ) {
+			return @unlink($file) && @rmdir($dir);
+		}
+
+		return @unlink($file);
 	}
 
 	public function getId () {
@@ -192,7 +208,7 @@ class File extends CActiveRecord {
 	public function getFilePath ( $full = false ) {
 		$md5 = md5($this->originalTitle);
 
-		$path = 'uploads/files/' . substr($md5, 0, 2) . '/';
+		$path = realpath(Yii::getPathOfAlias('application') . '/..') . '/uploads/files/' . substr($md5, 0, 2) . '/';
 		if ( !is_dir($path) ) {
 			mkdir($path, 0777, true);
 		}
@@ -205,7 +221,9 @@ class File extends CActiveRecord {
 	}
 
 	public function getFileUrl () {
-		return Yii::app()->getBaseUrl() . '/' . $this->getFilePath(true);
+		$md5 = md5($this->originalTitle);
+
+		return Yii::app()->getBaseUrl() . '/uploads/files/' . substr($md5, 0, 2) . '/' . $this->getTitle() . '.' . $this->getExt();
 	}
 
 	public function getTitle () {
@@ -214,5 +232,9 @@ class File extends CActiveRecord {
 
 	public function getExt () {
 		return $this->extension;
+	}
+
+	public function getOriginalTitle () {
+		return $this->originalTitle;
 	}
 }

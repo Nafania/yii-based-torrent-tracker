@@ -9,100 +9,97 @@
  *
  * Now checking and excluding remote files automatically
  *
- * @author Maxximus <maxximus007@gmail.com>
- * @author Alexander Makarov <sam@rmcreative.ru>
- * @author Kir <>
+ * @author    Maxximus <maxximus007@gmail.com>
+ * @author    Alexander Makarov <sam@rmcreative.ru>
+ * @author    Kir <>
  *
- * @link http://www.yiiframework.com/
+ * @link      http://www.yiiframework.com/
  * @copyright Copyright &copy; 2008-2011
- * @license htp://www.yiiframework.com/license/
- * @version 0.9.0
+ * @license   htp://www.yiiframework.com/license/
+ * @version   0.9.0
  *
  */
 
-class ExtendedClientScript extends CClientScript
-{
+class ExtendedClientScript extends CClientScript {
 	/**
-	* Compress all Javascript files with JSMin. JSMin must be installed as an extension in $jssminPath.
-	* github.com/rgrove/jsmin-php/
-	*/
+	 * Compress all Javascript files with JSMin. JSMin must be installed as an extension in $jssminPath.
+	 * github.com/rgrove/jsmin-php/
+	 */
 	public $compressJs = false;
 	/**
-	* Compress all CSS files with CssMin. CssMin must be installed as an extension in $cssMinPath.
-	* Specific browserhacks will be removed, so don't add them in to be compressed CSS files.
-	* code.google.com/p/cssmin/
-	*/
+	 * Compress all CSS files with CssMin. CssMin must be installed as an extension in $cssMinPath.
+	 * Specific browserhacks will be removed, so don't add them in to be compressed CSS files.
+	 * code.google.com/p/cssmin/
+	 */
 	public $compressCss = false;
 	/**
-	* DEPRECATED/LEGACY
-	* Combine all JS and CSS files into one. Be careful with relative paths in CSS.
-	*/
+	 * DEPRECATED/LEGACY
+	 * Combine all JS and CSS files into one. Be careful with relative paths in CSS.
+	 */
 	public $combineFiles = false;
 	/**
-	* Combine all non-remote JS files into one.
-	*/
+	 * Combine all non-remote JS files into one.
+	 */
 	public $combineJs = false;
 	/**
-	* Combine all non-remote CSS files into one. Be careful with relative paths in CSS.
-	*/
+	 * Combine all non-remote CSS files into one. Be careful with relative paths in CSS.
+	 */
 	public $combineCss = false;
 	/**
-	* Exclude certain files from inclusion. array('/path/to/excluded/file') Useful for fixed base
-	* and incidental additional JS.
-	*/
+	 * Exclude certain files from inclusion. array('/path/to/excluded/file') Useful for fixed base
+	 * and incidental additional JS.
+	 */
 	public $excludeFiles = array();
 	/**
-	* Path where the combined/compressed file will be stored. Will use coreScriptUrl if not defined
-	*/
+	 * Path where the combined/compressed file will be stored. Will use coreScriptUrl if not defined
+	 */
 	public $filePath;
 	/**
-	* If true, all files to be included will be checked if they are modified.
-	* To enhance speed (eg production) set to false.
-	*/
+	 * If true, all files to be included will be checked if they are modified.
+	 * To enhance speed (eg production) set to false.
+	 */
 	public $autoRefresh = true;
 	/**
-	* Relative Url where the combined/compressed file can be found
-	*/
+	 * Relative Url where the combined/compressed file can be found
+	 */
 	public $fileUrl;
 	/**
-	* Path where files can be found
-	*/
+	 * Path where files can be found
+	 */
 	public $basePath;
 	/**
-	* Used for garbage collection. If not accessed during that period: remove.
-	*/
+	 * Used for garbage collection. If not accessed during that period: remove.
+	 */
 	public $ttlDays = 1;
 	/**
-	* prefix for the combined/compressed files
-	*/
+	 * prefix for the combined/compressed files
+	 */
 	public $prefix = 'c_';
 	/**
-	* path to JsMin
-	*/
+	 * path to JsMin
+	 */
 	public $jsMinPath = 'ext.ExtendedClientScript.jsmin.*';
 	/**
-	* path to CssMin
-	*/
+	 * path to CssMin
+	 */
 	public $cssMinPath = 'ext.ExtendedClientScript.cssmin.*';
 	/**
-	* CssMin filter options. Default values according cssMin doc.
-	*/
-	public $cssMinFilters = array
-	(
-        'ImportImports'                 => true,
-        'RemoveComments'                => true,
-        'RemoveEmptyRulesets'           => true,
-        'RemoveEmptyAtBlocks'           => true,
-        'ConvertLevel3AtKeyframes'      => false,
-        'ConvertLevel3Properties'       => false,
-        'Variables'                     => true,
-        'RemoveLastDelarationSemiColon' => true
+	 * CssMin filter options. Default values according cssMin doc.
+	 */
+	public $cssMinFilters = array(
+		'ImportImports'                 => true,
+		'RemoveComments'                => true,
+		'RemoveEmptyRulesets'           => true,
+		'RemoveEmptyAtBlocks'           => true,
+		'ConvertLevel3AtKeyframes'      => false,
+		'ConvertLevel3Properties'       => false,
+		'Variables'                     => true,
+		'RemoveLastDelarationSemiColon' => true
 	);
 	/**
-	* CssMin plugin options. Maximum compression and conversion.
-	*/
-	public $cssMinPlugins = array
-	(
+	 * CssMin plugin options. Maximum compression and conversion.
+	 */
+	public $cssMinPlugins = array(
 		'Variables'                => true,
 		'ConvertFontWeight'        => true,
 		'ConvertHslColors'         => true,
@@ -114,34 +111,33 @@ class ExtendedClientScript extends CClientScript
 	);
 
 	private $_changesHash = '';
-    private $_renewFile;
+	private $_renewFile;
 
 	/**
-	* Will combine/compress JS and CSS if wanted/needed, and will continue with original
-	* renderHead afterwards
-	*
-	* @param <type> $output
-	*/
-	public function renderHead(&$output)
-	{
-		if ($this->combineFiles) {
+	 * Will combine/compress JS and CSS if wanted/needed, and will continue with original
+	 * renderHead afterwards
+	 *
+	 * @param <type> $output
+	 */
+	public function renderHead ( &$output ) {
+		if ( $this->combineFiles ) {
 			$this->combineJs = $this->combineCss = true;
 		}
 
 		$this->renderJs($output, parent::POS_HEAD);
 
-		if ($this->combineCss)
-		{
-			if (count($this->cssFiles) !== 0)
-			{
-				foreach ($this->cssFiles as $url => $media) {
+		if ( $this->combineCss ) {
+			if ( count($this->cssFiles) !== 0 ) {
+				$cssFiles = array();
+
+				foreach ( $this->cssFiles as $url => $media ) {
 					$url = $this->getRealPath($url);
-					if( !$this->isRemoteFile($url) ) {
+					if ( !$this->isRemoteFile($url) ) {
 						$cssFiles[$media][$url] = $url; // Exclude remote files
 					}
 				}
 
-				foreach ($cssFiles as $media => $url) {
+				foreach ( $cssFiles as $media => $url ) {
 					$this->combineAndCompress('css', $url, $media);
 				}
 			}
@@ -150,29 +146,58 @@ class ExtendedClientScript extends CClientScript
 	}
 
 	/**
-	* Will combine/compress JS if wanted/needed, and will continue with original
-	* renderBodyEnd afterwards
-	*
-	* @param <type> $output
-	*/
-	public function renderBodyBegin(&$output)
-	{
+	 * Will combine/compress JS if wanted/needed, and will continue with original
+	 * renderBodyEnd afterwards
+	 *
+	 * @param <type> $output
+	 */
+	public function renderBodyBegin ( &$output ) {
 		$this->renderJs($output, parent::POS_BEGIN);
 		parent::renderBodyBegin($output);
 	}
 
 	/**
-	* Will combine/compress JS if wanted/needed, and will continue with original
-	* renderBodyEnd afterwards
-	*
-	* @param <type> $output
-	*/
-	public function renderBodyEnd(&$output)
-	{
+	 * Will combine/compress JS if wanted/needed, and will continue with original
+	 * renderBodyEnd afterwards
+	 *
+	 * @param <type> $output
+	 */
+	public function renderBodyEnd ( &$output ) {
 		$this->renderJs($output, parent::POS_END);
 		parent::renderBodyEnd($output);
 	}
 
+
+	/**
+	 * Registers a piece of javascript code.
+	 *
+	 * @param string  $id       ID that uniquely identifies this piece of JavaScript code
+	 * @param string  $script   the javascript code
+	 * @param integer $position the position of the JavaScript code. Valid values include the following:
+	 * <ul>
+	 * <li>CClientScript::POS_HEAD : the script is inserted in the head section right before the title element.</li>
+	 * <li>CClientScript::POS_BEGIN : the script is inserted at the beginning of the body section.</li>
+	 * <li>CClientScript::POS_END : the script is inserted at the end of the body section.</li>
+	 * <li>CClientScript::POS_LOAD : the script is inserted in the window.onload() function.</li>
+	 * <li>CClientScript::POS_READY : the script is inserted in the jQuery's ready function.</li>
+	 * </ul>
+	 *
+	 * @return CClientScript the CClientScript object itself (to support method chaining, available since version 1.1.5).
+	 */
+	public function registerScript ( $id, $script, $position = null, array $htmlOptions = array() ) {
+		if ( $position === null ) {
+			$position = $this->defaultScriptPosition;
+		}
+		$this->hasScripts = true;
+		$script = $this->minifyJs($script);
+		$this->scripts[$position][$id] = $script;
+		if ( $position === self::POS_READY || $position === self::POS_LOAD ) {
+			$this->registerCoreScript('jquery');
+		}
+		$params = func_get_args();
+		$this->recordCachingAction('clientScript', 'registerScript', $params);
+		return $this;
+	}
 
 	/**
 	 *
@@ -180,17 +205,15 @@ class ExtendedClientScript extends CClientScript
 	 * @param <type> $output
 	 * @param <type> $pos
 	 */
-	private function renderJs($output, $pos)
-	{
-		if ($this->combineJs)
-		{
-			if (isset($this->scriptFiles[$pos]) && count($this->scriptFiles[$pos]) !==  0)
-			{
+	private function renderJs ( $output, $pos ) {
+		if ( $this->combineJs ) {
+			if ( isset($this->scriptFiles[$pos]) && count($this->scriptFiles[$pos]) !== 0 ) {
 				$jsFiles = $this->scriptFiles[$pos];
 
-				foreach ($jsFiles as &$fileName) {
+				foreach ( $jsFiles as &$fileName ) {
 					$fileName = $this->getRealPath($fileName);
-					(!empty($this->excludeFiles) && in_array($fileName, $this->excludeFiles) || $this->isRemoteFile($fileName)) AND $fileName = false;
+					(!empty($this->excludeFiles) && in_array($fileName,
+							$this->excludeFiles) || $this->isRemoteFile($fileName)) AND $fileName = false;
 				}
 
 				$jsFiles = array_filter($jsFiles);
@@ -200,131 +223,146 @@ class ExtendedClientScript extends CClientScript
 	}
 
 	/**
-	* Performs the actual combining and compressing
-	*
-	* @param <type> $type
-	* @param <type> $urls
-	* @param <type> $pos
-	*/
-	private function combineAndCompress($type, $urls, $pos)
-	{
+	 * Performs the actual combining and compressing
+	 *
+	 * @param <type> $type
+	 * @param <type> $urls
+	 * @param <type> $pos
+	 */
+	private function combineAndCompress ( $type, $urls, $pos ) {
 		$this->fileUrl or $this->fileUrl = $this->getCoreScriptUrl();
 		$this->basePath or $this->basePath = realpath($_SERVER['DOCUMENT_ROOT']);
-		$this->filePath or $this->filePath = $this->basePath.$this->fileUrl;
+		$this->filePath or $this->filePath = $this->basePath . $this->fileUrl;
 
-		$optionsHash = ($type == 'js') ? md5($this->basePath . $this->compressJs . $this->ttlDays . $this->prefix)
-												 : md5($this->basePath . $this->compressCss . $this->ttlDays . $this->prefix . serialize($this->cssMinFilters + $this->cssMinPlugins));
+		$optionsHash = ($type == 'js') ? md5($this->basePath . $this->compressJs . $this->ttlDays . $this->prefix) : md5($this->basePath . $this->compressCss . $this->ttlDays . $this->prefix . serialize($this->cssMinFilters + $this->cssMinPlugins));
 
-		if ($this->autoRefresh)
-		{
+		if ( $this->autoRefresh ) {
 			$mtimes = array();
 
-			foreach ($urls as $file)
-			{
-				$fileName = $this->basePath.'/'.trim($file,'/');
+			foreach ( $urls as $file ) {
+				$fileName = $this->basePath . '/' . trim($file, '/');
 
-				if(file_exists($fileName))
-				{
+				if ( file_exists($fileName) ) {
 					$mtimes[] = filemtime($fileName);
 				}
 			}
-			$this->_changesHash = md5(serialize($mtimes));
+			$this->_changesHash = md5(implode(',', $mtimes));
 		}
 
-		$combineHash = md5(implode('',$urls));
+		$combineHash = md5(implode(',', $urls));
 
-		$fileName = $this->prefix.md5($combineHash.$optionsHash.$this->_changesHash).".$type";
+		$fileName = $this->prefix . md5($combineHash . $optionsHash . $this->_changesHash) . ".$type";
 
-		$this->_renewFile = (file_exists($this->filePath.'/'.$fileName)) ? false : true;
+		$this->_renewFile = (file_exists($this->filePath . '/' . $fileName)) ? false : true;
 
-		if ($this->_renewFile)
-		{
+		if ( $this->_renewFile ) {
 			$this->garbageCollect($type);
 			$combinedFile = '';
 
-			foreach ($urls as $file) {
-			    $fileContents = file_get_contents($this->basePath.'/'.$file);
-			    if ( $type == 'css' && strpos($fileContents, '@import') !== false ) {
-					$this->cssMinFilters['ImportImports'] = array('BasePath' => dirname($this->basePath.'/'.$file) );
-			    }
+			foreach ( $urls as $file ) {
+				$fileContents = file_get_contents($this->basePath . '/' . $file);
 
-			    if ($type == 'js' && $this->compressJs) {
+				if ( $type == 'css' && strpos($fileContents, '@import') !== false ) {
+					$this->cssMinFilters['ImportImports'] = array('BasePath' => dirname($this->basePath . '/' . $file));
+				}
+
+				if ( $type == 'js' && $this->compressJs ) {
 					$fileContents = $this->minifyJs($fileContents) . ';';
-			    }
+				}
 
-			    if ($type == 'css' && $this->compressCss) {
+				if ( $type == 'css' && $this->compressCss ) {
 					$_fileBasePath = explode('/', $file);
 					array_pop($_fileBasePath);
 					$_fileBasePath = implode('/', $_fileBasePath) . '/';
-					$this->cssMinPlugins['UrlPrefix'] = array( 'BaseUrl' => $_fileBasePath );
+					$this->cssMinPlugins['UrlPrefix'] = array('BaseUrl' => $_fileBasePath);
 					$fileContents = $this->minifyCss($fileContents);
-			    }
-			    $combinedFile .= $fileContents;
+				}
+				$combinedFile .= $fileContents;
 			}
 
-			file_put_contents($this->filePath.'/'.$fileName, $combinedFile);
+			file_put_contents($this->filePath . '/' . $fileName, $combinedFile);
 		}
 
-		foreach ($urls as $url) {
-			$this->scriptMap[basename($url)] = $this->fileUrl.'/'.$fileName;
+		foreach ( $urls as $url ) {
+			$this->scriptMap[basename($url)] = $this->fileUrl . '/' . $fileName;
 		}
 
 		$this->remapScripts();
 	}
 
-	private function garbageCollect($type)
-	{
-		$files = CFileHelper::findFiles($this->filePath, array('fileTypes' => array($type), 'level'=> 0));
+	private function garbageCollect ( $type ) {
+		$files = CFileHelper::findFiles($this->filePath,
+			array(
+			     'fileTypes' => array($type),
+			     'level'     => 0
+			));
 
-		foreach($files as $file)
-		{
-			if (strpos($file, $this->prefix) !== false && $this->fileTTL($file))
+		foreach ( $files as $file ) {
+			if ( strpos($file, $this->prefix) !== false && $this->fileTTL($file) ) {
 				unlink($file);
+			}
 		}
 	}
 
 	/**
-	* See if file is ready for deletion
-	*
-	* @param <type> $file
-	*/
-	private function fileTTL($file)
-	{
-		if(!file_exists($file)) return false;
+	 * See if file is ready for deletion
+	 *
+	 * @param <type> $file
+	 */
+	private function fileTTL ( $file ) {
+		if ( !file_exists($file) ) {
+			return false;
+		}
 		$ttl = $this->ttlDays * 60 * 60 * 24;
 		return ((fileatime($file) + $ttl) < time()) ? true : false;
 	}
 
 	/**
-	* Minify javascript with JSMin
-	*
-	* @param <type> $js
-	*/
-	private function minifyJs($js)
-	{
+	 * Minify javascript with JSMin
+	 *
+	 * @param <type> $js
+	 */
+	private function minifyJs ( $js ) {
 		Yii::import($this->jsMinPath);
-		return JSMin::minify($js);
+
+		$md5 = md5($js);
+		if ( $cache = Yii::app()->cache->get(__FILE__ . 'js' . $md5) ) {
+			return $cache;
+		}
+
+		$minified = trim(JSMin::minify($js));
+
+		Yii::app()->cache->set(__FILE__ . 'js' . $md5, $minified);
+		return $minified;
 	}
 
 	/**
-	* Minify css with cssmin
-	*
-	* @param <type> $css
-	*/
-	private function minifyCss($css)
-	{
+	 * Minify css with cssmin
+	 *
+	 * @param <type> $css
+	 */
+	private function minifyCss ( $css ) {
 		Yii::import($this->jsMinPath);
 		Yii::import($this->cssMinPath);
-		return cssmin::minify($css, $this->cssMinFilters, $this->cssMinPlugins);
+
+		$md5 = md5($css);
+		if ( $cache = Yii::app()->cache->get(__FILE__ . 'css' . $md5) ) {
+			return $cache;
+		}
+
+		$minified = cssmin::minify($css, $this->cssMinFilters, $this->cssMinPlugins);
+
+		Yii::app()->cache->set(__FILE__ . 'css' . $md5, $minified);
+		return $minified;
 	}
 
 	/**
-	* See if file is on remote server
-	*
-	* @param <type> $file
-	*/
-	private function isRemoteFile($file) {
-		return (strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0) ? true : false;
+	 * See if file is on remote server
+	 *
+	 * @param <type> $file
+	 */
+	private function isRemoteFile ( $file ) {
+		return (strpos($file, '//') === 0 || strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0) ? true : false;
 	}
 
 	private function getRealPath ( $file ) {

@@ -19,7 +19,7 @@ class CategoryBehavior extends CActiveRecordBehavior {
 		return true;
 	}
 
-	public function afterDelete () {
+	public function afterDelete ( $event ) {
 		CategoryAttribute::model()->deleteAllByAttributes(array('catId' => $this->getOwner()->id));
 	}
 

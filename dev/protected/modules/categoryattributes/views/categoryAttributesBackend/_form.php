@@ -1,4 +1,10 @@
 <?php
+/**
+ * @var $form CActiveForm
+ */
+?>
+
+<?php
 $form = $this->beginWidget('CActiveForm',
 	array(
 	     'id'                     => 'category-attributes-form',
@@ -26,7 +32,10 @@ $form = $this->beginWidget('CActiveForm',
 	            } ?>">
                  <div class="column span-4"><?php echo $form->labelEx($model, 'cId'); ?></div>
                  <div class="column span-flexible">
-			<?php echo $form->dropDownList($model, 'cId', CHtml::listData(Category::model()->findAll(), 'id', 'title'), array('empty' => '')); ?>
+			<?php echo $form->dropDownList($model,
+		                 'cId',
+		                 CHtml::listData(Category::model()->findAll(), 'id', 'title'),
+		                 array('empty' => '')); ?>
 	                 <ul class="errorlist">
                          <li><?php echo $form->error($model, 'cId'); ?></li>
                      </ul>
@@ -57,6 +66,18 @@ $form = $this->beginWidget('CActiveForm',
                     </div>
                 </div>
 
+	            <div class="row <?php if ( $model->getError('validator') ) {
+		            echo 'errors';
+	            } ?>">
+                 <div class="column span-4"><?php echo $form->labelEx($model, 'validator'); ?></div>
+                 <div class="column span-flexible">
+			<?php echo $form->dropDownList($model, 'validator', $validators, array('empty' => '')); ?>
+	                 <ul class="errorlist">
+                         <li><?php echo $form->error($model, 'validator'); ?></li>
+                     </ul>
+                 </div>
+             </div>
+
                 <div class="row <?php if ( $model->getError('required') ) {
 	                echo 'errors';
                 } ?>">
@@ -82,25 +103,25 @@ $form = $this->beginWidget('CActiveForm',
              </div>
 
 
-                <div class="row <?php if ( $model->getError('measure') ) {
+                <div class="row <?php if ( $model->getError('description') ) {
 	                echo 'errors';
                 } ?>">
-                    <div class="column span-4"><?php echo $form->labelEx($model, 'measure'); ?></div>
+                    <div class="column span-4"><?php echo $form->labelEx($model, 'description'); ?></div>
                     <div class="column span-flexible">
-						<?php echo $form->textField($model, 'measure'); ?>
+						<?php echo $form->textField($model, 'description'); ?>
 	                    <ul class="errorlist">
-                            <li><?php echo $form->error($model, 'measure'); ?></li>
+                            <li><?php echo $form->error($model, 'description'); ?></li>
                         </ul>
                     </div>
                 </div>
 
 	            <div class="row <?php if ( $model->getError('separate') ) {
-              echo 'errors';
-             } ?>">
+		            echo 'errors';
+	            } ?>">
                  <div class="column span-4"><?php echo $form->labelEx($model, 'separate'); ?></div>
                  <div class="column span-flexible">
 			<?php echo $form->checkBox($model, 'separate'); ?>
-                  <ul class="errorlist">
+	                 <ul class="errorlist">
                          <li><?php echo $form->error($model, 'separate'); ?></li>
                      </ul>
                  </div>

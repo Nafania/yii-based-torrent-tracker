@@ -3,3 +3,10 @@
 /dev/uploads/*
 /dev/protected/runtime/*
 /dev/protected/modules/yiiadmin/data/*
+/dev/protected/engine/*
+/.idea
+/dev/protected/config/production/web.php
+/dev/protected/config/production/console.php
+/dev/protected/config/devel/web.php
+/dev/protected/config/devel/console.php
+atlassian-ide-plugin.xml

@@ -1,21 +1,8 @@
 <?php
-if ( $_SERVER['SERVER_ADDR'] == '127.0.0.1' ) {
-	$config = dirname(__FILE__) . '/local/config.php';
 
-	defined('YII_DEBUG') or define('YII_DEBUG', true);
-	defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL', 3);
-}
-elseif ( isset($_SERVER['SERVER_ADDR']) ) {
-	$config = dirname(__FILE__) . '/production/config.php';
-}
-elseif ( strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ) {
-	$config = dirname(__FILE__) . '/local/console.php';
-
-	defined('YII_DEBUG') or define('YII_DEBUG', true);
-	defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL', 3);
-}
-else {
-	$config = dirname(__FILE__).'/production/console.php';
+if ( $env == 'devel' ) {
+    defined('YII_DEBUG') or define('YII_DEBUG', true);
+    defined('YII_TRACE_LEVEL') or define('YII_TRACE_LEVEL', 3);
 }
 
 $config = require_once($config);

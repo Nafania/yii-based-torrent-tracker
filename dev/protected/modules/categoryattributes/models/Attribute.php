@@ -9,8 +9,12 @@
  * @property integer $validator
  * @property integer $required
  * @property string  $title
- * @property string  $measure
- * @property integer cId
+ * @property string  $description
+ * @property integer $cId
+ * @property integer $append
+ * @property integer $prepend
+ * @property integer $separate
+ * @property integer $common
  */
 class Attribute extends EActiveRecord {
 
@@ -22,6 +26,26 @@ class Attribute extends EActiveRecord {
 	const TYPE_TEXTAREA = 5;
 
 	public $cacheTime = 3600;
+
+	public function __get ( $name ) {
+		if ( is_numeric($name) ) {
+			$model = self::model()->findByPk($name);
+			if ( $model ) {
+				return (isset($_POST[get_class($this)][$name]) ? $_POST[get_class($this)][$name] : '');
+			}
+		}
+		return parent::__get($name);
+	}
+
+	public function __set ( $name, $value ) {
+		if ( is_numeric($name) ) {
+			$model = self::model()->findByPk($name);
+			if ( $model ) {
+				return;
+			}
+		}
+		return parent::__set($name, $value);
+	}
 
 	/**
 	 * Returns the static model of the specified AR class.
@@ -58,16 +82,22 @@ class Attribute extends EActiveRecord {
 				'range' => array_keys($this->typeLabels())
 			),
 			array(
-				'title, measure',
+				'title, description',
 				'length',
 				'max' => 255
+			),
+			array(
+				'validator',
+				'in',
+				'range'      => array_keys(CValidator::$builtInValidators),
+				'allowEmpty' => true,
 			),
 			array(
 				'required, common, separate',
 				'safe'
 			),
 			array(
-				'type, title, measure, validator, required, common, cId',
+				'type, title, description, validator, required, common, cId',
 				'safe',
 				'on' => 'adminSearch'
 			)
@@ -95,14 +125,18 @@ class Attribute extends EActiveRecord {
 	 */
 	public function attributeLabels () {
 		return array(
-			'id'        => Yii::t('CategoryAttributesModule', 'ID'),
-			'title'     => Yii::t('CategoryAttributesModule', 'Название'),
-			'type'      => Yii::t('CategoryAttributesModule', 'Тип'),
-			'validator' => Yii::t('CategoryAttributesModule', 'Валидатор'),
-			'required'  => Yii::t('CategoryAttributesModule', 'Обязательное'),
-			'measure'   => Yii::t('CategoryAttributesModule', 'Ед. измерения'),
-			'common'    => Yii::t('CategoryAttributesModule', 'Общий'),
-			'cId'       => Yii::t('CategoryAttributesModule', 'Категория'),
+			'id'          => Yii::t('CategoryAttributesModule', 'ID'),
+			'title'       => Yii::t('CategoryAttributesModule', 'Название'),
+			'type'        => Yii::t('CategoryAttributesModule', 'Тип'),
+			'validator'   => Yii::t('CategoryAttributesModule', 'Валидатор'),
+			'required'    => Yii::t('CategoryAttributesModule', 'Обязательное'),
+			'description' => Yii::t('CategoryAttributesModule', 'Описание'),
+			'common'      => Yii::t('CategoryAttributesModule', 'Общий'),
+			'cId'         => Yii::t('CategoryAttributesModule', 'Категория'),
+			/**
+			 * нужно для того, чтобы при валидации прикрепленными валидаторами происходило корректное отображение названия поля
+			 */
+			$this->id     => $this->getTitle(),
 		);
 	}
 
@@ -130,6 +164,7 @@ class Attribute extends EActiveRecord {
 		if ( sizeof($in) ) {
 			$this->getDbCriteria()->mergeWith(array(
 			                                       'condition' => 'id IN(' . implode(', ', $in) . ')',
+			                                       'order'     => 'FIELD(id, ' . implode(', ', $in) . ')',
 			                                  ));
 		}
 		else {
@@ -166,7 +201,7 @@ class Attribute extends EActiveRecord {
 
 		$criteria->compare('id', $this->id);
 		$criteria->compare('title', $this->title, true);
-		$criteria->compare('measure', $this->measure, true);
+		$criteria->compare('description', $this->description, true);
 		$criteria->compare('type', $this->type);
 		$criteria->compare('required', $this->required);
 		$criteria->compare('cId', $this->cId);
@@ -193,40 +228,43 @@ class Attribute extends EActiveRecord {
 			));
 	}
 
-	public function getInputField ( $value = null, $hasErrors = false, $nameAppend = false ) {
-		$name = 'Attribute' . ($nameAppend !== false ? '[' . $nameAppend . ']' : '') . '[' . $this->id . ']';
-		$class = ($hasErrors ? 'error' : '');
+	public function getInputField ( $value = null, $hasErrors = false, $htmlOptions = array() ) {
+		$name = 'Attribute[' . $this->id . ']';
+		$class = ($hasErrors ? ' error' : '');
+		if ( isset($htmlOptions['class']) ) {
+			$htmlOptions['class'] .= $class;
+		}
+		else {
+			$htmlOptions['class'] = $class;
+		}
 		switch ( $this->type ) {
 			case self::TYPE_TEXTAREA:
-				return CHtml::textArea($name, $value, array('class' => $class));
+				return CHtml::textArea($name, $value, $htmlOptions);
 				break;
 
 			case self::TYPE_TEXT:
-				return CHtml::textField($name, $value, array('class' => $class));
+				return CHtml::textField($name, $value, $htmlOptions);
 				break;
 
 			case self::TYPE_DROPDOWN:
 				return CHtml::dropDownList($name,
 					$value,
 					CHtml::listData($this->chars, 'title', 'title'),
-					array(
-					     'empty' => '',
-					     'class' => $class
-					));
+					CMap::mergeArray($htmlOptions, array('empty' => '')));
 				break;
 
 			case self::TYPE_RADIO:
 				return CHtml::radioButtonList($name,
 					$value,
 					CHtml::listData($this->chars, 'title', 'title'),
-					array('class' => $class));
+					$htmlOptions);
 				break;
 
 			case self::TYPE_CHECKBOX:
 				return CHtml::checkBoxList($name,
 					$value,
 					CHtml::listData($this->chars, 'title', 'title'),
-					array('class' => $class));
+					$htmlOptions);
 				break;
 
 			case self::TYPE_RADIO_YES_NO:
@@ -236,7 +274,7 @@ class Attribute extends EActiveRecord {
 					     0 => Yii::t('common', 'Нет'),
 					     1 => Yii::t('common', 'Да')
 					),
-					array('class' => $class));
+					$htmlOptions);
 				break;
 		}
 	}

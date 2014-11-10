@@ -29,10 +29,13 @@ class StaticpagesModule extends CWebModule {
 	public function getPublishedPagesAsMenu () {
 		$models = StaticPage::model()->published()->findAll();
 		$items = array();
+
 		foreach ( $models AS $model ) {
 			$items[] = array(
 				'label' => $model->getTitle(),
-				'url' => $model->getUrl(),
+				'url' => $model->getFullUrl(),
+				'visible' => Yii::app()->user->checkAccess('staticpages.default.index'),
+			    'active' => Yii::app()->getRequest()->getUrl() == $model->getFullUrl(),
 			);
 		}
 
