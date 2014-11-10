@@ -87,6 +87,7 @@ $(document).on('click', 'a[data-action=deleteComment]', function (e) {
 });
 
 $(document).on('mouseenter', '.commentText', function (e) {
+    $(this).removeClass('commentTextGradient');
     if ($(this).hasClass('rating0')) {
         return true;
     }
@@ -96,6 +97,7 @@ $(document).on('mouseenter', '.commentText', function (e) {
     $(this).fadeTo('slow', 1);
 });
 $(document).on('mouseleave', '.commentText', function (e) {
+    $(this).addClass('commentTextGradient');
     if ($(this).hasClass('rating0')) {
         return true;
     }
