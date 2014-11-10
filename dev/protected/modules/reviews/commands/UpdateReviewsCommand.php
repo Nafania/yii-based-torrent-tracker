@@ -4,12 +4,12 @@ Yii::import('application.modules.reviews.models.*');
 
 class UpdateReviewsCommand extends CConsoleCommand
 {
-    public function actionIndex($limit = 500)
+    public function actionIndex($limit = 500, $forceRun = false)
     {
         $offset = Yii::app()->getGlobalState(__FILE__ . 'reviewsOffset', 0);
         $runAt = Yii::app()->getGlobalState(__FILE__ . 'runAt', 0);
 
-        if ($runAt && $runAt > ( time() - 1 * 60 * 60 ) ) {
+        if (!$forceRun && $runAt && $runAt > ( time() - 1 * 60 * 60 ) ) {
             return 0;
         }
 
@@ -29,7 +29,7 @@ class UpdateReviewsCommand extends CConsoleCommand
         $comm->select = 'COUNT(*) AS count';
         $comm->from = '{{torrentGroups}}';
         $comm->where = 'cId IN(' . implode(', ', array_keys($data)) . ')';
-        $count = $comm->queryColumn()[0];
+        $count = $comm->queryScalar();
 
         $comm = $db->createCommand();
         $comm->select = '*';
@@ -52,6 +52,10 @@ class UpdateReviewsCommand extends CConsoleCommand
                 $ReviewRelation = EActiveRecord::model('ReviewRelation')->populateRecord($review);
 
                 $params = $ReviewRelation->getParams();
+
+                /**
+                 * @var $class ReviewInterface
+                 */
                 $class = new $ReviewRelation->apiName;
 
                 $attrs = $params;
