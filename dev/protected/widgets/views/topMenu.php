@@ -7,36 +7,46 @@
  * @var $selectedTags       string
  * @var $notTags            string
  * @var $settingActive      boolean
+ * @var $searchVal string
+ * @var mixed $searchAction
+ * @var string $searchPlaceholder
  */
 ?>
 <?php
 
+$str = CHtml::beginForm($searchAction, 'get', ['class' => 'form-search navbar-search pull-right']);
+
 if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
-	$form = '
-	<form class="form-search navbar-search pull-right" action="' . Yii::app()->createUrl('/torrents/default/index') . '">
-	    <div class="input-prepend">
-	        <a href="#searchSettings" class="add-on' . ($settingActive ? ' active' : '') . '" data-toggle="modal">
-	            <i class="icon-cog' . ($settingActive ? ' icon-white' : '') . '" title="' . Yii::t('torrentsModule.common', 'Расширенный поиск') . '" data-toggle="tooltip" data-placement="bottom"></i></a>' .
-        CHtml::textField('search',
-			$searchVal,
-			array(
-			     'class'       => 'input-medium',
-			     'placeholder' => Yii::t('common', 'Поиск')
-			)) . '
-			</div>
-			<div class="input-append">
-			<button type="submit" class="btn"><i class="icon-search"></i></button>
-			</div>
-		</form>';
+    $str .= CHtml::openTag('div', ['class' => 'input-prepend']);
+    $str .= CHtml::openTag(
+        'a',
+        ['class' => 'add-on' . ($settingActive ? ' active' : ''), 'href' => '#searchSettings', 'data-toggle' => 'modal']
+    );
+    $str .= CHtml::openTag(
+        'i',
+        [
+            'class' => 'icon-cog' . ($settingActive ? ' icon-white' : ''),
+            'title' => Yii::t('torrentsModule.common', 'Расширенный поиск'),
+            'data-toggle' => 'tooltip',
+            'data-placement' => 'bottom'
+        ]
+    );
+    $str .= CHtml::closeTag('i');
+    $str .= CHtml::closeTag('a');
+    $str .= CHtml::textField('search', $searchVal, ['class' => 'input-medium', 'placeholder' => $searchPlaceholder]);
+    $str .= CHtml::closeTag('div');
 }
 else {
-	$form = '<form class="form-search navbar-search pull-right" action="' . Yii::app()->createUrl('/torrents/default/index') . '">' . CHtml::textField('search',
-			$searchVal,
-			array(
-			     'class'       => 'input-medium',
-			     'placeholder' => Yii::t('common', 'Поиск')
-			)) . '<div class="input-append"><button type="submit" class="btn"><i class="icon-search"></i></button></div></form>';
+    $str .= CHtml::textField('search', $searchVal, ['class' => 'input-medium', 'placeholder' => $searchPlaceholder]);
 }
+
+$str .= CHtml::openTag('div', ['class' => 'input-append']);
+$str .= CHtml::openTag('button', ['class' => 'btn', 'type' => 'submit']);
+$str .= CHtml::openTag('i', ['class' => 'icon-search']);
+$str .= CHtml::closeTag('i');
+$str .= CHtml::closeTag('button');
+$str .= CHtml::closeTag('div');
+$str .= CHtml::endForm();
 
 
 $this->widget('bootstrap.widgets.TbNavbar',
@@ -50,7 +60,7 @@ $this->widget('bootstrap.widgets.TbNavbar',
 	     // requires bootstrap-responsive.css
 	     'items'    => array(
 		     $items,
-		     $form
+             $str
 
 	     )
 	));
@@ -64,7 +74,7 @@ if ( Yii::app()->getUser()->checkAccess('savedsearches.default.create') ) {
 		     'id'                     => 'search-form',
 		     'enableAjaxValidation'   => true,
 		     'enableClientValidation' => true,
-		     'action'                 => Yii::app()->createUrl('/torrents/default/index'),
+		     'action'                 => $searchAction,
 		     'method'                 => 'get',
 		)); ?>
 	<div class="modal-header">
