@@ -83,8 +83,9 @@ $tid = $comment->getTorrentId();
 
 	        </h6>
 
-             <div class="commentText <?php echo 'rating' . ($rating < -10 ? -10 : $rating); ?>"><?php echo TextHelper::parseText($comment->getText(),
-		             'comment-' . $comment->getId()); ?></div>
+             <div class="commentText commentTextGradient <?php echo 'rating' . ($rating < -10 ? -10 : $rating); ?>">
+                 <?= TextHelper::parseText($comment->getText(), 'comment-' . $comment->getId()); ?>
+             </div>
 
 			<?php if ( Yii::app()->getUser()->checkAccess('comments.default.loadAnswerBlock') && $comment->status == $comment::APPROVED ) { ?>
 				<span><?php echo CHtml::link(Yii::t('commentsModule.common', 'Ответить'),
