@@ -16,11 +16,25 @@ abstract class ReviewInterface
     abstract function getId();
 
     /**
-     * @param $args
+     * @param array $args
      *
-     * @return mixed
+     * @return array|bool
      */
     abstract protected function getApiData($args);
+
+    /**
+     * @param array $params
+     * @return string
+     */
+    abstract public function returnReviewString( $params );
+
+    /**
+     * Метод должен возвращать массив параметров параметр => описание
+     * которые получает по апи
+     *
+     * @return array
+     */
+    abstract public function getReturnParams();
 
     /**
      * @param $attrs
@@ -30,7 +44,7 @@ abstract class ReviewInterface
      */
     public function getReviewData($attrs, $className, $primaryKey)
     {
-        $row = Yii::app()->db->createCommand('SELECT ratingText FROM reviews WHERE modelId = :pk AND modelName = :name AND apiName = :apiName AND mtime > :mtime')->queryRow(true, [
+        $row = Yii::app()->db->createCommand('SELECT params FROM reviews WHERE modelId = :pk AND modelName = :name AND apiName = :apiName AND mtime > :mtime')->queryRow(true, [
                 ':pk' => $primaryKey,
                 ':name' => $className,
                 ':apiName' => $this->getId(),
@@ -38,7 +52,7 @@ abstract class ReviewInterface
         );
 
         if ($row) {
-            return $row['ratingText'];
+            return CJSON::decode($row['params']);
         }
 
         return $this->sendData($this->getApiData($attrs), $className, $primaryKey);
@@ -52,27 +66,30 @@ abstract class ReviewInterface
      */
     public function sendData($data, $className, $primaryKey)
     {
+        /**
+         * @var $review Review
+         */
         $review = Review::model()->findByPk(array(
             'modelId' => $primaryKey,
             'modelName' => $className,
             'apiName' => $this->getId()
         ));
 
-        if ($review) {
-            if ($data === false) {
-                $review->mtime = time();
-
-            } else {
-                $review->mtime = time();
-                $review->ratingText = $data;
-            }
-        } else {
+        if ( !$review ) {
             $review = new Review();
             $review->modelId = $primaryKey;
             $review->modelName = $className;
             $review->apiName = $this->getId();
             $review->mtime = time();
-            $review->ratingText = ($data === false ? '' : $data);
+        }
+
+        $review->mtime = time();
+
+        if ( $data ) {
+            $review->params = CJSON::encode($data);
+        }
+        else {
+            $review->params = new CDbExpression('NULL');
         }
 
         $review->save();

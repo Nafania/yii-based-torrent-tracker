@@ -40,6 +40,33 @@ class KinopoiskApi extends ReviewInterface
 
     }
 
+    /**
+     * @return array
+     */
+    public function getReturnParams()
+    {
+        return [
+            'imdbID' => Yii::t('reviewsModule.kinopoiskApi', 'movieId'),
+            'imdbRating' => Yii::t('reviewsModule.kinopoiskApi', 'rating'),
+            'imdbVotes' => Yii::t('reviewsModule.kinopoiskApi', 'votes'),
+        ];
+    }
+
+    public function returnReviewString($params)
+    {
+        return Yii::t('ReviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/{movieId}/" target="_blank">{rating}, голосов: {votes}</a>',
+            [
+                '{movieId}' => $params['movieId'],
+                '{rating}' => $params['rating'],
+                '{votes}' => Yii::app()->getNumberFormatter()->formatDecimal($params['votes'])
+            ]
+        );
+    }
+
+    /**
+     * @param $args
+     * @return array|bool
+     */
     protected function getApiData($args)
     {
         $title = $args['t'];
@@ -116,6 +143,10 @@ class KinopoiskApi extends ReviewInterface
         return false;
     }
 
+    /**
+     * @param $movieId
+     * @return array|bool
+     */
     protected function parseXml($movieId)
     {
         try {
@@ -126,16 +157,17 @@ class KinopoiskApi extends ReviewInterface
                 false);
 
             $data = simplexml_load_string($xml);
-            $votes = $data->kp_rating['num_vote'];
 
-            if ($data->kp_rating == 0 || $votes == 0) {
-                return false;
-            } else {
-                return Yii::t('ReviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/' . $movieId . '/" target="_blank">{rating}, голосов: {votes}</a>', array('{rating}' => $data->kp_rating, '{votes}' => Yii::app()->getNumberFormatter()->formatDecimal($votes)));
-            }
+            return [
+                'movieId' => $movieId,
+                'rating' => (float) $data->kp_rating,
+                'votes' => (int) $data->kp_rating['num_vote'],
+            ];
+
 
         } catch (CException $e) {
             Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+            return false;
         }
     }
 }

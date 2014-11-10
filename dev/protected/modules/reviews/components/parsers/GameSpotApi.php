@@ -31,6 +31,34 @@ class GameSpotApi extends ReviewInterface {
 
 	}
 
+    /**
+     * @return array
+     */
+    public function getReturnParams()
+    {
+        return [
+            'url' => Yii::t('reviewsModule.gameSpotApi', 'Url рейтинга'),
+            'reviewerScore' => Yii::t('reviewsModule.gameSpotApi', 'reviewerScore'),
+            'usersScore' => Yii::t('reviewsModule.gameSpotApi', 'usersScore'),
+            'word' => Yii::t('reviewsModule.gameSpotApi', 'word'),
+            'usersCount' => Yii::t('reviewsModule.gameSpotApi', 'usersCount'),
+        ];
+    }
+
+
+    public function returnReviewString ( $params ) {
+        $ret = '<a href="' . $params['url'] . '" target="_blank">';
+        $ret .= ( $params['reviewerScore'] ? 'Reviewer score: ' . $params['reviewerScore'] : '' ) . ($params['word'] ? ' / ' . $params['word'] . '. ' : '');
+        $ret .= ( $params['usersScore'] ? 'Average Score: ' . $params['usersScore'] : '' ) . ($params['usersCount'] ? ' / ' . $params['usersCount'] . ' votes' : '');
+        $ret .= '</a>';
+
+        return $ret;
+    }
+
+    /**
+     * @param array $args
+     * @return array|bool
+     */
 	protected function getApiData ( $args ) {
 		$title = (isset($args['t']) ? rawurlencode($args['t']) : '');
 
@@ -52,6 +80,11 @@ class GameSpotApi extends ReviewInterface {
 	}
 
 
+    /**
+     * @param $content
+     * @param $url
+     * @return array|bool
+     */
 	private function _parseSearchResults ( $content, $url ) {
 		$html = phpQuery::newDocument($content);
 
@@ -62,12 +95,13 @@ class GameSpotApi extends ReviewInterface {
 
 
 		if ( $reviewerScore || $usersScore ) {
-			$ret = '<a href="' . $url . '" target="_blank">';
-			$ret .= ( $reviewerScore ? 'Reviewer score: ' . $reviewerScore : '' ) . ($word ? ' / ' . $word . '. ' : '');
-			$ret .= ( $usersScore ? 'Average Score: ' . $usersScore : '' ) . ($usersCount ? ' / ' . $usersCount . ' votes' : '');
-			$ret .= '</a>';
-
-			return $ret;
+            return [
+                'url' => $url,
+                'reviewerScore' => $reviewerScore,
+                'usersScore' => $usersScore,
+                'word' => $word, //like great, bad, good etc
+                'usersCount' => $usersCount,
+            ];
 		}
 
 		return false;

@@ -2,6 +2,9 @@
 
 class ReviewWidget extends CWidget
 {
+    /**
+     * @var $model EActiveRecord
+     */
     public $model;
     public $template;
 
@@ -16,21 +19,27 @@ class ReviewWidget extends CWidget
         Yii::import('application.modules.reviews.components.parsers.*');
         Yii::import('application.modules.reviews.models.*');
 
+        /**
+         * @var $reviews Review[]
+         */
         $reviews = Review::model()->findAllByAttributes(array(
                 'modelId' => $this->model->getPrimaryKey(),
                 'modelName' => $this->model->resolveClassName(),
-            ),
-            'ratingText <> ""');
+            ), 'params IS NOT NULL');
 
         foreach ($reviews AS $review) {
+            /**
+             * @var $class ReviewInterface
+             */
             $class = new $review->apiName;
+
             echo str_replace(array(
                     '{ratingTitle}',
                     '{ratingValue}'
                 ),
                 array(
                     $class->getDescription(),
-                    $review->ratingText,
+                    $class->returnReviewString(CJSON::decode($review->params)),
                 ),
                 $this->template);
         }
