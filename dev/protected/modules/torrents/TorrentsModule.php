@@ -55,6 +55,7 @@ class TorrentsModule extends \CWebModule
                 'torrents/<title>-<id>-watch-online' => 'torrents/default/watchOnline',
                 'torrents/<title>-<id>' => 'torrents/default/view',
                 'torrents/' => 'torrents/default/index',
+                'torrents/my' => 'torrents/default/my',
                 'torrents/<action:\w+>/*' => 'torrents/default/<action>',
                 'torrents/<controller:\w+>/<action:\w+>/*' => 'torrents/<controller>/<action>',
             ),
