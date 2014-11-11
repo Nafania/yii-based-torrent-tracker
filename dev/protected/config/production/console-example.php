@@ -1,5 +1,6 @@
 <?php
 $yiic = '/usr/share/php/lib/yii-1.1.15.022a51/framework/yiic.php';
+$yii = '/usr/share/php/lib/yii-1.1.15.022a51/framework/yii.php';
 
 return array(
 	// preloading 'log' component
