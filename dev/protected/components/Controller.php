@@ -35,6 +35,8 @@ class Controller extends \CController {
 
 	public $pageOgDescription;
 
+    public $searchWidgetParams;
+
 	public function filters () {
 		return array(
 			array('application.modules.auth.filters.AuthFilter'),
