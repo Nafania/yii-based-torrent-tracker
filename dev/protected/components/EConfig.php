@@ -35,6 +35,8 @@ class EConfig extends CApplicationComponent
 
     /**
      * @param $key
+     *
+     * @return mixed
      * @throws CException
      */
     public function get($key)

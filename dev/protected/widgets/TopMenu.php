@@ -2,6 +2,7 @@
 
 class TopMenu extends CWidget {
 	public function run () {
+
 		$categories = Category::model()->findAll();
 		$searchData = Yii::app()->getUser()->getSavedSearchData('modules_torrents_models_TorrentGroup');
 
@@ -27,6 +28,8 @@ class TopMenu extends CWidget {
 				'sortVal'            => $sortVal,
 				'periodVal'          => $periodVal,
 				'settingActive'      => $selectedCategories || $selectedTags || $notTags || $searchVal || $sortVal || $periodVal,
+                'searchAction' => ( isset($this->controller->searchWidgetParams['action']) ? $this->controller->searchWidgetParams['action'] : ['/torrents/default/index']),
+                'searchPlaceholder' => ( isset($this->controller->searchWidgetParams['placeholder']) ? $this->controller->searchWidgetParams['placeholder'] : Yii::t('common', 'Поиск')),
 			));
 	}
 
@@ -119,6 +122,10 @@ class TopMenu extends CWidget {
                                 'label' => Yii::t('pmsModule.common', 'Личные сообщения'),
 								'url'   => array('/pms/default/index'),
 							),
+                            [
+                                'label' => Yii::t('blogsModule.common', 'Мои торренты'),
+                                'url' => ['/torrents/default/my'],
+                            ],
 							array(
 								'label' => Yii::t('blogsModule.common', 'Мои блоги'),
 								'url'   => array('/blogs/default/my'),

@@ -189,16 +189,10 @@ if ( Yii::app()->getUser()->checkAccess('canViewTorrentOwner') ) {
         'dataProvider' => $dataProvider,
         'type' => 'striped bordered',
         'template' => "{items}\n{pager}",
-        'extraRowColumns' => array('groupCtime'),
+        'extraRowColumns' => ['groupCtime'],
         'extraRowExpression' => function($data) { return '<abbr title="' . $data->getCtime('d.m.Y') . '" class="torrentGridHeader">' . Yii::t('torrentsModule.common', 'Добавлено') . ' ' . TimeHelper::timeAgoInWords($data->getCtime()) . '</abbr>';},
         'enableHistory' => true,
         'enableSorting' => true,
         'id' => 'torrents-grid',
         'columns' => $groupGridColumns,
-        'afterAjaxUpdate' => 'js:function(){}'
-        /*'sortableAttributes' => array(
-             'mtime',
-             'commentsCount',
-             'rating',
-         ),*/
     ));

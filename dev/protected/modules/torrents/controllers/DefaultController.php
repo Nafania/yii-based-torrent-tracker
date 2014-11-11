@@ -529,6 +529,38 @@ class DefaultController extends components\Controller {
 		$this->redirect($url);
 	}
 
+    public function actionMy()
+    {
+        $this->pageTitle = Yii::t('torrentsModule.common', 'Мои торренты');
+        $this->breadcrumbs[] = $this->pageTitle;
+        $this->searchWidgetParams['action'] = ['/torrents/default/my'];
+        $this->searchWidgetParams['placeholder'] = Yii::t('torrentsModule.common', 'Поиск в моих торрентах');
+
+        $model = new models\Torrent();
+
+        $model->unsetAttributes(); // clear any default values
+        $model->setScenario('search');
+        $model->setSearchSettings();
+
+        $attributes = Yii::app()->getRequest()->getQuery('Torrent', '');
+
+        $model->attributes = $attributes;
+
+        $dataProvider = $model->search();
+        $dataProvider->getCriteria()->mergeWith(['condition' => $model->getTableAlias() . '.uid = ' . Yii::app()->getUser()->getId()]);
+
+        \Ajax::renderAjax(
+            'indexGrid',
+            [
+                'dataProvider' => $dataProvider,
+            ],
+            false,
+            false,
+            true
+        );
+
+    }
+
 	/**
 	 * Lists all models.
 	 */
