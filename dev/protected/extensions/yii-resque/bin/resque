@@ -8,6 +8,18 @@ if ($includeFiles) {
     }
 }
 
+$env = getenv('APP_ENV');
+
+switch ( $env ) {
+    case 'devel':
+        $config = 'devel/console.php';
+        break;
+
+    default:
+        $config = 'production/console.php';
+        break;
+}
+
 require_once(getenv('APP_PATH').'/config/config.php');
 require_once($yii);
 Yii::createConsoleApplication($config);
