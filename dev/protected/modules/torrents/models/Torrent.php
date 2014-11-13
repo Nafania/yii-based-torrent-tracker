@@ -482,8 +482,7 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
             $criteria = new CDbCriteria();
             $alias = $this->getTableAlias();
             try {
-                $search = str_replace(['\'', '"', '<', '>'], '', $search);
-                $rows = Yii::app()->sphinx->createCommand('SELECT id FROM yiiTorrents WHERE MATCH(:term)')->queryAll(true, [':term' => '@title ' . $search]);
+                $rows = Yii::app()->sphinx->createCommand('SELECT id FROM yiiTorrents WHERE MATCH(:term)')->queryAll(true, [':term' => '@title ' . \SphinxHelper::escapeMatch($search)]);
 
                 $keys = [];
                 foreach ( $rows AS $row ) {
