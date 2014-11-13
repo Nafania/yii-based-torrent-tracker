@@ -190,14 +190,10 @@ return array(
                 'lifetime' => 30 * 24 * 60 * 60,
             ),
         ),*/
-        'sphinx' => array(
-            'class' => 'ext.DGSphinxSearch.DGSphinxSearch',
-            'server' => '127.0.0.1',
-            'port' => 3312,
-            'maxQueryTime' => 3000,
-            'enableProfiling' => 0,
-            'enableResultTrace' => 0,
-        ),
+        'sphinx' => [
+            'class' => 'system.db.CDbConnection',
+            'connectionString' => 'mysql:host=127.0.0.1;port=9306',
+        ],
         'redis'        => [
             'class'    => 'application.extensions.redis.ARedisConnection',
             'hostname' => 'localhost',
