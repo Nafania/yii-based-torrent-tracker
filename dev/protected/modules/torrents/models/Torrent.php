@@ -410,7 +410,9 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
         $this->title = $return;
 
-        $this->save();
+        if ( $this->title ) {
+            $this->save(false);
+        }
 
         return $return;
     }
@@ -434,7 +436,7 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
     {
         $cache = Yii::app()->cache;
 
-        if ( !$this->_filesCount && ( $this->_filesCount = $cache->get(\CHtml::modelName($this) . $this->getPrimaryKey() . '_filesCount') === false ) ) {
+        if ( !$this->_filesCount && ( $this->_filesCount = $cache->get(\CHtml::modelName($this) . $this->getPrimaryKey() . '_filesCount') ) === false ) {
             $torrent = new tComponents\TorrentComponent($this->getDownloadPath());
             $this->_filesCount = sizeof($torrent->content());
             $cache->set(\CHtml::modelName($this) . $this->getPrimaryKey() . '_filesCount', $this->_filesCount);

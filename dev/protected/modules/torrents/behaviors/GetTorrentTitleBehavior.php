@@ -7,7 +7,12 @@ class GetTorrentTitleBehavior extends CActiveRecordBehavior {
 	private $_beforeSaveCalled = false;
 
 	public function getTitle () {
-		if ( $title = $this->getOwner()->title ) {
+        /**
+         * @var modules\torrents\models\Torrent $owner
+         */
+        $owner = $this->getOwner();
+
+		if ( $title = $owner->title ) {
 			return $title;
 		}
 
@@ -18,7 +23,7 @@ class GetTorrentTitleBehavior extends CActiveRecordBehavior {
 			$prepend  = ( $row['prepend'] ? $row['prepend'] . ' ' : '' );
 			$append  = ( $row['append'] ? ' ' . $row['append'] : '' );
 
-			$val = $this->getOwner()->getEavAttribute($row['attrId']);
+			$val = $owner->getEavAttribute($row['attrId']);
 			if ( $val ) {
 				$return[] = $prepend . $val . $append;
 			}
@@ -27,10 +32,10 @@ class GetTorrentTitleBehavior extends CActiveRecordBehavior {
 		$return = array_unique($return);
 		$return = implode(' ' . Yii::app()->config->get('torrentsModule.torrentsNameDelimiter') . ' ', $return);
 
-		$this->getOwner()->title = $return;
+        $owner->title = $return;
 
-		if ( !$this->_beforeSaveCalled ) {
-			$this->getOwner()->save(false);
+		if ( !$this->_beforeSaveCalled && $owner->title ) {
+            $owner->save(false);
 		}
 
 		return $return;
