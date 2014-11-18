@@ -410,7 +410,9 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
         $this->title = $return;
 
-        $this->save();
+        if ( $this->title ) {
+            $this->save(false);
+        }
 
         return $return;
     }
