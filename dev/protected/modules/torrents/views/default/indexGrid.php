@@ -125,10 +125,10 @@ $groupGridColumns = array(
         )
     ),
     array(
-        'name' => Yii::t('torrentsModule.common', 'Размер'),
+        'name' => 'size',
         'type' => 'raw',
-        'value' => function ($data) {
-                echo SizeHelper::formatSize($data->getFilesSize());
+        'value' => function (\modules\torrents\models\Torrent $data) {
+                echo $data->getSize(true);
             },
         'htmlOptions' => array(
             'width' => '60px'
