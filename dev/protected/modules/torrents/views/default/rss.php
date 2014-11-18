@@ -45,7 +45,7 @@
 					'Категория') . '&lt;/strong&gt;: ' . $model->torrentGroup->category->getTitle() . '&lt;br&gt;';
 			echo '&lt;strong&gt;' . Yii::t('torrentsModule.common', 'Теги') . '&lt;/strong&gt;: ' . $model->tags->toString() . '&lt;br&gt;';
 			echo '&lt;strong&gt;' . Yii::t('torrentsModule.common',
-					'Размер') . '&lt;/strong&gt;: ' . SizeHelper::formatSize($model->getFilesSize()) . '&lt;br&gt;';
+					'Размер') . '&lt;/strong&gt;: ' . SizeHelper::formatSize($model->size) . '&lt;br&gt;';
 			echo '&lt;strong&gt;' . Yii::t('torrentsModule.common',
 					'Время добавления') . '&lt;/strong&gt;: ' . $model->getCtime('d.m.Y H:i:s') . '&lt;br&gt;';
 			echo '&lt;strong&gt;' . Yii::t('torrentsModule.common', 'Описание') . '&lt;/strong&gt;: ' . $model->torrentGroup->getDescription() . '&lt;br&gt;';
