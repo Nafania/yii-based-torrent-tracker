@@ -15,7 +15,12 @@
         <div class="accordion-group">
             <div class="accordion-heading">
                 <a class="accordion-toggle" data-toggle="collapse" data-parent="#newsAccordion" href="#collapse<?php echo $new->getId() ?>"><abbr title="<?php echo $new->getCtime('d.m.Y H:i'); ?>"><?php echo TimeHelper::timeAgoInWords($new->getCtime()) ?></abbr></a>
-	            <?php echo CHtml::link($new->getTitle(), $new->getUrl()); ?>
+	            <?= CHtml::link($new->getTitle(), $new->getUrl()); ?>
+                <?php
+          		    if ( $commentsCount = $new->commentsCount->count ) {
+          			    echo CHtml::link('<i class="icon-comment"></i> ' . $commentsCount, CMap::mergeArray($new->getUrl(), ['#' => 'comments']));
+          		    }
+                ?>
             </div>
             <div id="collapse<?php echo $new->getId() ?>" class="accordion-body collapse<?php echo ( $key == 0 ? ' in' : '') ?>">
                 <div class="accordion-inner">
