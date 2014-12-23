@@ -29,9 +29,9 @@ class CategoryAttributesBackendController extends YAdminController {
 		}
 
 		Ajax::renderAjax('index',
-			array(
+			[
 			     'model' => $model,
-			));
+			], false, false, true);
 	}
 
 	public function actionCreate () {
@@ -101,6 +101,12 @@ class CategoryAttributesBackendController extends YAdminController {
 			));
 	}
 
+	public function performAjaxValidation ( $models ) {
+		if ( isset($_POST['ajax']) && $_POST['ajax'] === 'category-attributes-form' ) {
+			echo CActiveForm::validate($models);
+			Yii::app()->end();
+		}
+	}
 
 	public function actionUpdate ( $id ) {
 		Yii::import('application.modules.category.models.*');
@@ -191,13 +197,6 @@ class CategoryAttributesBackendController extends YAdminController {
 			Ajax::send(Ajax::AJAX_SUCCESS, Yii::t('CategoryAttributesModule', 'Атрибуты удалены успешно'));
 		} catch ( CException $e ) {
 			Ajax::send(Ajax::AJAX_ERROR, Yii::t('CategoryAttributesModule', 'Возникли ошибки при удалении атрибутов'));
-		}
-	}
-
-	public function performAjaxValidation ( $models ) {
-		if ( isset($_POST['ajax']) && $_POST['ajax'] === 'category-attributes-form' ) {
-			echo CActiveForm::validate($models);
-			Yii::app()->end();
 		}
 	}
 }

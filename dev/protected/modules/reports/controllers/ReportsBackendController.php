@@ -41,9 +41,9 @@ class ReportsBackendController extends YAdminController {
 		}
 
 		Ajax::renderAjax('index',
-			array(
+			[
 				'model' => $model,
-			));
+			], false, false, true);
 	}
 
 
