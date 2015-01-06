@@ -305,7 +305,7 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface, \WebInte
 	}
 
 	public function searchWithText ( $search = '' ) {
-		if ( $search ) {
+		if (trim($search)) {
 			$criteria = new CDbCriteria();
 			$alias = $this->getTableAlias();
 			try {

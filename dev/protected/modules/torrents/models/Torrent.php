@@ -487,9 +487,8 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
     public function searchWithText($search = '')
     {
-        if ($search) {
+        if (trim($search)) {
             $criteria = new CDbCriteria();
-            $alias = $this->getTableAlias();
             try {
                 $rows = Yii::app()->sphinx->createCommand('SELECT id FROM yiiTorrents WHERE MATCH(:term)')->queryAll(true, [':term' => '@title ' . \SphinxHelper::escapeMatch($search)]);
 
