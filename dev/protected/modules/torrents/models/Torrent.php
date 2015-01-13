@@ -30,6 +30,8 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 {
     public $cacheTime = 3600;
 
+    private $_filesCount;
+
     /**
      * Returns the static model of the specified AR class.
      *
@@ -228,6 +230,9 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
                 /**
                  * allow to change torrent file with same hash only for same torrent
                  */
+                /**
+                 * @var Torrent $model
+                 */
                 $model = self::model()->findByAttributes(array('info_hash' => $torrent->hash_info()));
                 if ($model && $model->getId() <> $this->getId()) {
                     $this->addError('info_hash', Yii::t('torrentsModule.common', 'Torrent file already exists'));
@@ -272,6 +277,9 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
                 $this->info_hash = $torrent->hash_info();
                 $this->size = $torrent->size();
+
+                $this->flushCache();
+
             } elseif (!$this->info_hash) {
                 unset($this->info_hash);
             }
@@ -402,7 +410,9 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
         $this->title = $return;
 
-        $this->save();
+        if ( $this->title ) {
+            $this->save(false);
+        }
 
         return $return;
     }
@@ -424,16 +434,15 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
     public function getFilesCount()
     {
-        $torrent = new tComponents\TorrentComponent($this->getDownloadPath());
+        $cache = Yii::app()->cache;
 
-        return sizeof($torrent->content());
-    }
+        if ( !$this->_filesCount && ( $this->_filesCount = $cache->get(\CHtml::modelName($this) . $this->getPrimaryKey() . '_filesCount') ) === false ) {
+            $torrent = new tComponents\TorrentComponent($this->getDownloadPath());
+            $this->_filesCount = sizeof($torrent->content());
+            $cache->set(\CHtml::modelName($this) . $this->getPrimaryKey() . '_filesCount', $this->_filesCount);
+        }
 
-    public function getFilesSize()
-    {
-        $torrent = new tComponents\TorrentComponent($this->getDownloadPath());
-
-        return $torrent->size();
+        return $this->_filesCount;
     }
 
     public function getDownloadPath()
@@ -478,21 +487,16 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
     public function searchWithText($search = '')
     {
-        if ($search) {
+        if (trim($search)) {
             $criteria = new CDbCriteria();
-            $alias = $this->getTableAlias();
             try {
-                $spSearch = Yii::app()->sphinx;
-                $spSearch->setSelect('*');
-                $spSearch->setMatchMode(SPH_MATCH_ALL);
-                $resArray = $spSearch->query(\SphinxClient::EscapeString($search), 'yiiTorrents');
+                $rows = Yii::app()->sphinx->createCommand('SELECT id FROM yiiTorrents WHERE MATCH(:term)')->queryAll(true, [':term' => '@title ' . \SphinxHelper::escapeMatch($search)]);
 
-                $keys = array();
-                if (sizeof($resArray['matches'])) {
-                    foreach ($resArray['matches'] AS $key => $data) {
-                        $keys[] = $key;
-                    }
+                $keys = [];
+                foreach ( $rows AS $row ) {
+                    $keys[] = $row['id'];
                 }
+
                 $criteria->with = 'torrentGroup';
                 $criteria->addInCondition('torrentGroup.id', $keys);
 
@@ -538,5 +542,9 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
     public function getLastTime()
     {
         return $this->ctime;
+    }
+
+    public function flushCache() {
+        Yii::app()->cache->set(\CHtml::modelName($this) . $this->getPrimaryKey() . '_filesCount', null);
     }
 }

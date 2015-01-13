@@ -642,3 +642,7 @@ form div[class*="span"] {
 .latestComments .comment {
     border-bottom: none;
 }
+
+.torrentsList .accordion-heading .btn:not(:first-child) {
+    margin-left: 5px;
+}

@@ -305,21 +305,17 @@ class TorrentGroup extends \EActiveRecord implements \ChangesInterface, \WebInte
 	}
 
 	public function searchWithText ( $search = '' ) {
-		if ( $search ) {
+		if (trim($search)) {
 			$criteria = new CDbCriteria();
 			$alias = $this->getTableAlias();
 			try {
-				$spSearch = Yii::app()->sphinx;
-				$spSearch->setSelect('*');
-				$spSearch->setMatchMode(SPH_MATCH_ALL);
-				$resArray = $spSearch->query(\SphinxClient::EscapeString($search), 'yiiTorrents');
+                $rows = Yii::app()->sphinx->createCommand('SELECT id FROM yiiTorrents WHERE MATCH(:term)')->queryAll(true, [':term' => '@title ' . \SphinxHelper::escapeMatch($search)]);
 
-				$keys = array();
-				if ( sizeof($resArray['matches']) ) {
-					foreach ( $resArray['matches'] AS $key => $data ) {
-						$keys[] = $key;
-					}
-				}
+                $keys = [];
+                foreach ( $rows AS $row ) {
+                    $keys[] = $row['id'];
+                }
+
 				$criteria->addInCondition($alias . '.id', $keys);
 
 			} catch ( \CException $e ) {

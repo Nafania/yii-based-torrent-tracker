@@ -16,7 +16,10 @@ class BlogCommentBehavior extends BaseEventBehavior
 
         $owner = $this->getOwner();
 
-        if ($owner->modelName != \CHtml::modelName(new BlogPost())) {
+        /**
+         * Если комментарий не новый или он относится не к записи в блоге, то ничего не делаем
+         */
+        if (!$owner->getIsNewRecord() || $owner->modelName != \CHtml::modelName(new BlogPost())) {
             return false;
         }
 
@@ -28,7 +31,10 @@ class BlogCommentBehavior extends BaseEventBehavior
             return false;
         }
 
-        if ($owner->getIsNewRecord() && $blogPost) {
+        if ($blogPost) {
+            /**
+             * @var Subscription[] $subscriptions
+             */
             $subscriptions = Subscription::model()->findAllByAttributes(array(
                 'modelName' => \CHtml::modelName($blogPost),
                 'modelId' => $blogPost->getId()

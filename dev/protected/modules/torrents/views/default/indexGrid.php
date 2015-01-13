@@ -7,7 +7,7 @@ $groupGridColumns = array(
     array(
         'name' => '',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo CHtml::link('<i class="icon-magnet"></i>',
                     $data->getMagnetUrl(),
                     array(
@@ -40,7 +40,7 @@ $groupGridColumns = array(
     array(
         'name' => Yii::t('torrentsModule.common', 'Тип'),
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo CHtml::link(CHtml::image($data->torrentGroup->category->getImageUrl(50),
                         $data->torrentGroup->category->getTitle(),
                         array('style' => 'width:50px')),
@@ -56,7 +56,7 @@ $groupGridColumns = array(
     array(
         'name' => 'title',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo '<strong>' . CHtml::link($data->getTitle(),
                         $data->getUrl()) . ($data->getIsNew() ? ' <span class="labelTorrent label label-info">' . Yii::t('torrentsModule.common',
                             'новый') . '</span> ' : '') . '</strong><br>' . CHtml::link($data->torrentGroup->category->getTitle(),
@@ -78,7 +78,7 @@ $groupGridColumns = array(
     array(
         'name' => 'ctime',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo $data->getCtime('d.m.Y H:i:s');
             },
         'htmlOptions' => array(
@@ -88,7 +88,7 @@ $groupGridColumns = array(
     array(
         'name' => Yii::t('torrentsModule.common', 'Файлы'),
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo $data->getFilesCount();
             },
         'htmlOptions' => array(
@@ -99,7 +99,7 @@ $groupGridColumns = array(
         'header' => Yii::t('torrentsModule.common', 'Ком.'),
         'name' => 'commentsCount',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo CHtml::link(($data->torrentGroup->commentsCount ? $data->torrentGroup->commentsCount : 0),
                     CMap::mergeArray($data->torrentGroup->getUrl(), array('#' => 'comments')));
             },
@@ -112,7 +112,7 @@ $groupGridColumns = array(
         'header' => Yii::t('torrentsModule.common', 'Рейтинг'),
         'name' => 'rating',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 Yii::app()->getController()->widget('application.modules.ratings.widgets.TorrentGroupRating',
                     array(
                         'model' => $data->torrentGroup,
@@ -125,10 +125,10 @@ $groupGridColumns = array(
         )
     ),
     array(
-        'name' => Yii::t('torrentsModule.common', 'Размер'),
+        'name' => 'size',
         'type' => 'raw',
-        'value' => function ($data) {
-                echo SizeHelper::formatSize($data->getFilesSize());
+        'value' => function (\modules\torrents\models\Torrent $data) {
+                echo $data->getSize(true);
             },
         'htmlOptions' => array(
             'width' => '60px'
@@ -137,7 +137,7 @@ $groupGridColumns = array(
     array(
         'name' => 'downloads',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo $data->getDownloads();
             },
         'htmlOptions' => array(
@@ -147,7 +147,7 @@ $groupGridColumns = array(
     array(
         'name' => 'seeders',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo $data->getSeeders();
             },
         'htmlOptions' => array(
@@ -157,7 +157,7 @@ $groupGridColumns = array(
     array(
         'name' => 'leechers',
         'type' => 'raw',
-        'value' => function ($data) {
+        'value' => function (\modules\torrents\models\Torrent $data) {
                 echo $data->getLeechers();
             },
         'htmlOptions' => array(
@@ -189,16 +189,10 @@ if ( Yii::app()->getUser()->checkAccess('canViewTorrentOwner') ) {
         'dataProvider' => $dataProvider,
         'type' => 'striped bordered',
         'template' => "{items}\n{pager}",
-        'extraRowColumns' => array('groupCtime'),
+        'extraRowColumns' => ['groupCtime'],
         'extraRowExpression' => function($data) { return '<abbr title="' . $data->getCtime('d.m.Y') . '" class="torrentGridHeader">' . Yii::t('torrentsModule.common', 'Добавлено') . ' ' . TimeHelper::timeAgoInWords($data->getCtime()) . '</abbr>';},
         'enableHistory' => true,
         'enableSorting' => true,
         'id' => 'torrents-grid',
         'columns' => $groupGridColumns,
-        'afterAjaxUpdate' => 'js:function(){}'
-        /*'sortableAttributes' => array(
-             'mtime',
-             'commentsCount',
-             'rating',
-         ),*/
     ));
