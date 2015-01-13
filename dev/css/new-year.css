@@ -1,0 +1,11 @@
+body {
+    background-image: url('/images/snowflakes_background.jpg');
+}
+body:before {
+    content: " ";
+    background: url('/images/snow.png') repeat-x bottom left;
+    height: 20px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}

@@ -8,6 +8,9 @@ if ( !Yii::app()->getUser()->getIsGuest() ) {
 else {
     $cs->registerPackage('theme-default');
 }
+if ( date('m') == 12 && date('d') > 25 || date('m') == 1 && date('d') < 15 ) {
+	$cs->registerCssFile('/css/new-year.css');
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
