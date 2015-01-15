@@ -1,5 +1,5 @@
 <?php
-class install extends CDbMigration {
+class setup extends CDbMigration {
 	public function safeUp () {
 
 		$this->execute('CREATE TABLE auto_tag (

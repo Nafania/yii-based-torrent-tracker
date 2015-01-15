@@ -45,7 +45,7 @@ class AutotagsModule extends CWebModule
     {
         Yii::import('application.modules.autotags.migrations.install');
 
-        $Install = new install();
+        $Install = new setup();
         $Install->safeUp();
     }
 
@@ -53,7 +53,7 @@ class AutotagsModule extends CWebModule
     {
         Yii::import('application.modules.autotags.migrations.install');
 
-        $Install = new install();
+        $Install = new setup();
         $Install->safeDown();
     }
 }
