@@ -23,7 +23,7 @@ class TagsModule extends CWebModule
 		Yii::app()->pd->registerBehavior('modules\torrents\models\Torrent', array(
 		        'tags' => array(
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
-		            'modelTableName' => 'Torrent',
+		            'modelTableName' => \modules\torrents\models\Torrent::model()->resolveClassName(),
 		            'cacheID' => 'cache',
 		            'createTagsAutomatically' => true,
 		        )
@@ -33,7 +33,7 @@ class TagsModule extends CWebModule
 		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup', array(
 		        'tags' => array(
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
-		            'modelTableName' => 'TorrentGroup',
+		            'modelTableName' => \modules\torrents\models\TorrentGroup::model()->resolveClassName(),
 		            'cacheID' => 'cache',
 		            'createTagsAutomatically' => true,
 		        )
