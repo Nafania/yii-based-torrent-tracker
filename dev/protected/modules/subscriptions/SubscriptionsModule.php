@@ -188,11 +188,11 @@ class SubscriptionsModule extends CWebModule {
 	}
 
 	private static function _setImport () {
-		Yii::app()->pd->setImport(array(
-			'application.modules.subscriptions.interfaces.*',
+		Yii::app()->pd->setImport([
+			'application.modules.subscriptions.interfaces.ChangesInterface',
 			'application.modules.subscriptions.models.*',
             'application.modules.subscriptions.components.resqueWorkers'
-		));
+		]);
 	}
 
 

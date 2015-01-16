@@ -9,9 +9,9 @@
 namespace modules\autotags\behaviors;
 
 class AutoTag extends \CActiveRecordBehavior {
-    public function afterSave($e)
+    public function beforeSave($e)
     {
-        parent::afterSave($e);
+        parent::beforeSave($e);
 
         /**
          * @var \modules\torrents\models\Torrent $owner
@@ -25,32 +25,11 @@ class AutoTag extends \CActiveRecordBehavior {
         $group = $owner->torrentGroup;
         $categoryPk = $group->category->getPrimaryKey();
 
-        $rows = \Yii::app()->getDb()->createCommand('SELECT fk_tag FROM auto_tag WHERE fk_category = '. $categoryPk)->queryAll();
+        $rows = \Yii::app()->getDb()->createCommand('SELECT t.name FROM auto_tag at, tags t WHERE at.fk_tag = t.id AND at.fk_category = '. $categoryPk)->queryAll();
 
         foreach ( $rows AS $row ) {
-            \Yii::app()->getDb()->createCommand('INSERT INTO tagRelations (modelId, tagId, modelName, uId) VALUES(:modelId, :tagId, :modelName, :uId)')->execute([
-                ':modelId' => $owner->getPrimaryKey(),
-                ':tagId' => $row['fk_tag'],
-                ':modelName' => $owner->resolveClassName(),
-                ':uId' => $owner->user->getPrimaryKey(),
-            ]);
-
-            if ( !\Yii::app()->getDb()->createCommand('SELECT 1 FROM tagRelations WHERE modelId = :modelId AND tagId = :tagId AND modelName = :modelName')->queryColumn([
-                ':modelId' => $group->getPrimaryKey(),
-                ':tagId' => $row['fk_tag'],
-                ':modelName' => $group->resolveClassName(),
-            ]) ) {
-                \Yii::app()->getDb()->createCommand(
-                    'INSERT INTO tagRelations (modelId, tagId, modelName, uId) VALUES(:modelId, :tagId, :modelName, :uId)'
-                )->execute(
-                    [
-                        ':modelId' => $group->getPrimaryKey(),
-                        ':tagId' => $row['fk_tag'],
-                        ':modelName' => $group->resolveClassName(),
-                        ':uId' => $owner->user->getPrimaryKey(),
-                    ]
-                );
-            }
+            $owner->addTag($row['name']);
+            $group->addTag($row['name']);
         }
 
         return true;

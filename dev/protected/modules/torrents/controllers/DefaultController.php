@@ -124,6 +124,7 @@ class DefaultController extends components\Controller {
 
 					$this->processAttributes($Torrent);
 
+
 					$Torrent->gId = $TorrentGroup->getId();
 					$Torrent->save(false);
 

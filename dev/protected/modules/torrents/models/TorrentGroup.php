@@ -26,6 +26,7 @@ use modules\torrents\models AS models;
  * @mixin \GetTorrentTitleBehavior
  * @mixin \TorrentNameRuleBehavior
  * @mixin \FavoritesBehavior
+ * @mixin \ETaggableBehavior
  *
  */
 class TorrentGroup extends \EActiveRecord implements \ChangesInterface, \WebInterface {
