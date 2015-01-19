@@ -118,12 +118,13 @@ class DefaultController extends components\Controller {
 			$valid = $this->validateAttributes($Attributes, $TorrentGroup) && $valid;
 
 			if ( $valid ) {
+				$Torrent->torrentGroup = $TorrentGroup;
+
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
 
 					$this->processAttributes($Torrent);
-
 
 					$Torrent->gId = $TorrentGroup->getId();
 					$Torrent->save(false);
