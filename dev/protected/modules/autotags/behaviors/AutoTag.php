@@ -9,9 +9,9 @@
 namespace modules\autotags\behaviors;
 
 class AutoTag extends \CActiveRecordBehavior {
-    public function beforeSave($e)
+    public function afterValidate($e)
     {
-        parent::beforeSave($e);
+        parent::afterValidate($e);
 
         /**
          * @var \modules\torrents\models\Torrent $owner
