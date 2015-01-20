@@ -210,6 +210,8 @@ class DefaultController extends components\Controller {
 			}
 
 			if ( $valid ) {
+				$Torrent->torrentGroup = $TorrentGroup;
+
 				$transaction = Yii::app()->db->beginTransaction();
 
 				try {
