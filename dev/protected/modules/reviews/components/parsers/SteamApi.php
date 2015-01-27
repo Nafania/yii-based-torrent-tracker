@@ -90,7 +90,7 @@ class SteamApi extends ReviewInterface {
             $link = pq($link);
 
             $_title = $link->find('.title')->html();
-            var_dump($title, $_title, levenshtein($title, $_title));
+
             if (levenshtein($title, $_title) > 10) {
                 continue;
             }
