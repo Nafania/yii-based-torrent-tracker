@@ -40,7 +40,7 @@ class UpdateReviewsCommand extends CConsoleCommand
 
         $rows = $comm->query();
 
-        $className = (new modules\torrents\models\TorrentGroup())->resolveClassName();
+        $className = \modules\torrents\models\TorrentGroup::model()->resolveClassName();
 
         foreach ($rows AS $row) {
             $reviewsData = $data[$row['cId']];

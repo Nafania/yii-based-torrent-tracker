@@ -22,10 +22,10 @@ class ReviewWidget extends CWidget
         /**
          * @var $reviews Review[]
          */
-        $reviews = Review::model()->findAllByAttributes(array(
+        $reviews = Review::model()->findAllByAttributes([
                 'modelId' => $this->model->getPrimaryKey(),
                 'modelName' => $this->model->resolveClassName(),
-            ), 'params IS NOT NULL');
+            ], 'params IS NOT NULL');
 
         foreach ($reviews AS $review) {
             /**
@@ -33,15 +33,7 @@ class ReviewWidget extends CWidget
              */
             $class = new $review->apiName;
 
-            echo str_replace(array(
-                    '{ratingTitle}',
-                    '{ratingValue}'
-                ),
-                array(
-                    $class->getDescription(),
-                    $class->returnReviewString(CJSON::decode($review->params)),
-                ),
-                $this->template);
+            echo str_replace(['{ratingTitle}', '{ratingValue}'], [$class->getDescription(), $class->returnReviewString(CJSON::decode($review->params))], $this->template);
         }
     }
 }
