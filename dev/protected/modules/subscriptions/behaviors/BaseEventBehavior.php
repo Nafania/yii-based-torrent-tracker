@@ -12,10 +12,17 @@ use CActiveRecordBehavior;
 
 class BaseEventBehavior extends CActiveRecordBehavior {
     protected function saveEvent ( $eventData ) {
-        if ( !is_array($eventData) ) {
+        /**
+         * Если массив не ассоциативный
+         */
+        if (!array_key_exists(0, $eventData)) {
             $eventData = [$eventData];
         }
+        Yii::import('application.modules.subscriptions.models.*');
 
+        /**
+         * @var \Event $event
+         */
         Yii::app()->resque->createJob('save_events', 'application\modules\subscriptions\components\resqueWorkers\SaveEvent', ['data' => $eventData]);
     }
 }

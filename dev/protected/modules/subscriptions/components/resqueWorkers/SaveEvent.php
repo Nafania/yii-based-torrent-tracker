@@ -28,9 +28,7 @@ class SaveEvent {
         foreach ( $data AS $_data ) {
             $event = new \Event();
             $event->setAttributes($_data, false);
-            if (!$event->save(false)) {
-                Yii::log('Cant save event due error ' . \CJSON::encode(var_export($event->getErrors(), true)), \CLogger::LEVEL_ERROR);
-            }
+            $event->save(false);
         }
     }
 }
