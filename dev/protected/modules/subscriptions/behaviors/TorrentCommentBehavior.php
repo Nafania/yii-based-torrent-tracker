@@ -19,7 +19,7 @@ class TorrentCommentBehavior extends BaseEventBehavior
         /**
          * Если комментарий не новый или он относится не к группе торрентов, то ничего не делаем
          */
-        if (!$owner->getIsNewRecord() || $owner->modelName <> 'modules_torrents_models_TorrentGroup') {
+        if (!$owner->getIsNewRecord() || $owner->modelName <> TorrentGroup::model()->resolveClassName() ) {
             return true;
         }
 

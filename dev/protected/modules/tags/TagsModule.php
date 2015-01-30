@@ -9,7 +9,7 @@ class TagsModule extends CWebModule
 
 		// import the module-level models and components
 		$this->setImport(array(
-			'tags.models.*',
+			'application.modules.tags.behaviors.taggable.',
 			'tags.components.*',
 		));
 	}
@@ -20,34 +20,34 @@ class TagsModule extends CWebModule
 	}
 
 	protected static function _addBehaviors () {
-		Yii::app()->pd->registerBehavior('modules\torrents\models\Torrent', array(
-		        'tags' => array(
+		Yii::app()->pd->registerBehavior('modules\torrents\models\Torrent', [
+		        'tags' => [
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
-		            'modelTableName' => 'Torrent',
+		            'modelTableName' => 'modules_torrents_models_Torrent',
 		            'cacheID' => 'cache',
 		            'createTagsAutomatically' => true,
-		        )
-		    )
+		        ]
+		    ]
 		);
 
-		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup', array(
-		        'tags' => array(
+		Yii::app()->pd->registerBehavior('modules\torrents\models\TorrentGroup', [
+		        'tags' => [
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
-		            'modelTableName' => 'TorrentGroup',
+		            'modelTableName' => 'modules_torrents_models_TorrentGroup',
 		            'cacheID' => 'cache',
 		            'createTagsAutomatically' => true,
-		        )
-		    )
+		        ]
+		    ]
 		);
 
-		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost', array(
-		        'tags' => array(
+		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost', [
+		        'tags' => [
 		            'class' => 'application.modules.tags.behaviors.taggable.ETaggableBehavior',
 		            'modelTableName' => 'BlogPost',
 		            'cacheID' => 'cache',
 		            'createTagsAutomatically' => true,
-		        )
-		    )
+		        ]
+		    ]
 		);
 	}
 

@@ -441,7 +441,7 @@ class ETaggableBehavior extends CActiveRecordBehavior {
 			if ( !empty($this->tags) ) {
 				foreach ( $this->tags as $tag ) {
 					if ( empty($tag) ) {
-						return;
+						continue;
 					}
 
 					// try to get existing tag

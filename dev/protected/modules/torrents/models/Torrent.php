@@ -23,8 +23,9 @@ use modules\tracking\components AS trackable;
  * @property string                                   $info_hash
  * @property integer                                  $uid
  * @property string                                   $title
- * @property models\TorrentGroup                      torrentGroup
- * @property \User                                    user
+ * @property models\TorrentGroup                      $torrentGroup
+ * @property \User                                    $user
+ * @mixin \ETaggableBehavior
  */
 class Torrent extends \EActiveRecord implements trackable\Trackable
 {
