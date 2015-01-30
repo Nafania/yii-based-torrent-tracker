@@ -114,6 +114,8 @@ class DefaultController extends components\Controller {
 
 			$TorrentGroup->addTags($_POST['torrentTags']);
 
+			$Torrent->torrentGroup = $TorrentGroup;
+
 			$valid = $Torrent->validate();
 			$valid = $this->validateAttributes($Attributes, $TorrentGroup) && $valid;
 
@@ -130,16 +132,10 @@ class DefaultController extends components\Controller {
 					$TorrentGroup->mtime = time();
 					$TorrentGroup->save(false);
 
-					//foreach ( $Attributes AS $Attribute ) {
-
-					//}
-
 					$transaction->commit();
 
-					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
-						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
-					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'torrent' . $Torrent->getId())));
+					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS, Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
+					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(), ['#' => 'torrent' . $Torrent->getId()]));
 				} catch ( \CException $e ) {
 
 					$transaction->rollBack();
@@ -175,6 +171,11 @@ class DefaultController extends components\Controller {
 		$torrent->send($Torrent->getSlugTitle() . '.torrent');
 	}
 
+	/**
+	 * @param $cId
+	 * @throws CHttpException
+	 * @throws \CDbException
+	 */
 	public function actionCreateGroup ( $cId ) {
 		$title = Yii::t('torrentsModule.common', 'Загрузка торрента');
 		$this->breadcrumbs[] = $title;
@@ -197,6 +198,8 @@ class DefaultController extends components\Controller {
 			$Torrent->setTags($_POST['torrentTags']);
 
 			$TorrentGroup->setTags($_POST['torrentTags']);
+
+			$Torrent->torrentGroup = $TorrentGroup;
 
 			$valid = $TorrentGroup->validate();
 			$valid = $Torrent->validate() && $valid;
@@ -227,10 +230,8 @@ class DefaultController extends components\Controller {
 
 					$transaction->commit();
 
-					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS,
-						Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
-					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(),
-						array('#' => 'torrent' . $Torrent->getId())));
+					Yii::app()->getUser()->setFlash(\User::FLASH_SUCCESS, Yii::t('torrentsModule.common', 'Торрент успешно добавлен'));
+					$this->redirect(CMap::mergeArray($TorrentGroup->getUrl(), ['#' => 'torrent' . $Torrent->getId()]));
 				} catch ( \CException $e ) {
 
 					$transaction->rollBack();

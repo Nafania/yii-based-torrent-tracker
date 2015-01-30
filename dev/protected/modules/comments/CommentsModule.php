@@ -106,7 +106,7 @@ class CommentsModule extends CWebModule {
 				     'class' => 'application.modules.comments.behaviors.DeleteCommentsBehavior'
 			     )
 			));
-		Yii::app()->pd->registerBehavior('BlogPost',
+		Yii::app()->pd->registerBehavior('modules\blogs\models\BlogPost',
 			array(
 			     'deleteComments' => array(
 				     'class' => 'application.modules.comments.behaviors.DeleteCommentsBehavior'

@@ -19,10 +19,9 @@ class BlogCommentBehavior extends BaseEventBehavior
         /**
          * Если комментарий не новый или он относится не к записи в блоге, то ничего не делаем
          */
-        if (!$owner->getIsNewRecord() || $owner->modelName != \CHtml::modelName(new BlogPost())) {
+        if (!$owner->getIsNewRecord() || $owner->modelName <> BlogPost::model()->resolveClassName() ) {
             return false;
         }
-
         /**
          * @var BlogPost $blogPost
          */

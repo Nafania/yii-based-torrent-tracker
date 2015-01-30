@@ -72,7 +72,6 @@
      						'{torrentName}' => $torrent->getTitle()
      					))
      		)) ?>
-
 <?php echo CHtml::link('<i class="icon-download"></i>',
 array(
 	'/torrents/default/download',
@@ -87,7 +86,6 @@ array(
 				'{torrentName}' => $torrent->getTitle()
 			))
 )) ?>
-
 <?php if ( Yii::app()->getUser()->checkAccess('reports.default.create') ) {
 	echo CHtml::link('<i class="icon-warning-sign"></i>',
 		array(
@@ -106,7 +104,6 @@ array(
 					))
 		));
 } ?>
-
 <?php
 echo CHtml::link('<i class="icon-comment"></i>',
 	'#',
@@ -122,7 +119,6 @@ echo CHtml::link('<i class="icon-comment"></i>',
 				))
 	));
 ?>
-
 <?php
 echo CHtml::link('<i class="icon-file"></i>',
 	array(
@@ -140,7 +136,6 @@ echo CHtml::link('<i class="icon-file"></i>',
 				))
 	));
 ?>
-
 <?php if ( Yii::app()->getUser()->checkAccess('files.default.index') && $torrent->files ) {
 	Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('torrents')->getAssetsUrl() . '/jMyCarousel/jMyCarousel.js');
     Yii::app()->getClientScript()->registerScriptFile(Yii::app()->getModule('files')->getAssetsUrl() . '/js/filesViewGallery.js');
@@ -163,7 +158,6 @@ echo CHtml::link('<i class="icon-file"></i>',
 		));
 
 } ?>
-
 <?php
 if ( Yii::app()->user->checkAccess('updateOwnTorrent',
 		array('model' => $torrent)) || Yii::app()->user->checkAccess('updateTorrent')

@@ -34,16 +34,23 @@ class PluginsDispatcher extends CApplicationComponent {
 			$modulesDir = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR;
 			$handle = opendir($modulesDir);
 
+			$files = [];
 			while ( false !== ($file = readdir($handle)) ) {
 				if ( $file != "." && $file != ".." && is_dir($modulesDir . $file) ) {
-					$configPath = $modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
-					if ( file_exists($configPath) ) {
-						$config = new CConfiguration($modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
-						self::$_modules[$file] = $config->toArray();
-					}
+					$files[] = $file;
 				}
 			}
 			closedir($handle);
+
+			sort($files);
+
+			foreach ( $files AS $file ) {
+				$configPath = $modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+				if ( file_exists($configPath) ) {
+					$config = new CConfiguration($modulesDir . $file . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php');
+					self::$_modules[$file] = $config->toArray();
+				}
+			}
 
 			Yii::app()->cache->set(self::CACHE_KEY . 'ModulesList', self::$_modules, 0);
 		}
@@ -90,6 +97,7 @@ class PluginsDispatcher extends CApplicationComponent {
 				Yii::trace('PluginsDispatcher ignore module ' . $moduleTitle, 'PluginsDispatcher');
 			}
 		}
+
 		Yii::app()->setModules(self::$_modules);
 		Yii::app()->getMessages()->basePath = Yii::getPathOfAlias('application.messages');
 		Yii::trace('PluginsDispatcher load finished', 'PluginsDispatcher');

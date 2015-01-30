@@ -112,14 +112,14 @@ class Event extends EActiveRecord
                 ));
 
                 if ($oldEvent) {
-                    $oldEvent->saveCounters(array('count' => 1));
+                    $oldEvent->saveCounters(['count' => 1]);
 
                     return false;
                 }
             }
 
             $this->url = serialize($this->url);
-            $this->icon = ($this->icon ? $this->icon : 'envelope');
+            $this->icon = ($this->icon ?: 'envelope');
 
             if ($this->getIsNewRecord()) {
                 $this->ctime = time();
