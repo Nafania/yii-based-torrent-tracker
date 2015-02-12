@@ -86,6 +86,10 @@ class TorrentCommentBehavior extends BaseEventBehavior
 
         $this->addSubscriptionToTorrentGroup($subscriptions, $torrentGroup);
 
+        /**
+         * Сбросим ключи массива, так как при сохранении события идет проверка на ассоциативность, путем наличия ключа 0
+         */
+        $data = array_values($data);
         $this->saveEvent($data);
     }
 
