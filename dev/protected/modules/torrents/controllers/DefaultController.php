@@ -101,6 +101,8 @@ class DefaultController extends components\Controller {
 
 		$Torrent = new models\Torrent();
 
+		$Torrent->addTags($TorrentGroup->getTags());
+
 		$Category = \Category::model()->findByPk($TorrentGroup->cId);
 		if ( !$Category ) {
 			throw new \CHttpException(404);
