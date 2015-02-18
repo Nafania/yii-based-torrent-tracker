@@ -18,7 +18,7 @@ class UserRatingBehavior extends RatingBehavior {
 		$comm->bindValue(':uId', $owner->getId());
 		$sumTorrentRatings = ($row = $comm->queryRow()) ? $row['rating'] : 0;
 
-		$comm = $db->createCommand('SELECT SUM(rating) AS rating FROM {{ratings}} r, {{comments}} t WHERE r.modelId = t.id AND r.modelName = :modelName AND r.modelName = t.modelName AND t.ownerId = :uId');
+		$comm = $db->createCommand('SELECT SUM(rating) AS rating FROM {{ratings}} r, {{comments}} t WHERE r.modelId = t.id AND r.modelName = :modelName AND t.ownerId = :uId');
 		$comm->bindValue(':modelName', 'Comment');
 		$comm->bindValue(':uId', $owner->getId());
 		$sumCommentRatings = ($row = $comm->queryRow()) ? $row['rating'] : 0;
