@@ -1,2 +1,6 @@
 # Created by .gitignore support plugin (hsz.mobi)
 /.idea
+protected/config/devel/web.php
+protected/config/devel/console.php
+protected/config/production/web.php
+protected/config/production/console.php
