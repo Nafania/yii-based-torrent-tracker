@@ -54,7 +54,7 @@ class KinopoiskApi extends ReviewInterface
 
     public function returnReviewString($params)
     {
-        return Yii::t('ReviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/{movieId}/" target="_blank">{rating}, голосов: {votes}</a>',
+        return Yii::t('reviewsModule.kinopoiskApi', '<a href="http://www.kinopoisk.ru/film/{movieId}/" target="_blank">{rating}, голосов: {votes}</a>',
             [
                 '{movieId}' => $params['movieId'],
                 '{rating}' => $params['rating'],
@@ -93,7 +93,7 @@ class KinopoiskApi extends ReviewInterface
                 ),
                 false);
 
-            return $this->_parseSearchResults($contents);
+            return $this->_parseSearchResults($contents, $title);
 
         } catch (CException $e) {
             Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
@@ -120,27 +120,34 @@ class KinopoiskApi extends ReviewInterface
         );
     }
 
-    private function _parseSearchResults($content)
+    /**
+     * @param string $content
+     * @param string $title
+     * @return array|bool
+     */
+    private function _parseSearchResults($content, $title)
     {
-        $html = phpQuery::newDocument($content);
+        $html = phpQuery::newDocumentHTML($content, $charset = 'utf-8');
 
         $div = $html->find('div.element.most_wanted');
         if ($div->length) {
-            $href = $div->find('p.name')->find('a')->attr('href');
+            $link = $div->find('p.name')->find('a');
+            $href = $link->attr('href');
+            $foundedTitle = $link->html();
             preg_match('/film\/([0-9]+)\//', $href, $matches);
-
-            if (!empty($matches[1])) {
-                $movieId = (int)$matches[1];
-                return $this->parseXml($movieId);
-            }
         } else {
             preg_match('/id_film = ([0-9]+);/', $content, $matches);
-            if (!empty($matches[1])) {
-                $movieId = (int)$matches[1];
-                return $this->parseXml($movieId);
-            }
+            $foundedTitle = $html->find('h1.moviename-big')->html();
         }
-        return false;
+
+
+        if (empty($matches[1]) || levenshtein($title, $foundedTitle) > 5) {
+            return false;
+        }
+        else {
+            $movieId = (int)$matches[1];
+            return $this->parseXml($movieId);
+        }
     }
 
     /**

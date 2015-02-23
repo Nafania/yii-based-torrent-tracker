@@ -58,7 +58,7 @@ class OmDbApi extends ReviewInterface
      * @return string
      */
     public function returnReviewString ( $params ) {
-        return Yii::t('ReviewsModule.omDbApi',
+        return Yii::t('reviewsModule.omDbApi',
             '<a href="http://www.imdb.com/title/{movieId}/" target="_blank">{rating}, голосов: {votes}, metascore: {metascore}</a>',
             [
                 '{movieId}' => $params['imdbID'],
