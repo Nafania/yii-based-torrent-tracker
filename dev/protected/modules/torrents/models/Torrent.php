@@ -401,10 +401,12 @@ class Torrent extends \EActiveRecord implements trackable\Trackable
 
         $return = array();
         foreach ($sepAttr AS $attribute) {
-            $prepend = ($attribute->prepend ? $attribute->prepend . ' ' : '');
-            $append = ($attribute->append ? ' ' . $attribute->append : '');
+            if ($attr = $this->getEavAttribute($attribute->id)) {
+                $prepend = ($attribute->prepend ? $attribute->prepend . ' ' : '');
+                $append = ($attribute->append ? ' ' . $attribute->append : '');
 
-            $return[] = $prepend . $this->getEavAttribute($attribute->id) . $append;
+                $return[] = $prepend . $attr . $append;
+            }
         }
 
         $return = implode(' - ', $return);
