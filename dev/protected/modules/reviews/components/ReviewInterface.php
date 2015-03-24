@@ -7,18 +7,29 @@ abstract class ReviewInterface
      * Method to get type of reviews (video, audio, games etc)
      * @return string
      */
-    abstract function getType();
-
-    abstract function getTitle();
-
-    abstract function getNeededFields();
-
-    abstract function getId();
+    abstract public function getType();
 
     /**
+     * @return string
+     */
+    abstract public function getTitle();
+
+    /**
+     * @return array
+     */
+    abstract public function getNeededFields();
+
+    /**
+     * @return string
+     */
+    abstract public function getId();
+
+    /**
+     * Must return [] if we have data, null if something wrong with data and false if we have errors with getting data
+     *
      * @param array $args
      *
-     * @return array|bool
+     * @return array|bool|null
      */
     abstract protected function getApiData($args);
 
@@ -85,13 +96,15 @@ abstract class ReviewInterface
 
         $review->mtime = time();
 
-        if ( $data ) {
-            $review->params = CJSON::encode($data);
-        }
-        else {
-            $review->params = new CDbExpression('NULL');
+        /**
+         * if $data !== false then we have answer from api, it may be null if not correct answer, may be data not present or something else.
+         * If $data === false, there are no answer from api, so we not update params
+         */
+        if ($data !== false) {
+            $review->params = ($data === null) ? new CDbExpression('NULL') : CJSON::encode($data);
         }
 
+        //must update mtime anyway
         $review->save();
 
         return $data;

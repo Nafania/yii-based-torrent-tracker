@@ -74,9 +74,8 @@ class SteamApi extends ReviewInterface {
    			}
    		} catch ( CException $e ) {
    			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+            return false;
    		}
-
-   		return false;
    	}
 
 
@@ -100,7 +99,7 @@ class SteamApi extends ReviewInterface {
             return array_merge($this->parseReview($link->find('.search_review_summary')->attr('data-store-tooltip')), ['url' => $url]);
         }
 
-        return false;
+        return null;
     }
 
     protected function parseReview ($str) {
