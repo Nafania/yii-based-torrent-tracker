@@ -15,7 +15,7 @@ class UpdateReviewsCommand extends CConsoleCommand
 
         Yii::app()->setGlobalState(__FILE__ . 'runAt', time());
 
-        $sql = 'SELECT * FROM {{reviewsRelations}} WHERE cId = 1';
+        $sql = 'SELECT * FROM {{reviewsRelations}}';
         $db = Yii::app()->getDb();
         $comm = $db->createCommand($sql);
         $rows = $comm->query();

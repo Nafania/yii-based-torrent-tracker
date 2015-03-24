@@ -92,7 +92,6 @@ class KinopoiskApi extends ReviewInterface
                     'proxy' => Yii::app()->config->get('reviewsModule.proxies'),
                 ),
                 false);
-
             return $this->_parseSearchResults($contents, $title);
 
         } catch (CException $e) {
@@ -138,7 +137,6 @@ class KinopoiskApi extends ReviewInterface
             preg_match('/id_film = ([0-9]+);/', $content, $matches);
             $foundedTitle = $html->find('h1.moviename-big')->html();
         }
-
 
         if (empty($matches[1]) || levenshtein($title, $foundedTitle) > 5) {
             return null;
