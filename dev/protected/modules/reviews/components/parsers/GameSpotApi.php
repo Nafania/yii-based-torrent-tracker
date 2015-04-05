@@ -74,9 +74,8 @@ class GameSpotApi extends ReviewInterface {
 			}
 		} catch ( CException $e ) {
 			Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+            return false;
 		}
-
-		return false;
 	}
 
 
@@ -104,6 +103,6 @@ class GameSpotApi extends ReviewInterface {
             ];
 		}
 
-		return false;
+		return null;
 	}
 }

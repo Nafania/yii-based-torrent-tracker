@@ -65,7 +65,7 @@ class KinopoiskApi extends ReviewInterface
 
     /**
      * @param $args
-     * @return array|bool
+     * @return array|bool|null
      */
     protected function getApiData($args)
     {
@@ -92,14 +92,12 @@ class KinopoiskApi extends ReviewInterface
                     'proxy' => Yii::app()->config->get('reviewsModule.proxies'),
                 ),
                 false);
-
             return $this->_parseSearchResults($contents, $title);
 
         } catch (CException $e) {
             Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+            return false;
         }
-
-        return false;
     }
 
     private function _generateUserAgent()
@@ -140,9 +138,8 @@ class KinopoiskApi extends ReviewInterface
             $foundedTitle = $html->find('h1.moviename-big')->html();
         }
 
-
         if (empty($matches[1]) || levenshtein($title, $foundedTitle) > 5) {
-            return false;
+            return null;
         }
         else {
             $movieId = (int)$matches[1];
@@ -152,15 +149,15 @@ class KinopoiskApi extends ReviewInterface
 
     /**
      * @param $movieId
-     * @return array|bool
+     * @return array|null
      */
     protected function parseXml($movieId)
     {
         try {
             $xml = $this->makeRequest('http://rating.kinopoisk.ru/' . $movieId . '.xml',
-                array(
+                [
                     'useragent' => $this->_generateUserAgent(),
-                ),
+                ],
                 false);
 
             $data = simplexml_load_string($xml);

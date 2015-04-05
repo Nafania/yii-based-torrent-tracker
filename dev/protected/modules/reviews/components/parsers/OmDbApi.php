@@ -83,7 +83,7 @@ class OmDbApi extends ReviewInterface
         }
 
         try {
-            if ($type == 'S') {
+            if ($type === 'S') {
                 $url = 'http://omdbapi.com/?s=' . $title;
             } else {
                 $url = 'http://omdbapi.com/?t=' . $title . '&y=' . $year;
@@ -91,35 +91,62 @@ class OmDbApi extends ReviewInterface
 
             $contents = $this->makeRequest($url);
 
-            if ($type == 'M' && $contents->Response != 'False' && $contents->imdbID !== null ) {
-                return [
-                    'imdbID' => $contents->imdbID,
-                    'imdbRating' => (float) $contents->imdbRating,
-                    'imdbVotes' => $contents->imdbVotes,
-                    'Metascore' => $contents->Metascore,
-                ];
+            return $this->parseResponse($type, $contents);
 
-            } elseif ($type == 'S' && $contents->Response != 'False') {
-                foreach ($contents->Search AS $movie) {
-                    if ($movie->Type == 'series') {
-                        $data = $this->makeRequest('http://omdbapi.com/?i=' . $movie->imdbID);
-                        if ($data->Response != 'False' && $contents->imdbID !== null ) {
-                            return [
-                                'imdbID' => $contents->imdbID,
-                                'imdbRating' => (float) $contents->imdbRating,
-                                'imdbVotes' => $contents->imdbVotes,
-                                'Metascore' => $contents->Metascore,
-                            ];
-                        }
-                    }
-                }
-            } else {
-                return false;
-            }
         } catch (CException $e) {
             Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+
+            return false;
+        }
+    }
+
+    /**
+     * @param $type
+     * @param $contents
+     * @return array|null|false
+     * @throws CException
+     */
+    protected function parseResponse($type, $contents)
+    {
+        if ($contents->Response !== 'False') {
+            switch ($type) {
+                //series
+                case 'S':
+                    foreach ($contents->Search AS $movie) {
+                        if ($movie->Type === 'series') {
+                            try {
+                                $data = $this->makeRequest('http://omdbapi.com/?i=' . $movie->imdbID);
+                                if ($data->Response !== 'False' && $contents->imdbID !== null) {
+                                    return [
+                                        'imdbID' => $contents->imdbID,
+                                        'imdbRating' => (float)$contents->imdbRating,
+                                        'imdbVotes' => $contents->imdbVotes,
+                                        'Metascore' => $contents->Metascore,
+                                    ];
+                                }
+                            }
+                            catch (CException $e) {
+                                Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+
+                //movie
+                case 'M':
+                    if ($contents->imdbID !== null) {
+                        return [
+                            'imdbID' => $contents->imdbID,
+                            'imdbRating' => (float)$contents->imdbRating,
+                            'imdbVotes' => $contents->imdbVotes,
+                            'Metascore' => $contents->Metascore,
+                        ];
+                    }
+                    break;
+            }
         }
 
-        return false;
+        return null;
     }
 }
