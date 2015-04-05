@@ -8,7 +8,6 @@ abstract class ReviewInterface
      * @return string
      */
     abstract public function getType();
-
     /**
      * @return string
      */
@@ -18,7 +17,6 @@ abstract class ReviewInterface
      * @return array
      */
     abstract public function getNeededFields();
-
     /**
      * @return string
      */
@@ -165,7 +163,7 @@ abstract class ReviewInterface
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, (isset($options['timeout']) ? $options['timeout'] : 10));
 
         if (isset($options['referer'])) {
             curl_setopt($ch, CURLOPT_REFERER, $options['referer']);
@@ -178,9 +176,8 @@ abstract class ReviewInterface
         if (isset($options['useragent'])) {
             curl_setopt($ch, CURLOPT_USERAGENT, $options['useragent']);
         }
-        if (isset($options['proxy']) && is_array($options['proxy'])) {
-            $key = array_rand($options['proxy'], 1);
-            curl_setopt($ch, CURLOPT_PROXY, $options['proxy'][$key]);
+        if (isset($options['proxy'])) {
+            curl_setopt($ch, CURLOPT_PROXY, $options['proxy']);
         }
 
         if (isset($options['query'])) {
