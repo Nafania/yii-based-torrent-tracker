@@ -83,21 +83,32 @@ class KinopoiskApi extends ReviewInterface
             $url = 'http://www.kinopoisk.ru/s/type/film/find/' . rawurlencode($title) . '/m_act[year]/' . $year . '/';
         }
 
-        try {
-            $contents = $this->makeRequest($url,
-                array(
-                    'useragent' => $this->_generateUserAgent(),
-                    'headers' => $this->_generateHeaders(),
-                    'referer' => 'http://www.kinopoisk.ru/',
-                    'proxy' => Yii::app()->config->get('reviewsModule.proxies'),
-                ),
-                false);
-            return $this->_parseSearchResults($contents, $title);
+        $proxies = Yii::app()->config->get('reviewsModule.proxies');
 
-        } catch (CException $e) {
-            Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
-            return false;
+        shuffle($proxies);
+
+        foreach ($proxies AS $proxy) {
+            try {
+                $contents = $this->makeRequest(
+                    $url,
+                    [
+                        'useragent' => $this->_generateUserAgent(),
+                        'headers' => $this->_generateHeaders(),
+                        'referer' => 'http://www.kinopoisk.ru/',
+                        'timeout' => 3,
+                        'proxy' => $proxy,
+                    ],
+                    false
+                );
+                return $this->_parseSearchResults($contents, $title);
+
+            } catch (CException $e) {
+                Yii::log($e->getMessage() . ' with proxy ' . $proxy, CLogger::LEVEL_INFO);
+            }
         }
+
+        Yii::log('All kinopoisk proxies fail or kinopoisk not responding', CLogger::LEVEL_ERROR);
+        return false;
     }
 
     private function _generateUserAgent()
