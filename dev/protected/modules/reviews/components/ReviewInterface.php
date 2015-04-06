@@ -128,11 +128,7 @@ abstract class ReviewInterface
         }
 
         if ($headers['http_code'] != 200) {
-            Yii::log('Invalid response http code: ' . $headers['http_code'] . '.' . PHP_EOL . 'URL: ' . $url . PHP_EOL . 'Result: ' . $result,
-                CLogger::LEVEL_ERROR);
-            throw new CException(Yii::t('reviewsModule.common',
-                'Invalid response http code: {code}.',
-                array('{code}' => $headers['http_code'])), $headers['http_code']);
+            throw new CException(Yii::t('common', 'Invalid response http code: {code}.', ['{code}' => $headers['http_code']]), $headers['http_code']);
         }
 
         curl_close($ch);
