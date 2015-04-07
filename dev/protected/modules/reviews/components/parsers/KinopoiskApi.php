@@ -146,7 +146,7 @@ class KinopoiskApi extends ReviewInterface
             preg_match('/film\/([0-9]+)\//', $href, $matches);
         } else {
             preg_match('/id_film = ([0-9]+);/', $content, $matches);
-            $foundedTitle = $html->find('h1.moviename-big')->html();
+            $foundedTitle = $html->find('h1.moviename-big[itemprop=name]')->html();
         }
 
         if (empty($matches[1]) || levenshtein($title, $foundedTitle) > 5) {
