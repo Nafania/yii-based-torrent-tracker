@@ -12,7 +12,6 @@
 
 		default:
 			echo '<h2>Error ' . $code . '</h2>';
-			echo CHtml::encode($message);
+            echo Yii::t('common', 'Произошла ошибка, администратор уже уведомлен о ней.');
 		break;
 	}
-?>
