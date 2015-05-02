@@ -48,7 +48,7 @@ class DefaultController extends components\Controller {
 	 * @param integer $id the ID of the model to be displayed
 	 */
 	public function actionView ( $id ) {
-		$model = $this->loadModel($id)->deleteForRussianOrError();
+		$model = $this->loadModel($id)->checkIsBlocked();
 
 		$title = Yii::t('torrentsModule.common', '{torrentName}', array('{torrentName}' => $model->getTitle()));
 		$this->breadcrumbs[] = $title;
@@ -72,7 +72,7 @@ class DefaultController extends components\Controller {
    	 * @param integer $id the ID of the model to be displayed
    	 */
    	public function actionWatchOnline ( $id ) {
-   		$model = $this->loadModel($id)->deleteForRussianOrError();
+   		$model = $this->loadModel($id)->checkIsBlocked();
 
         $torrentStreamModel = models\TorrentstreamCategory::model()->findByAttributes(['fk_category' => $model->cId]);
 
