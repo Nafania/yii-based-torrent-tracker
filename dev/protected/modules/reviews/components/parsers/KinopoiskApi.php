@@ -100,7 +100,7 @@ class KinopoiskApi extends ReviewInterface
                     ],
                     false
                 );
-                return $this->_parseSearchResults($contents, $title);
+                return $this->_parseSearchResults($contents, $title, $type);
 
             } catch (CException $e) {
                 Yii::log($e->getMessage() . ' with proxy ' . $proxy, CLogger::LEVEL_INFO);
@@ -134,7 +134,7 @@ class KinopoiskApi extends ReviewInterface
      * @param string $title
      * @return array|bool
      */
-    private function _parseSearchResults($content, $title)
+    private function _parseSearchResults($content, $title, $type)
     {
         $html = phpQuery::newDocumentHTML($content, $charset = 'utf-8');
 
@@ -147,6 +147,11 @@ class KinopoiskApi extends ReviewInterface
         } else {
             preg_match('/id_film = ([0-9]+);/', $content, $matches);
             $foundedTitle = $html->find('h1.moviename-big[itemprop=name]')->html();
+        }
+
+        if ($type == 'S') {
+            $foundedTitle = str_replace(['(сериал)', '(мини-сериал)'], '', $foundedTitle);
+            $foundedTitle = trim($foundedTitle);
         }
 
         if (empty($matches[1]) || levenshtein($title, $foundedTitle) > 5) {
