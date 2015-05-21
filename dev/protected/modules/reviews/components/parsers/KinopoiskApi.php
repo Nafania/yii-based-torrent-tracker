@@ -94,7 +94,7 @@ class KinopoiskApi extends ReviewInterface
                 for ($i = 0; $i < 3; ++$i) {
                     $searchUrl = sprintf($url, rawurlencode($title), $year);
 
-                    $result = $this->doRequest($searchUrl, $title, $proxy);
+                    $result = $this->doRequest($searchUrl, $title, $proxy, $type);
 
                     if ($result === null) {
                         if ($i === 0) {
@@ -107,7 +107,7 @@ class KinopoiskApi extends ReviewInterface
                     }
                 }
             } else {
-                return $this->doRequest($url, $title, $proxy);
+                return $this->doRequest($url, $title, $proxy, $type);
             }
             return null;
         }
@@ -122,7 +122,7 @@ class KinopoiskApi extends ReviewInterface
      * @param string $proxy
      * @return array|bool
      */
-    protected function doRequest($url, $title, $proxy)
+    protected function doRequest($url, $title, $proxy, $type)
     {
         try {
             $contents = $this->makeRequest(
@@ -136,7 +136,7 @@ class KinopoiskApi extends ReviewInterface
                 ],
                 false
             );
-            return $this->_parseSearchResults($contents, $title);
+            return $this->_parseSearchResults($contents, $title, $type);
 
         } catch (CException $e) {
             Yii::log($e->getMessage() . ' with proxy ' . $proxy, CLogger::LEVEL_INFO);
