@@ -9,7 +9,7 @@ else {
     $cs->registerPackage('theme-default');
 }*/
 $cs->registerPackage('theme-default');
-$cs->registerPackage('BOOTSTRA.386');
+//$cs->registerPackage('BOOTSTRA.386');
 if ( date('m') == 12 && date('d') > 25 || date('m') == 1 && date('d') < 15 ) {
 	$cs->registerCssFile('/css/new-year.css');
 }
