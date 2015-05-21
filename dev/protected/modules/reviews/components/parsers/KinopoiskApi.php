@@ -70,17 +70,18 @@ class KinopoiskApi extends ReviewInterface
     protected function getApiData($args)
     {
         $title = $args['t'];
-        $year = $args['y'];
+        $year = (int) $args['y'];
         $type = $args['mt'];
 
         //        http://www.kinopoisk.ru/index.php?level=7&from=forma&result=adv&m_act%5Bfrom%5D=forma&m_act%5Bwhat%5D=content&m_act%5Bfind%5D=%D1%F2%F0%E5%EB%E0&m_act%5Bfrom_year%5D=2012&m_act%5Bto_year%5D=2013&m_act%5Bcontent_find%5D=serial
 
         $title = str_replace('/', '', $title);
+        $origYear = $year;
 
         if ($type == 'S') {
             $url = 'http://www.kinopoisk.ru/index.php?level=7&from=forma&result=adv&m_act%5Bfrom%5D=forma&m_act%5Bwhat%5D=content&m_act%5Bfind%5D=' . rawurlencode($title) . '&m_act%5Bcontent_find%5D=serial';
         } else {
-            $url = 'http://www.kinopoisk.ru/s/type/film/find/' . rawurlencode($title) . '/m_act[year]/' . $year . '/';
+            $url = 'http://www.kinopoisk.ru/s/type/film/find/%s/m_act[year]/%d/';
         }
 
         $proxies = Yii::app()->config->get('reviewsModule.proxies');
@@ -88,27 +89,59 @@ class KinopoiskApi extends ReviewInterface
         shuffle($proxies);
 
         foreach ($proxies AS $proxy) {
-            try {
-                $contents = $this->makeRequest(
-                    $url,
-                    [
-                        'useragent' => $this->_generateUserAgent(),
-                        'headers' => $this->_generateHeaders(),
-                        'referer' => 'http://www.kinopoisk.ru/',
-                        'timeout' => 3,
-                        'proxy' => $proxy,
-                    ],
-                    false
-                );
-                return $this->_parseSearchResults($contents, $title, $type);
+            //we do 3 iterations for movies only, for current year, if nothing found for prev year and if again nothing found then for next year
+            if ($type != 'S') {
+                for ($i = 0; $i < 3; ++$i) {
+                    $searchUrl = sprintf($url, rawurlencode($title), $year);
 
-            } catch (CException $e) {
-                Yii::log($e->getMessage() . ' with proxy ' . $proxy, CLogger::LEVEL_INFO);
+                    $result = $this->doRequest($searchUrl, $title, $proxy);
+                    if ($result === null) {
+                        if ($i === 0) {
+                            $year = $origYear - 1;
+                        } else {
+                            $year = $origYear + 1;
+                        }
+                    } else {
+                        return $result;
+                    }
+                }
+            } else {
+                return $this->doRequest($url, $title, $proxy);
             }
+            return null;
         }
 
         Yii::log('All kinopoisk proxies fail or kinopoisk not responding', CLogger::LEVEL_ERROR);
         return false;
+    }
+
+    /**
+     * @param string $url
+     * @param string $title
+     * @param string $proxy
+     * @return array|bool
+     */
+    protected function doRequest($url, $title, $proxy)
+    {
+        try {
+            $contents = $this->makeRequest(
+                $url,
+                [
+                    'useragent' => $this->_generateUserAgent(),
+                    'headers' => $this->_generateHeaders(),
+                    'referer' => 'http://www.kinopoisk.ru/',
+                    'timeout' => 3,
+                    'proxy' => $proxy,
+                ],
+                false
+            );
+            return $this->_parseSearchResults($contents, $title);
+
+
+        } catch (CException $e) {
+            Yii::log($e->getMessage() . ' with proxy ' . $proxy, CLogger::LEVEL_INFO);
+            return false;
+        }
     }
 
     private function _generateUserAgent()
