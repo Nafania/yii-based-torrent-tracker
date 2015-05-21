@@ -95,6 +95,7 @@ class KinopoiskApi extends ReviewInterface
                     $searchUrl = sprintf($url, rawurlencode($title), $year);
 
                     $result = $this->doRequest($searchUrl, $title, $proxy);
+
                     if ($result === null) {
                         if ($i === 0) {
                             $year = $origYear - 1;
@@ -136,7 +137,6 @@ class KinopoiskApi extends ReviewInterface
                 false
             );
             return $this->_parseSearchResults($contents, $title);
-
 
         } catch (CException $e) {
             Yii::log($e->getMessage() . ' with proxy ' . $proxy, CLogger::LEVEL_INFO);
