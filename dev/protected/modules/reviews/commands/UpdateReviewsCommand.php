@@ -4,7 +4,7 @@ Yii::import('application.modules.reviews.models.*');
 
 class UpdateReviewsCommand extends CConsoleCommand
 {
-    public function actionIndex($limit = 500, $forceRun = false)
+    public function actionIndex($limit = 500, $forceRun = false, $groupId = null)
     {
         $offset = Yii::app()->getGlobalState(__FILE__ . 'reviewsOffset', 0);
         $runAt = Yii::app()->getGlobalState(__FILE__ . 'runAt', 0);
@@ -25,16 +25,24 @@ class UpdateReviewsCommand extends CConsoleCommand
             $data[$row['cId']][] = $row;
         }
 
-        $comm = $db->createCommand();
-        $comm->select = 'COUNT(*) AS count';
-        $comm->from = '{{torrentGroups}}';
-        $comm->where = 'cId IN(' . implode(', ', array_keys($data)) . ')';
-        $count = $comm->queryScalar();
+        if ($groupId === null) {
+            $comm = $db->createCommand();
+            $comm->select = 'COUNT(*) AS count';
+            $comm->from = '{{torrentGroups}}';
+            $comm->where = 'cId IN(' . implode(', ', array_keys($data)) . ')';
+            $count = $comm->queryScalar();
+        }
+        else {
+            $count = 1;
+        }
 
         $comm = $db->createCommand();
         $comm->select = '*';
         $comm->from = '{{torrentGroups}}';
         $comm->where = 'cId IN(' . implode(', ', array_keys($data)) . ')';
+        if ($groupId !== null) {
+            $comm->andWhere('id = :id', [':id' => $groupId]);
+        }
         $comm->order = 'mtime DESC';
         $comm->limit($limit, $offset);
 
@@ -43,8 +51,8 @@ class UpdateReviewsCommand extends CConsoleCommand
         $className = \modules\torrents\models\TorrentGroup::model()->resolveClassName();
 
         foreach ($rows AS $row) {
-            $reviewsData = $data[$row['cId']];
 
+            $reviewsData = $data[$row['cId']];
             foreach ($reviewsData AS $review) {
                 /**
                  * @var ReviewRelation $ReviewRelation
