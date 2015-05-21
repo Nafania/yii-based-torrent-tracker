@@ -82,20 +82,57 @@ class OmDbApi extends ReviewInterface
             return false;
         }
 
+        $origYear = $year;
+
         try {
             if ($type === 'S') {
                 $url = 'http://omdbapi.com/?s=' . $title;
+
+                return $this->doRequest($url, $type);
             } else {
-                $url = 'http://omdbapi.com/?t=' . $title . '&y=' . $year;
+                $url = 'http://omdbapi.com/?t=%s&y=%d';
+
+                //we do 3 iterations for movies only, for current year, if nothing found for prev year and if again nothing found then for next year
+                for ($i = 0; $i < 3; ++$i) {
+                    $searchUrl = sprintf($url, $title, $year);
+
+                    $result = $this->doRequest($searchUrl, $type);
+
+                    if ($result === null) {
+                        if ($i === 0) {
+                            $year = $origYear - 1;
+                        } else {
+                            $year = $origYear + 1;
+                        }
+                    } else {
+                        return $result;
+                    }
+                }
             }
 
+            return null;
+
+        } catch (CException $e) {
+            Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
+
+            return false;
+        }
+    }
+
+    /**
+     * @param string $url
+     * @param string $type
+     * @return array|bool|null
+     */
+    protected function doRequest($url, $type)
+    {
+        try {
             $contents = $this->makeRequest($url);
 
             return $this->parseResponse($type, $contents);
 
         } catch (CException $e) {
-            Yii::log($e->getMessage(), CLogger::LEVEL_ERROR);
-
+            Yii::log($e->getMessage(), CLogger::LEVEL_INFO);
             return false;
         }
     }
