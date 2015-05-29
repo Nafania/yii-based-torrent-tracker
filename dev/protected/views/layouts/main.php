@@ -2,14 +2,13 @@
 
 $cs = Yii::app()->getClientScript();
 $cs->registerPackage('common');
-/*if ( !Yii::app()->getUser()->getIsGuest() ) {
+if ( !Yii::app()->getUser()->getIsGuest() ) {
+    $cs->registerPackage('theme-default');
     $cs->registerPackage('theme-' . Yii::app()->getUser()->getModel()->profile->theme);
 }
 else {
     $cs->registerPackage('theme-default');
-}*/
-$cs->registerPackage('theme-default');
-//$cs->registerPackage('BOOTSTRA.386');
+}
 if ( date('m') == 12 && date('d') > 25 || date('m') == 1 && date('d') < 15 ) {
 	$cs->registerCssFile('/css/new-year.css');
 }
